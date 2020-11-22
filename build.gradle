@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+    id 'maven'
+}
+
+repositories {
+    flatDir { dirs("$MASTERLIB") }
+    maven {
+        credentials {
+            username 'admin'
+            password 'mezo@rational4archiva'
+        }
+        url "http://localhost:8888/repository/internal/"
+
+    }
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-resteasy'
+    implementation 'io.quarkus:quarkus-resteasy-jackson'
+    implementation 'io.quarkus:quarkus-jdbc-mysql'
+    implementation 'io.quarkus:quarkus-arc'
+    // https://mvnrepository.com/artifact/io.quarkus/quarkus-jsonb
+    compile group: 'io.quarkus', name: 'quarkus-jsonb', version: '1.9.2.Final'
+    implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2'
+    implementation group: 'com.rationalteam', name: 'rtsalesejb', version: '1.2'
+    compile group: 'com.rationalteam', name: 'RationalCore', version: '1.0'
+    implementation group: 'com.blazebit', name: 'blaze-persistence-integration-quarkus'
+    implementation group: 'com.blazebit', name: 'blaze-persistence-integration-hibernate-5.4'
+    //the text template engine from appache velocity
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.10.0-RC1'
+
+    compile 'org.apache.velocity:velocity-engine-core:2.2'
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+}
+
+group 'com.rationalteam'
+version '1.0.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
