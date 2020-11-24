@@ -1,9 +1,8 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.DataManager;
-import com.rationalteam.rterp.erpcore.HDataManager;
 import com.rationalteam.rterp.erpcore.MezoDB;
-import com.rationalteam.rtreadymix.data.Tblclients;
+import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.utility.CMezoTools;
 
 import javax.annotation.PostConstruct;
@@ -13,7 +12,6 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.Serializable;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ClientManager implements Serializable {
@@ -34,20 +32,20 @@ public class ClientManager implements Serializable {
     }
 
     @Transactional
-    public List<Tblclients> getCLients() {
+    public List<Tblclient> getCLients() {
         DataManager.setEntityManager(eman);
         Client c = new Client();
         List<Client> lst = c.listItems();
-        List<Tblclients> clist = new ArrayList<>();
+        List<Tblclient> clist = new ArrayList<>();
         for (Client client : lst) {
             Object data = client.getData();
-            clist.add((Tblclients) data);
+            clist.add((Tblclient) data);
         }
         return clist;
     }
 
     @Transactional
-    public boolean addClient(Tblclients client) {
+    public boolean addClient(Tblclient client) {
         Client c = new Client();
         if (client.getPassword() == null || client.getPassword().isEmpty())
             client.setPassword("123");
@@ -75,9 +73,13 @@ public class ClientManager implements Serializable {
         if (r) {
             Client original = new Client();
             Map<String, Object> map = new HashMap<>();
-            map.put("username", client.getUsername());
-            List<Client> filter = original.filter(map);
-            r = filter.get(0).equals(client);
+            map.put("email", client.getEmail());
+//            List<Client> filter = original.filter(map);
+//            r = filter.get(0).equals(client);
+            MezoDB.setEman(eman);
+            int cid=MezoDB.getInteger("select id from tblclient where email='"+client.getEmail()+"' and password='"+client.getPassword()+"'");
+            System.out.println("Login log: is user " + client.getEmail() + " auth? " + Boolean.toString(r));
+            return cid>0;
         }
         return r;
     }

@@ -5,7 +5,7 @@ import java.util.Objects;
 
 @Entity
 @Table(catalog = "rtmix")
-public class Tblclients {
+public class Tblclient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;
@@ -87,8 +87,8 @@ public class Tblclients {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Tblclients)) return false;
-        Tblclients that = (Tblclients) o;
+        if (!(o instanceof Tblclient)) return false;
+        Tblclient that = (Tblclient) o;
         return Objects.equals(id, that.id) &&
                 Objects.equals(username, that.username) &&
                 Objects.equals(item, that.item) &&

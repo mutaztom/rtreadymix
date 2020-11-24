@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.rationalteam.core.security.enUserType;
 import com.rationalteam.rterp.erpcore.CRtDataObject;
 import com.rationalteam.rterp.erpcore.CSearchOption;
-import com.rationalteam.rtreadymix.data.Tblclients;
+import com.rationalteam.rtreadymix.data.Tblclient;
 
 @JsonSerialize
 public class Client extends CRtDataObject {
@@ -14,7 +14,7 @@ public class Client extends CRtDataObject {
     String password;
     enUserType userType;
     String address;
-    Tblclients data;
+    Tblclient data;
     private Integer accountid;
     private Integer customerid;
     private String pincode;
@@ -28,7 +28,7 @@ public class Client extends CRtDataObject {
 
     @Override
     public Object getData() {
-        data = new Tblclients();
+        data = new Tblclient();
         data.setId(id);
         data.setItem(item);
         data.setUsername(username);
@@ -47,7 +47,7 @@ public class Client extends CRtDataObject {
 
     @Override
     public void setData(Object o) {
-        data = (Tblclients) o;
+        data = (Tblclient) o;
         id = data.getId();
         item = data.getItem();
         email = data.getEmail();
@@ -62,7 +62,7 @@ public class Client extends CRtDataObject {
 
     @Override
     public <T> Class<T> getDataType() {
-        return (Class<T>) Tblclients.class;
+        return (Class<T>) Tblclient.class;
     }
 
     public String getUsername() {
