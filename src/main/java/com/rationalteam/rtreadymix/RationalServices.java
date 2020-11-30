@@ -111,66 +111,90 @@ public class RationalServices {
     @GET
     @Path("/getStates/")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getSates() {
+    public Response getSates() {
         MezoDB.setEman(eman);
         OptionLocal st = new COption("tblstate");
         List<OptionLocal> olist = st.listOptions();
         List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
-        return list;
+        return Response.ok(list).build();
     }
 
     @GET
     @Path("/getCities")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getCities() {
+    public Response getCities() {
         MezoDB.setEman(eman);
         OptionLocal st = new COption("tblcity");
         List<OptionLocal> olist = st.listOptions();
         List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
-        return list;
+        return Response.ok(list).build();
     }
 
     @GET
     @Path("/getCountries")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getCountries() {
+    public Response getCountries() {
         MezoDB.setEman(eman);
-        OptionLocal st = new COption("tblccountry");
+        OptionLocal st = new COption("tblcountry");
         List<OptionLocal> olist = st.listOptions();
         List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
-        return list;
+        return Response.ok(list).build();
+    }
+    @GET
+    @Path("/getProvencies")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getProvencies() {
+        MezoDB.setEman(eman);
+        OptionLocal st = new COption("tblprovince");
+        List<OptionLocal> olist = st.listOptions();
+        List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+        return Response.ok(list).build();
     }
 
     @GET
     @Path("/getProducts")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getProducts() {
-        MezoDB.setEman(eman);
-        ProductLocal p = new CProduct();
-        List<ProductLocal> olist = p.listAllItems();
-        List<String> list = olist.stream().map(ProductLocal::getItem).collect(Collectors.toList());
-        return list;
+    public Response getProducts() {
+//        MezoDB.setEman(eman);
+//        ProductLocal p = new CProduct();
+//        List<ProductLocal> olist = p.listAllItems();
+//        List<String> list = olist.stream().map(ProductLocal::getItem).collect(Collectors.toList());
+        List<String> list=new ArrayList<>();
+        String[] prods=new String[]{"C10","C15","C20","C25","C30","C35","C40"};
+        for (String p :
+                prods) {
+            list.add(p);
+        }
+        return Response.ok(list).build();
     }
 
     @GET
     @Path("/getServices")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getServices() {
-        MezoDB.setEman(eman);
-        ServiceLocal p = new CService();
-        List<ServiceLocal> olist = p.listAllItems();
-        List<String> list = olist.stream().map(ServiceLocal::getItem).collect(Collectors.toList());
-        return list;
+    public Response getServices() {
+//        MezoDB.setEman(eman);
+//        ServiceLocal p = new CService();
+//        List<ServiceLocal> olist = p.listAllItems();
+//        List<String> list = olist.stream().map(ServiceLocal::getItem).collect(Collectors.toList());
+        List<String> list=new ArrayList<>();
+        String[] prods=new String[]{"ReadyMix","Site Readyness Inspectin","Concreate Inspection","Soil Inpsectoin","Other.."};
+        for (String p :
+                prods) {
+            list.add(p);
+        }
+        return Response.ok(list).build();
     }
 
     @POST
     @Path("/placeOrder")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response placeOrder(Order order) {
+    public Response placeOrder(ClientOrder order) {
         if (order == null) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
         }
-        return Response.ok().build();
+        //save order to our database
+//        order.save();
+        return Response.ok("Recieved order from client: "+order.getClientid()+" Notes:"+order.getNotes()).build();
     }
 }
