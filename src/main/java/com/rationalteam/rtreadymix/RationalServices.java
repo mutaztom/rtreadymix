@@ -94,18 +94,18 @@ public class RationalServices {
     public Response login(@PathParam("email") String email, @PathParam("pwd") String pwd) {
         if (Objects.isNull(email) || Objects.isNull("pwd"))
             return Response.serverError().status(Response.Status.EXPECTATION_FAILED.getStatusCode(), "User name and password must not be empty").build();
-       try {
-           MezoDB.setEman(eman);
-           int cid = MezoDB.getInteger("select id from tblclient where email='" +email + "' and password='" + pwd + "'");
-           boolean r = cid > 0;
-           if (r)
-               return Response.ok("User is authenticated").build();
-           else {
-               return Response.status(401, "No such user.").build();
-           }
-       }catch(Exception e){
-           return   Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
-       }
+        try {
+            MezoDB.setEman(eman);
+            int cid = MezoDB.getInteger("select id from tblclient where email='" + email + "' and password='" + pwd + "'");
+            boolean r = cid > 0;
+            if (r)
+                return Response.ok("User is authenticated").build();
+            else {
+                return Response.status(401, "No such user.").build();
+            }
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
     }
 
     @GET
@@ -140,6 +140,7 @@ public class RationalServices {
         List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
         return Response.ok(list).build();
     }
+
     @GET
     @Path("/getProvencies")
     @Produces(MediaType.APPLICATION_JSON)
@@ -159,8 +160,8 @@ public class RationalServices {
 //        ProductLocal p = new CProduct();
 //        List<ProductLocal> olist = p.listAllItems();
 //        List<String> list = olist.stream().map(ProductLocal::getItem).collect(Collectors.toList());
-        List<String> list=new ArrayList<>();
-        String[] prods=new String[]{"C10","C15","C20","C25","C30","C35","C40"};
+        List<String> list = new ArrayList<>();
+        String[] prods = new String[]{"C10", "C15", "C20", "C25", "C30", "C35", "C40"};
         for (String p :
                 prods) {
             list.add(p);
@@ -176,8 +177,8 @@ public class RationalServices {
 //        ServiceLocal p = new CService();
 //        List<ServiceLocal> olist = p.listAllItems();
 //        List<String> list = olist.stream().map(ServiceLocal::getItem).collect(Collectors.toList());
-        List<String> list=new ArrayList<>();
-        String[] prods=new String[]{"ReadyMix","Site Readyness Inspectin","Concreate Inspection","Soil Inpsectoin","Other.."};
+        List<String> list = new ArrayList<>();
+        String[] prods = new String[]{"ReadyMix", "Site Readyness Inspectin", "Concreate Inspection", "Soil Inpsectoin", "Other.."};
         for (String p :
                 prods) {
             list.add(p);
@@ -190,11 +191,18 @@ public class RationalServices {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
     public Response placeOrder(ClientOrder order) {
-        if (order == null) {
-            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
-        }
-        //save order to our database
+        try {
+            if (order == null) {
+                //send sms to confirm recieval
+                return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
+            }
+            //save order to our database
 //        order.save();
-        return Response.ok("Recieved order from client: "+order.getClientid()+" Notes:"+order.getNotes()).build();
+            SubscriptionServer server = new SubscriptionServer();
+            server.confirmOrder(order, enCommMedia.SMS);
+            return Response.ok("Received order from client: " + order.getClientid() + " Notes:" + order.getNotes()).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
     }
 }
