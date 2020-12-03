@@ -1,10 +1,17 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.CRtDataObject;
+import com.rationalteam.rterp.erpcore.MezoDB;
+import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.data.TblCity;
+import com.rationalteam.rterp.erpcore.data.TblCountry;
+import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rterp.sales.data.TblSalesDoc;
+import com.rationalteam.rtreadymix.data.Tblclient;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -228,4 +235,21 @@ public class Order extends CRtDataObject {
         return Objects.hash(super.hashCode(), clientid, location, country, state, city, quantity, type, notes, itemid, ondate, dateNeeded, status, data);
     }
 
+    public void fromClientOrder(ClientOrder cord) {
+        try {
+            clientid = Math.toIntExact(MezoDB.getItemID(Tblclient.class.getSimpleName(), "item", cord.getClientid()));
+            city = Math.toIntExact(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity()));
+            country = Math.toIntExact(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry()));
+            type = Math.toIntExact(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getType()));
+            state= Math.toIntExact(MezoDB.getItemID("tblprovince", "item", cord.getState()));
+            dateNeeded = LocalDateTime.parse(cord.getDateNeeded());
+            ondate = LocalDateTime.parse(cord.getOndate());
+            quantity = cord.getQuantity();
+            unitprice=cord.getUnitprice();
+            location=cord.getLocation();
+            notes=cord.getNotes();
+        }catch (Exception exp){
+            Utility.ShowError(exp);
+        }
+    }
 }

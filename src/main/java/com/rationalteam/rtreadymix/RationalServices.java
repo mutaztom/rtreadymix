@@ -7,6 +7,7 @@ import com.rationalteam.rtreadymix.data.Tblclient;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -21,6 +22,7 @@ public class RationalServices {
     ClientManager cman;
     @Inject
     EntityManager eman;
+    SubscriptionServer server = new SubscriptionServer();
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -190,17 +192,25 @@ public class RationalServices {
     @Path("/placeOrder")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
+    @Transactional
     public Response placeOrder(ClientOrder order) {
         try {
             if (order == null) {
                 //send sms to confirm recieval
                 return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
             }
+            MezoDB.setEman(eman);
+            DataManager.setEntityManager(eman);
             //save order to our database
-//        order.save();
-            SubscriptionServer server = new SubscriptionServer();
-            server.confirmOrder(order, enCommMedia.SMS);
-            return Response.ok("Received order from client: " + order.getClientid() + " Notes:" + order.getNotes()).build();
+            Order inorder = new Order();
+            inorder.fromClientOrder(order);
+            boolean r = inorder.save();
+            if (r) {
+//                server.confirmOrder(order, enCommMedia.SMS);
+                server.confirmOrder(order, enCommMedia.EMAIL);
+                return Response.ok("Received order from client: " + order.getClientid() + " Notes:" + order.getNotes()).build();
+            } else
+                return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Cant' accept order now.").build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }

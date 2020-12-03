@@ -1,17 +1,15 @@
 package com.rationalteam.rtreadymix;
 
-import com.rationalteam.core.CUser;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscribtion;
 import com.rationalteam.rterp.sales.SubscribtionLocal;
+import io.vertx.core.json.Json;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 import javax.ejb.EJB;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +22,7 @@ public class SubscriptionServer {
     @EJB
     SubscribtionLocal subs;
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+    private String ADMINEMAIL = "mutaztom@gmail.com";
 
     public SubscriptionServer() {
         initTemplatePath(enCommMedia.EMAIL);
@@ -227,32 +226,34 @@ public class SubscriptionServer {
         try {
             VelocityContext context = new VelocityContext();
             initTemplatePath(media);
+            Template template = Velocity.getTemplate("placeorder.txt");
             StringBuilder message = new StringBuilder("order received:");
-            message.append("\n").append("from: ").append(s.clientid).append("\n")
+            message.append("\n").append("from: ").append(s.getClientid()).append("\n")
                     .append(" volume: ").append(s.getQuantity()).append("\n")
-                    .append(" locaiton ").append(s.getLocation()).append("\n")
+                    .append(" Product: ").append(s.getType()).append("\n")
+                    .append(" city: ").append(s.getCity()).append("\n")
+                    .append(" Address: ").append(s.getNotes()).append("\n")
+                    .append(" location: ").append(s.getLocation()).append("\n")
+                    .append(" onmap: ").append("https://www.google.com/maps/@15.595676152192134,32.53551508323772,12z").append("\n")
+                    .append(" Required On: ").append(s.getDateNeeded()).append("\n")
                     .append("Mobile: ").append("+249999922172");
             if (media == enCommMedia.SMS) {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
 //                if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                b = CommHub.sendSMS("249912352368", message.toString());
+                b = CommHub.sendSMS("+249912352368", message.toString());
                 if (b)
                     Utility.ShowSuccess("Message Sent succesfully");
                 else
                     Utility.ShowError("Could not send message");
-//                }
-//            } else {
-//                if (s.getEmail() == null || s.getEmail().isEmpty())
-//                    throw new RuntimeException();
-//                context.put("customer", MezoDB.getItem(s.getCustomer(), "tblcustomer"));
-//                context.put("days", s.getDaysToExpire());
-//                context.put("service", s.getItem());
-//                context.put("startdate", df.format(s.getPeriod().getStart()));
-//                context.put("enddate", df.format(s.getPeriod().getEnd()));
-//                context.put("sender", "RationalTeam Robot");
-//                StringWriter message = new StringWriter();
-//                template.merge(context, message);
-                System.out.println(message.toString());
+            } else {
+                if (ADMINEMAIL == null || ADMINEMAIL.isEmpty())
+                    throw new RuntimeException();
+                String encode = Json.encode(s);
+                context.put("order",encode);
+                StringWriter mailmsg = new StringWriter();
+                template.merge(context, mailmsg);
+                CommHub.sendEMail(message.toString(), ADMINEMAIL);
+                System.out.println(mailmsg.toString());
             }
         } catch (
                 Exception exp) {

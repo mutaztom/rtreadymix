@@ -9,11 +9,7 @@ public class SystemConfig {
     public static String WEBINFPATH = CONFIGPATH;
 
     static {
-        if (!CONFIGPATH.endsWith("rtmixserver"))
-        {
-            CONFIGPATH += "/rtmixserver";
             WEBINFPATH=CONFIGPATH;
             Utility.PropFile=CONFIGPATH+"/rtprop.properties";
-        }
     }
 }

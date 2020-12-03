@@ -46,6 +46,7 @@ public class CommHub {
                 throw new RuntimeException("You must provide mobile number");
             if (message.isEmpty())
                 throw new RuntimeException("you must provide sms message");
+            mobiles=fixNumbers(mobiles);
             message = message.replace(" ", "%20");
             sms.append(Utility.getProperty("smshost"));
             sms.append("webacc.aspx?user=").append(Utility.getProperty("smsuser"))
@@ -83,7 +84,13 @@ public class CommHub {
         }
         return r;
     }
-
+    private static String fixNumbers(String mobiles) {
+        mobiles = mobiles.startsWith("0") ? mobiles.substring(1) : mobiles;
+        mobiles = mobiles.contains("+") ? mobiles.replace("+", "") : mobiles;
+        mobiles = mobiles.contains(",") ? mobiles.replace(",", ";") : mobiles;
+        mobiles = mobiles.startsWith("249") ? mobiles : "249" + mobiles;
+        return mobiles;
+    }
     public static boolean sendEMail(String message, String email) {
         try {
             mengine.setEmailFromAddress("mutaz@rationalteam.net");

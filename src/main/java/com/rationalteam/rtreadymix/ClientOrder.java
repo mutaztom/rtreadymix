@@ -1,21 +1,21 @@
 package com.rationalteam.rtreadymix;
 
 public class ClientOrder {
-    String clientid;
-    String location;
-    String country;
-    String state;
-    String city;
-    Double quantity;
-    String type;
-    String notes;
-    String itemid;
+    private String clientid;
+    private String location;
+    private String country;
+    private String state;
+    private String city;
+    private Double quantity;
+    private String type;
+    private String notes;
+    private String itemid;
     //the date of the order
-    String ondate;
+    private String ondate;
     //the date on which the order to be delivered
-    String dateNeeded;
-    Double unitprice;
-    Double usdprice;
+    private String dateNeeded;
+    private Double unitprice;
+    private Double usdprice;
     private String province;
 
     public ClientOrder() {
