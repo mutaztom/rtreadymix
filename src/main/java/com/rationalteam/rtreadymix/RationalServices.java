@@ -215,4 +215,27 @@ public class RationalServices {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
+
+    @GET
+    @Path("/getLookup/{rtype}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getLookup(@PathParam("rtype") String rtype) {
+        try {
+            MezoDB.setEman(eman);
+            List show_tables = MezoDB.Open("show tables");
+
+            List<String> list;
+            if (!rtype.startsWith("tbl") && !show_tables.contains(rtype)) {
+                rtype = "tbl" + rtype;
+                if (!show_tables.contains(rtype))
+                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Table not found in databases: " + rtype).build();
+            }
+            COption option = new COption(rtype);
+            List<OptionLocal> oplist = option.listOptions();
+            list = oplist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+            return Response.ok(list).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
 }

@@ -6,15 +6,12 @@ import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.erpcore.data.TblCity;
 import com.rationalteam.rterp.erpcore.data.TblCountry;
 import com.rationalteam.rterp.erpcore.data.TblProduct;
-import com.rationalteam.rterp.sales.data.TblSalesDoc;
 import com.rationalteam.rtreadymix.data.Tblclient;
+import com.rationalteam.rtreadymix.data.Tblorder;
 
-import java.sql.Date;
 import java.sql.Time;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.TimeZone;
 
 public class Order extends CRtDataObject {
     Integer clientid;

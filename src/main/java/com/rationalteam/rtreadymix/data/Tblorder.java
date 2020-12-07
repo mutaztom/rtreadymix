@@ -1,7 +1,6 @@
-package com.rationalteam.rtreadymix;
+package com.rationalteam.rtreadymix.data;
 
 import javax.persistence.*;
-import java.sql.Date;
 import java.sql.Time;
 import java.util.Objects;
 
