@@ -1,6 +1,7 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.CRtDataObject;
+import com.rationalteam.rterp.erpcore.DataManager;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.erpcore.data.TblCity;
@@ -8,9 +9,15 @@ import com.rationalteam.rterp.erpcore.data.TblCountry;
 import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
+import com.sun.istack.Nullable;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class Order extends CRtDataObject {
@@ -23,6 +30,7 @@ public class Order extends CRtDataObject {
     Integer type;
     String notes;
     Integer itemid;
+    Integer member;
     //the date of the order
     LocalDateTime ondate;
     //the date on which the order to be delivered
@@ -30,7 +38,7 @@ public class Order extends CRtDataObject {
     enOrderStatus status;
     Double unitprice;
     Double usdprice;
-
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     Tblorder data;
     private Integer province;
 
@@ -47,51 +55,66 @@ public class Order extends CRtDataObject {
     @Override
     public Object getData() {
         data = new Tblorder();
-        data.setNotes(notes);
-        data.setState(state);
-        data.setStatus(status.name());
-        data.setDateNeeded(Time.valueOf(dateNeeded.toLocalTime()));
-        data.setOndate(Time.valueOf(ondate.toLocalTime()));
-        data.setItemid(itemid);
-        data.setQuantity(quantity);
-        data.setUsdprice(usdprice);
-        data.setUnitprice(unitprice);
-        data.setProvince(province);
-        data.setCountry(country);
-        data.setClientid(clientid);
-        data.setCity(city);
-        data.setItem(item);
-        data.setId(id);
+        try {
+            data.setNotes(notes);
+            data.setState(state);
+            data.setStatus(status.name());
+            data.setDateNeeded(Date.valueOf(dateNeeded.toLocalDate()));
+            data.setOndate(Date.valueOf(ondate.toLocalDate()));
+            data.setItemid(itemid);
+            data.setQuantity(quantity);
+            data.setUsdprice(usdprice);
+            data.setUnitprice(unitprice);
+            data.setProvince(province);
+            data.setCountry(country);
+            data.setClientid(clientid);
+            data.setCity(city);
+            data.setItem(item);
+            data.setId(id);
+            data.setMember(member);
+            data.setType(type);
+            data.setLocation(location);
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
         return data;
     }
 
     @Override
     public void setData(Object o) {
-        data = (Tblorder) o;
-        id = data.getId();
-        item = data.getItem();
-        clientid = data.getClientid();
-        country = data.getCountry();
-        province = data.getProvince();
-        state = data.getState();
-        city = data.getCity();
-        quantity = data.getQuantity();
-        type = data.getType();
-        itemid = data.getItemid();
-        unitprice = data.getUnitprice();
-        usdprice = data.getUsdprice();
-        if (data.getStatus() != null)
-            status = enOrderStatus.valueOf(data.getStatus());
-        if (Objects.nonNull(data.getOndate()))
-            ondate = LocalDateTime.from(data.getOndate().toLocalTime());
-        if (Objects.nonNull(data.getDateNeeded()))
-            dateNeeded = LocalDateTime.from(data.getDateNeeded().toLocalTime());
-        notes = data.getNotes();
+        try {
+            System.out.println(">>>>>>>>>>>> now setting data from order ??>>>>>>>");
+            data = (Tblorder) o;
+            id = data.getId();
+            item = data.getItem();
+            clientid = data.getClientid();
+            country = data.getCountry();
+            province = data.getProvince();
+            state = data.getState();
+            city = data.getCity();
+            quantity = data.getQuantity();
+            type = data.getType();
+            itemid = data.getItemid();
+            unitprice = data.getUnitprice();
+            usdprice = data.getUsdprice();
+            if (data.getStatus() != null)
+                status = enOrderStatus.valueOf(data.getStatus());
+            if (Objects.nonNull(data.getOndate()))
+                ondate = LocalDateTime.of(data.getOndate().toLocalDate(), LocalDateTime.now().toLocalTime());
+            if (Objects.nonNull(data.getDateNeeded()))
+                dateNeeded = LocalDateTime.of(data.getDateNeeded().toLocalDate(), LocalDateTime.now().toLocalTime());
+            notes = data.getNotes();
+            type = data.getType();
+            member = data.getMember();
+            location = data.getLocation();
+        } catch (IllegalArgumentException e) {
+            Utility.ShowError(e);
+        }
     }
 
     @Override
     public <T> Class<T> getDataType() {
-        return null;
+        return (Class<T>) Tblorder.class;
     }
 
     public String getLocation() {
@@ -232,21 +255,61 @@ public class Order extends CRtDataObject {
         return Objects.hash(super.hashCode(), clientid, location, country, state, city, quantity, type, notes, itemid, ondate, dateNeeded, status, data);
     }
 
+    public Integer getMember() {
+        return member;
+    }
+
+    public void setMember(Integer member) {
+        this.member = member;
+    }
+
     public void fromClientOrder(ClientOrder cord) {
         try {
-            clientid = Math.toIntExact(MezoDB.getItemID(Tblclient.class.getSimpleName(), "item", cord.getClientid()));
-            city = Math.toIntExact(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity()));
-            country = Math.toIntExact(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry()));
-            type = Math.toIntExact(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getType()));
-            state= Math.toIntExact(MezoDB.getItemID("tblprovince", "item", cord.getState()));
-            dateNeeded = LocalDateTime.parse(cord.getDateNeeded());
-            ondate = LocalDateTime.parse(cord.getOndate());
+            clientid = Long.valueOf(MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", cord.getClientid())).intValue();
+            city = Long.valueOf(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity())).intValue();
+            country = Long.valueOf(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry())).intValue();
+            type = Long.valueOf(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getType())).intValue();
+            state = Long.valueOf(MezoDB.getItemID("tblprovince", "item", cord.getState())).intValue();
+            dateNeeded = UtilityExt.toLocalDateTime(cord.getDateNeeded());
+            if (cord.getOndate() == null)
+                ondate = LocalDateTime.now();
+            else {
+                ondate = UtilityExt.toLocalDateTime(cord.getOndate());
+            }
             quantity = cord.getQuantity();
-            unitprice=cord.getUnitprice();
-            location=cord.getLocation();
-            notes=cord.getNotes();
-        }catch (Exception exp){
+            unitprice = cord.getUnitprice();
+            location = cord.getLocation();
+            notes = cord.getNotes();
+            member = Long.valueOf(MezoDB.getItemID("tblmember", "item", cord.getMember())).intValue();
+            if (cord.getStatus() != null)
+                status = enOrderStatus.valueOf(cord.getStatus());
+        } catch (Exception exp) {
             Utility.ShowError(exp);
         }
     }
+
+    public ClientOrder toClientOrder() {
+        ClientOrder cord = new ClientOrder();
+        try {
+            cord.setId(id);
+            cord.setItemid(String.valueOf(itemid));
+            cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName()));
+            cord.setCity(MezoDB.getItem(city, TblCity.class.getSimpleName()));
+            cord.setClientid(clientid.toString());
+            cord.setDateNeeded(dateNeeded.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            cord.setDateNeeded(ondate.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            cord.setLocation(location);
+            cord.setNotes(notes);
+            cord.setQuantity(quantity);
+            cord.setType(MezoDB.getItem(type, "Tblgrade"));
+            cord.setMember(MezoDB.getItem(member, "tblmember"));
+            cord.setState(MezoDB.getItem(state, "Tblprovince"));
+            cord.setStatus(status.name());
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
+        return cord;
+    }
+
+
 }

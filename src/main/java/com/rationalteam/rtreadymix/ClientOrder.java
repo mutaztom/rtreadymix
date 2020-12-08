@@ -17,6 +17,9 @@ public class ClientOrder {
     private Double unitprice;
     private Double usdprice;
     private String province;
+    private String member;
+    private Integer id;
+    private String status;
 
     public ClientOrder() {
         unitprice = 0D;
@@ -125,5 +128,29 @@ public class ClientOrder {
 
     public void setUsdprice(Double usdprice) {
         this.usdprice = usdprice;
+    }
+
+    public void setMember(String member) {
+        this.member=member;
+    }
+
+    public String getMember() {
+        return member;
+    }
+
+    public void setId(Integer id) {
+        this.id=id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setStatus(String status) {
+        this.status=status;
+    }
+
+    public String getStatus() {
+        return status;
     }
 }

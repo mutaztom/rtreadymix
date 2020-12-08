@@ -1,6 +1,7 @@
 package com.rationalteam.rtreadymix.data;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.sql.Time;
 import java.util.Objects;
 
@@ -8,7 +9,8 @@ import java.util.Objects;
 @Table
 public class Tblorder {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String item;
     private Integer country;
@@ -18,14 +20,16 @@ public class Tblorder {
     private String location;
     private Double quantity;
     private Integer type;
-    private Time ondate;
-    private Time dateNeeded;
+    private Date ondate;
+    private Date dateNeeded;
     private Integer clientid;
     private Integer itemid;
     private String status;
     private Double unitprice;
     private Double usdprice;
     private String notes;
+    private Integer member;
+
 
     public Integer getId() {
         return id;
@@ -99,19 +103,19 @@ public class Tblorder {
         this.type = type;
     }
 
-    public Time getOndate() {
+    public Date getOndate() {
         return ondate;
     }
 
-    public void setOndate(Time ondate) {
+    public void setOndate(Date ondate) {
         this.ondate = ondate;
     }
 
-    public Time getDateNeeded() {
+    public Date getDateNeeded() {
         return dateNeeded;
     }
 
-    public void setDateNeeded(Time dateNeeded) {
+    public void setDateNeeded(Date dateNeeded) {
         this.dateNeeded = dateNeeded;
     }
 
@@ -186,5 +190,13 @@ public class Tblorder {
     @Override
     public int hashCode() {
         return Objects.hash(id, item, country, state, city, province, location, quantity, type, ondate, dateNeeded, clientid, itemid);
+    }
+
+    public Integer getMember() {
+        return member;
+    }
+
+    public void setMember(Integer member) {
+        this.member = member;
     }
 }

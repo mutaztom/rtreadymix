@@ -35,10 +35,10 @@ public class MailMan {
     protected StringBuilder sendReport = new StringBuilder();
 
     static {
-        SMTP_HOST_NAME = Utility.getProperty("mailhost");
+        SMTP_HOST_NAME = Utility.getProperty("smtpHost");
         SMTP_AUTH_PORT = Utility.getProperty("smtpPort");
-        SMTP_AUTH_USER = Utility.getProperty("mailuser");
-        SMTP_AUTH_PWD = Utility.getProperty("mailpassword");
+        SMTP_AUTH_USER = Utility.getProperty("mailUser");
+        SMTP_AUTH_PWD = Utility.getProperty("mailPassword");
         SMTP_SENDER = Utility.getProperty("mailSender");
     }
 

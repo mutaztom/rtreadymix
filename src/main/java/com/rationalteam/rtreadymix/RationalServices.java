@@ -2,8 +2,10 @@ package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
+import com.rationalteam.rtreadymix.data.Tblorder;
 
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.persistence.EntityManager;
@@ -23,6 +25,13 @@ public class RationalServices {
     @Inject
     EntityManager eman;
     SubscriptionServer server = new SubscriptionServer();
+
+    @PostConstruct
+    public void init() {
+        System.out.println(">>>> INITIALIZING DATASOURCE....");
+        MezoDB.setEman(eman);
+        DataManager.setEntityManager(eman);
+    }
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -158,7 +167,6 @@ public class RationalServices {
     @Path("/getProducts")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getProducts() {
-//        MezoDB.setEman(eman);
 //        ProductLocal p = new CProduct();
 //        List<ProductLocal> olist = p.listAllItems();
 //        List<String> list = olist.stream().map(ProductLocal::getItem).collect(Collectors.toList());
@@ -238,4 +246,21 @@ public class RationalServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
+
+    @GET
+    @Path("/getOrders/{clientid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrders(@PathParam("clientid") String clientid) {
+        long clid = MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", clientid);
+        if(clid<=0)
+            return Response.status(Response.Status.FORBIDDEN.getStatusCode(),"You are not allowed access this service").build();
+        Order p = new Order();
+        Map<String, Object> map = new HashMap<>();
+        map.put("clientid", clid);
+        List<Order> olist = p.filter(map);
+        List<ClientOrder> list = olist.stream().map(Order::toClientOrder).collect(Collectors.toList());
+        list.sort((o1, o2) -> o1.getId()>o2.getId()?1:0);
+        return Response.ok(list).build();
+    }
+
 }
