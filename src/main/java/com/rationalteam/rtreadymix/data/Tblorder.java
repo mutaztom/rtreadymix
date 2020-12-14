@@ -7,6 +7,7 @@ import java.util.Objects;
 
 @Entity
 @Table
+@NamedQueries({@NamedQuery(name="Tblorder.findByClientid",query="select t from Tblorder t where t.clientid=:clientid")})
 public class Tblorder {
     @Id
 

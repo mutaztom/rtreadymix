@@ -251,15 +251,22 @@ public class RationalServices {
     @Path("/getOrders/{clientid}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOrders(@PathParam("clientid") String clientid) {
-        long clid = MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", clientid);
-        if(clid<=0)
-            return Response.status(Response.Status.FORBIDDEN.getStatusCode(),"You are not allowed access this service").build();
+        MezoDB.setEman(eman);
+        int clid = MezoDB.getInteger("select id from tblclient where email='" + clientid + "'");
+        if (clid <= 0)
+            return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed access this service").build();
         Order p = new Order();
         Map<String, Object> map = new HashMap<>();
         map.put("clientid", clid);
-        List<Order> olist = p.filter(map);
+        List<Order> olist = new ArrayList<>();
+        List<Tblorder> tblorders = MezoDB.openNamed("Tblorder.findByClientid", Tblorder.class, map);
+        tblorders.forEach(o -> {
+            Order order = new Order();
+            order.setData(o);
+            olist.add(order);
+        });
         List<ClientOrder> list = olist.stream().map(Order::toClientOrder).collect(Collectors.toList());
-        list.sort((o1, o2) -> o1.getId()>o2.getId()?1:0);
+        list.sort((o1, o2) -> o1.getId() > o2.getId() ? 1 : 0);
         return Response.ok(list).build();
     }
 

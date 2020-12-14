@@ -12,7 +12,7 @@ public class RationalServicesTest {
     @Test
     public void testHelloEndpoint() {
         given()
-          .when().get("/resteasy/hello")
+          .when().get("/rtmix/getCities")
           .then()
              .statusCode(200)
              .body(is("hello"));

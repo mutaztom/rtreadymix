@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.quarkus:quarkus-container-image-s2i'
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
     implementation 'io.quarkus:quarkus-resteasy'
     implementation 'io.quarkus:quarkus-resteasy-jackson'
