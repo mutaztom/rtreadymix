@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.quarkus:quarkus-undertow-websockets'
     implementation 'io.quarkus:quarkus-container-image-s2i'
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
     implementation 'io.quarkus:quarkus-resteasy'
@@ -28,7 +29,7 @@ dependencies {
     compile 'io.vertx:vertx-web:3.9.4'
     // https://mvnrepository.com/artifact/io.quarkus/quarkus-jsonb
     compile group: 'io.quarkus', name: 'quarkus-jsonb', version: '1.9.2.Final'
-    implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2'
+    implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2.1'
     implementation group: 'com.rationalteam', name: 'rtsalesejb', version: '1.2'
     compile group: 'com.rationalteam', name: 'RationalCore', version: '1.0'
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-quarkus'

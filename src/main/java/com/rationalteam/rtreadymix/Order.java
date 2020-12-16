@@ -293,17 +293,17 @@ public class Order extends CRtDataObject {
         try {
             cord.setId(id);
             cord.setItemid(String.valueOf(itemid));
-            cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName()));
+            cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName())+" ");
             cord.setCity(MezoDB.getItem(city, TblCity.class.getSimpleName()));
             cord.setClientid(clientid.toString());
             cord.setDateNeeded(dateNeeded.format(DateTimeFormatter.ISO_LOCAL_DATE));
-            cord.setDateNeeded(ondate.format(DateTimeFormatter.ISO_LOCAL_DATE));
+            cord.setOndate(ondate.format(DateTimeFormatter.ISO_LOCAL_DATE));
             cord.setLocation(location);
             cord.setNotes(notes);
             cord.setQuantity(quantity);
-            cord.setType(MezoDB.getItem(type, "Tblgrade"));
-            cord.setMember(MezoDB.getItem(member, "tblmember"));
-            cord.setState(MezoDB.getItem(state, "Tblprovince"));
+            cord.setType(MezoDB.getItem(type, " Tblgrade "));
+            cord.setMember(MezoDB.getItem(member, " tblmember "));
+            cord.setState(MezoDB.getItem(state, "Tblprovince "));
             cord.setStatus(status.name());
         } catch (Exception e) {
             Utility.ShowError(e);

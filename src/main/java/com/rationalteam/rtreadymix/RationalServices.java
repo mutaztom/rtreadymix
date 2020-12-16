@@ -258,13 +258,7 @@ public class RationalServices {
         Order p = new Order();
         Map<String, Object> map = new HashMap<>();
         map.put("clientid", clid);
-        List<Order> olist = new ArrayList<>();
-        List<Tblorder> tblorders = MezoDB.openNamed("Tblorder.findByClientid", Tblorder.class, map);
-        tblorders.forEach(o -> {
-            Order order = new Order();
-            order.setData(o);
-            olist.add(order);
-        });
+        List<Order> olist = p.filter(map);
         List<ClientOrder> list = olist.stream().map(Order::toClientOrder).collect(Collectors.toList());
         list.sort((o1, o2) -> o1.getId() > o2.getId() ? 1 : 0);
         return Response.ok(list).build();
