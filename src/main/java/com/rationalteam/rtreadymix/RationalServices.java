@@ -13,6 +13,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -155,6 +156,7 @@ public class RationalServices {
     @GET
     @Path("/getProvencies")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getProvencies() {
         MezoDB.setEman(eman);
         OptionLocal st = new COption("tblprovince");
@@ -166,34 +168,34 @@ public class RationalServices {
     @GET
     @Path("/getProducts")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getProducts() {
-//        ProductLocal p = new CProduct();
-//        List<ProductLocal> olist = p.listAllItems();
-//        List<String> list = olist.stream().map(ProductLocal::getItem).collect(Collectors.toList());
-        List<String> list = new ArrayList<>();
-        String[] prods = new String[]{"C10", "C15", "C20", "C25", "C30", "C35", "C40"};
-        for (String p :
-                prods) {
-            list.add(p);
+        try {
+            MezoDB.setEman(eman);
+            DataManager.setEntityManager(eman);
+            ProductLocal p = new CProduct();
+            List<CProduct> olist = p.listAll();
+            List<String> list = olist.stream().map(CProduct::getItem).collect(Collectors.toList());
+            return Response.ok(list).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
-        return Response.ok(list).build();
     }
 
     @GET
     @Path("/getServices")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getServices() {
-//        MezoDB.setEman(eman);
-//        ServiceLocal p = new CService();
-//        List<ServiceLocal> olist = p.listAllItems();
-//        List<String> list = olist.stream().map(ServiceLocal::getItem).collect(Collectors.toList());
-        List<String> list = new ArrayList<>();
-        String[] prods = new String[]{"ReadyMix", "Site Readyness Inspectin", "Concreate Inspection", "Soil Inpsectoin", "Other.."};
-        for (String p :
-                prods) {
-            list.add(p);
+        try {
+            MezoDB.setEman(eman);
+            ServiceLocal p = new CService();
+            List<CService> olist = p.listAll();
+            List<String> list = olist.stream().map(CService::getItem).collect(Collectors.toList());
+            return Response.ok(list).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
-        return Response.ok(list).build();
     }
 
     @POST
@@ -264,4 +266,13 @@ public class RationalServices {
         return Response.ok(list).build();
     }
 
+    @GET
+    @Path("/getNotifications")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getNotifications() {
+        List<News> notes = new ArrayList<>();
+        notes.add(new News(" أسعار الخرسانة تنخفض بقدر كبير بعد رفع الحظر."));
+        notes.add(new News(" بشرى سارة، نقدم لكم باقة من الخدمات في مجال فحص المواقع"));
+        return Response.ok(notes).build();
+    }
 }

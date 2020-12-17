@@ -1,6 +1,7 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.core.CUmanager;
+import com.rationalteam.rterp.erpcore.DataManager;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 
@@ -12,6 +13,7 @@ public class SystemConfig {
     static {
         WEBINFPATH = CONFIGPATH;
         MezoDB.REUSE_EMAN = true;
+        DataManager.USINGHIBERNATE=true;
         Utility.PropFile = CONFIGPATH + "/rtprop.properties";
     }
 }

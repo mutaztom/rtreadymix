@@ -83,7 +83,6 @@ public class Order extends CRtDataObject {
     @Override
     public void setData(Object o) {
         try {
-            System.out.println(">>>>>>>>>>>> now setting data from order ??>>>>>>>");
             data = (Tblorder) o;
             id = data.getId();
             item = data.getItem();
