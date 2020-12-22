@@ -33,6 +33,7 @@ dependencies {
     implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2.1'
     implementation group: 'com.rationalteam', name: 'rtsalesejb', version: '1.2'
     compile group: 'com.rationalteam', name: 'RationalCore', version: '1.0'
+    implementation group:"com.rationalteam",name:"readymixcommon",version:"1.0"
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-quarkus'
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-hibernate-5.4'
     //the text template engine from appache velocity

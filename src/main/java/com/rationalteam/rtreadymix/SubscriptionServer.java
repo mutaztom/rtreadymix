@@ -1,5 +1,6 @@
 package com.rationalteam.rtreadymix;
 
+import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscribtion;
@@ -230,7 +231,7 @@ public class SubscriptionServer {
             StringBuilder message = new StringBuilder("order received:");
             message.append("\n").append("from: ").append(s.getClientid()).append("\n")
                     .append(" volume: ").append(s.getQuantity()).append("\n")
-                    .append(" Product: ").append(s.getType()).append("\n")
+                    .append(" Product: ").append(s.getGrade()).append("\n")
                     .append(" city: ").append(s.getCity()).append("\n")
                     .append(" Address: ").append(s.getNotes()).append("\n")
                     .append(" location: ").append(s.getLocation()).append("\n")

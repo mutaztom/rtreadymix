@@ -1,5 +1,7 @@
 package com.rationalteam.rtreadymix;
 
+import com.rationalteam.reaymixcommon.ClientOrder;
+import com.rationalteam.reaymixcommon.News;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
@@ -183,6 +185,24 @@ public class RationalServices {
     }
 
     @GET
+    @Path("/getPriceList")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getPriceList() {
+        try {
+            MezoDB.setEman(eman);
+            DataManager.setEntityManager(eman);
+            ProductLocal p = new CProduct();
+            List<CProduct> olist = p.listAll();
+            Map<String,Double> pricelist = olist.stream().collect(Collectors.toMap(
+                CProduct::getItem, CProduct::getUnitPrice));
+            return Response.ok(pricelist).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @GET
     @Path("/getServices")
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
@@ -273,6 +293,7 @@ public class RationalServices {
         List<News> notes = new ArrayList<>();
         notes.add(new News(" أسعار الخرسانة تنخفض بقدر كبير بعد رفع الحظر."));
         notes.add(new News(" بشرى سارة، نقدم لكم باقة من الخدمات في مجال فحص المواقع"));
+        notes.add(new News("الآن يمكنكم التواصل معنا على الأرقام التالية: +249912352368"));
         return Response.ok(notes).build();
     }
 }

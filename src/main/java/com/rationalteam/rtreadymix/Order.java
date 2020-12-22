@@ -1,7 +1,7 @@
 package com.rationalteam.rtreadymix;
 
+import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.CRtDataObject;
-import com.rationalteam.rterp.erpcore.DataManager;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.erpcore.data.TblCity;
@@ -9,13 +9,8 @@ import com.rationalteam.rterp.erpcore.data.TblCountry;
 import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
-import com.sun.istack.Nullable;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
 import java.sql.Date;
-import java.sql.Time;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -267,7 +262,7 @@ public class Order extends CRtDataObject {
             clientid = Long.valueOf(MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", cord.getClientid())).intValue();
             city = Long.valueOf(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity())).intValue();
             country = Long.valueOf(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry())).intValue();
-            type = Long.valueOf(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getType())).intValue();
+            type = Long.valueOf(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getGrade())).intValue();
             state = Long.valueOf(MezoDB.getItemID("tblprovince", "item", cord.getState())).intValue();
             dateNeeded = UtilityExt.toLocalDateTime(cord.getDateNeeded());
             if (cord.getOndate() == null)
@@ -300,7 +295,7 @@ public class Order extends CRtDataObject {
             cord.setLocation(location);
             cord.setNotes(notes);
             cord.setQuantity(quantity);
-            cord.setType(MezoDB.getItem(type, " Tblgrade "));
+            cord.setGrade(MezoDB.getItem(type, " Tblgrade "));
             cord.setMember(MezoDB.getItem(member, " tblmember "));
             cord.setState(MezoDB.getItem(state, "Tblprovince "));
             cord.setStatus(status.name());
