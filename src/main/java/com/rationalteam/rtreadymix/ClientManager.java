@@ -54,22 +54,23 @@ public class ClientManager implements Serializable {
         return c.save();
     }
 
+    @Transactional
+    public boolean addClient(Client client) {
+        if (client.getPassword() == null || client.getPassword().isEmpty())
+            client.setPassword("123");
+        //generate client pin
+        client.setPincode(getneratePin(client));
+        return client.save();
+    }
+
     public String getneratePin(Client c) {
         Random random = new Random();
         int i = random.nextInt();
         return String.valueOf(i);
     }
 
-    @Transactional
-    public boolean isRegistered(Client client) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("username", client.getUsername());
-        List<Object> filter = client.getFacade().filter(map);
-        return !filter.isEmpty();
-    }
-
     public boolean authenticate(Client client) {
-        boolean r = isRegistered(client);
+        boolean r = client.isRegistered();
         if (r) {
             Client original = new Client();
             Map<String, Object> map = new HashMap<>();
@@ -77,9 +78,9 @@ public class ClientManager implements Serializable {
 //            List<Client> filter = original.filter(map);
 //            r = filter.get(0).equals(client);
             MezoDB.setEman(eman);
-            int cid=MezoDB.getInteger("select id from tblclient where email='"+client.getEmail()+"' and password='"+client.getPassword()+"'");
+            int cid = MezoDB.getInteger("select id from tblclient where email='" + client.getEmail() + "' and password='" + client.getPassword() + "'");
             System.out.println("Login log: is user " + client.getEmail() + " auth? " + Boolean.toString(r));
-            return cid>0;
+            return cid > 0;
         }
         return r;
     }

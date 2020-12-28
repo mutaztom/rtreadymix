@@ -1,23 +1,22 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
+import com.rationalteam.reaymixcommon.MobileUser;
 import com.rationalteam.reaymixcommon.News;
+import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
-import com.rationalteam.rtreadymix.data.Tblorder;
-
+import io.quarkus.vertx.web.Param;
+import io.vertx.core.json.JsonObject;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.json.JsonObject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 
@@ -62,45 +61,33 @@ public class RationalServices {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/signup/")
-    public Response signup(Tblclient client) {
-        String output = "No thing was processed";
+    public ServerMessage signup(MobileUser muser) {
+        ServerMessage output = new ServerMessage();
+        output.setMessage("Nothing was processed");
         try {
             boolean r;
-            System.out.println("Recieved json object is as follows: " + client.toString());
+            System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
-            c.setData(client);
-            System.out.println(output);
+            c.fromMobileUser(muser);
             //check if user already exists
-            if (!cman.isRegistered(c)) {
-                r = cman.addClient(client);
+            if (!c.isRegistered()) {
+                r = cman.addClient(c);
                 if (r)
-                    output = "User created succesfully";
+                    output.setMessage("User created successfully");
             } else {
-                output = "This user is already registered please select a new username";
+                output.setMessage("This user is already registered please select a new username");
             }
             System.out.println(output);
         } catch (Exception e) {
             Utility.ShowError(e);
-            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+            output.setMessage(e.getMessage());
+            return output;
         }
-        return Response.accepted().status(Response.Status.OK.getStatusCode(), output).build();
+        return output;
     }
 
-    @POST
-    @Path("/register")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Set<Tblclient> register(Tblclient client) {
-        if (userlist == null)
-            userlist = new HashSet<>();
-        userlist.add(client);
-        boolean r = cman.addClient(client);
-        if (r)
-            System.out.println("Client was created succesfully");
-        return userlist;
-    }
 
     @POST
     @Path("/login/{email}/{pwd}")
@@ -194,8 +181,8 @@ public class RationalServices {
             DataManager.setEntityManager(eman);
             ProductLocal p = new CProduct();
             List<CProduct> olist = p.listAll();
-            Map<String,Double> pricelist = olist.stream().collect(Collectors.toMap(
-                CProduct::getItem, CProduct::getUnitPrice));
+            Map<String, Double> pricelist = olist.stream().collect(Collectors.toMap(
+                    CProduct::getItem, CProduct::getUnitPrice));
             return Response.ok(pricelist).build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
@@ -295,5 +282,25 @@ public class RationalServices {
         notes.add(new News(" بشرى سارة، نقدم لكم باقة من الخدمات في مجال فحص المواقع"));
         notes.add(new News("الآن يمكنكم التواصل معنا على الأرقام التالية: +249912352368"));
         return Response.ok(notes).build();
+    }
+
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/verifyPin/{pincode}/{clientid}")
+    public Response verifyPin(@Param("pincode") String pincode, @Param("clientid") String clientid) {
+        try {
+            ServerMessage output = new ServerMessage();
+            Client c = Client.findByEmail(clientid);
+            if (c != null) {
+                if (c.getPincode() == pincode) {
+                    output.setMessage("Pin code verification was successful, Enjoy our app.");
+                }
+            } else {
+                output.setMessage("Could not verify pin code. Contact technical support.");
+            }
+            return Response.ok(output).build();
+        } catch (Exception exp) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
+        }
     }
 }

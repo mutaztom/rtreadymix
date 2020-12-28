@@ -13,7 +13,7 @@ public class SystemConfig {
     static {
         WEBINFPATH = CONFIGPATH;
         MezoDB.REUSE_EMAN = true;
-        DataManager.USINGHIBERNATE=true;
+        DataManager.USINGHIBERNATE=false;
         Utility.PropFile = CONFIGPATH + "/rtprop.properties";
     }
 }

@@ -2,9 +2,17 @@ package com.rationalteam.rtreadymix;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.rationalteam.core.security.enUserType;
+import com.rationalteam.reaymixcommon.MobileUser;
 import com.rationalteam.rterp.erpcore.CRtDataObject;
 import com.rationalteam.rterp.erpcore.CSearchOption;
+import com.rationalteam.rterp.erpcore.MezoDB;
+import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.data.Tblclient;
+
+import javax.validation.ValidationException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @JsonSerialize
 public class Client extends CRtDataObject {
@@ -55,9 +63,21 @@ public class Client extends CRtDataObject {
         username = data.getUsername();
         customerid = data.getCustomerid();
         accountid = data.getAccountid();
-        password=data.getPassword();
-        address=data.getAddress();
-        pincode =data.getPincode();
+        password = data.getPassword();
+        address = data.getAddress();
+        pincode = data.getPincode();
+    }
+
+    public void fromMobileUser(MobileUser muser) {
+        id = null;
+        item = muser.getItem();
+        email = muser.getEmail();
+        mobile = muser.getMobile();
+        username = muser.getUsername();
+        customerid = -1;
+        accountid = -1;
+        password = muser.getPassword();
+        address = muser.getAddress();
     }
 
     @Override
@@ -71,6 +91,7 @@ public class Client extends CRtDataObject {
 
     public void setUsername(String username) {
         this.username = username;
+        item = username;
     }
 
     public String getEmail() {
@@ -135,5 +156,64 @@ public class Client extends CRtDataObject {
 
     public void setPincode(String pincode) {
         this.pincode = pincode;
+    }
+
+    public boolean isMobileUsed() {
+        if (mobile == null || mobile.isEmpty())
+            return false;
+        String mob = mobile;
+        int used = MezoDB.getInteger("select count(mobile) from Tblclient where mobile='" + mob + "'");
+        return used > 0;
+    }
+
+    public boolean isEmailUsed() {
+        if (email == null || email.isEmpty())
+            return false;
+        String mob = email;
+        int used = MezoDB.getInteger("select count(email) from Tblclient where email='" + mob + "'");
+        return used > 0;
+    }
+
+    public boolean isNameUsed() {
+        if (username == null || username.isEmpty())
+            return false;
+        String mob = username;
+        int used = MezoDB.getInteger("select count(username) from Tblclient where username='" + mob + "'");
+        return used > 0;
+    }
+
+    public boolean isRegistered() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("email", email);
+        List<Object> filter = getFacade().filter(map);
+        return !filter.isEmpty();
+    }
+
+    public static Client findByEmail(String findemail) {
+        try {
+            Map<Integer, Object> map = new HashMap<>();
+            map.put(1, findemail);
+            List<Tblclient> list = MezoDB.openNative("select * from tblclient where email=?", Tblclient.class, map);
+            if (!list.isEmpty()) {
+                Tblclient dat = list.get(0);
+                Client c = new Client();
+                c.setData(dat);
+                return c;
+            }
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean checkEntries() throws ValidationException {
+        if (isEmailUsed())
+            throw new ValidationException("Email is already registered in our database.");
+        if (isMobileUsed())
+            throw new ValidationException("Mobile phone number is already registered.");
+        if (isNameUsed())
+            throw new ValidationException("Username already registered.");
+        return true;
     }
 }
