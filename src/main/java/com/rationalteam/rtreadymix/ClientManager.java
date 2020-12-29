@@ -50,7 +50,7 @@ public class ClientManager implements Serializable {
         if (client.getPassword() == null || client.getPassword().isEmpty())
             client.setPassword("123");
         c.setData(client);
-        c.setItem(getneratePin(c));
+        c.setItem(generatePin(c));
         return c.save();
     }
 
@@ -59,11 +59,11 @@ public class ClientManager implements Serializable {
         if (client.getPassword() == null || client.getPassword().isEmpty())
             client.setPassword("123");
         //generate client pin
-        client.setPincode(getneratePin(client));
+        client.setPincode(generatePin(client));
         return client.save();
     }
 
-    public String getneratePin(Client c) {
+    public String generatePin(Client c) {
         Random random = new Random();
         int i = random.nextInt();
         return String.valueOf(i);

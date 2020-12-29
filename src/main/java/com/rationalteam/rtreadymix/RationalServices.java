@@ -6,8 +6,6 @@ import com.rationalteam.reaymixcommon.News;
 import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
-import io.quarkus.vertx.web.Param;
-import io.vertx.core.json.JsonObject;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -35,13 +33,6 @@ public class RationalServices {
         DataManager.setEntityManager(eman);
     }
 
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Path("hello")
-    public String hello() {
-        return "hello";
-    }
-
     private Set<Tblclient> userlist = Collections.newSetFromMap(Collections.synchronizedMap(new LinkedHashMap<>()));
 
 
@@ -63,6 +54,7 @@ public class RationalServices {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/signup/")
+    @Transactional
     public ServerMessage signup(MobileUser muser) {
         ServerMessage output = new ServerMessage();
         output.setMessage("Nothing was processed");
@@ -74,8 +66,10 @@ public class RationalServices {
             //check if user already exists
             if (!c.isRegistered()) {
                 r = cman.addClient(c);
-                if (r)
+                if (r) {
                     output.setMessage("User created successfully");
+                    output.setDetails(c.getEmail());
+                }
             } else {
                 output.setMessage("This user is already registered please select a new username");
             }
@@ -91,21 +85,36 @@ public class RationalServices {
 
     @POST
     @Path("/login/{email}/{pwd}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response login(@PathParam("email") String email, @PathParam("pwd") String pwd) {
-        if (Objects.isNull(email) || Objects.isNull("pwd"))
-            return Response.serverError().status(Response.Status.EXPECTATION_FAILED.getStatusCode(), "User name and password must not be empty").build();
+        ServerMessage output = new ServerMessage();
+        if (Objects.isNull(email) || Objects.isNull("pwd")) {
+            output.setMessage("User name and password must not be empty");
+            return Response.serverError().status(Response.Status.EXPECTATION_FAILED.getStatusCode(), output.getMessage()).build();
+        }
         try {
             MezoDB.setEman(eman);
             int cid = MezoDB.getInteger("select id from tblclient where email='" + email + "' and password='" + pwd + "'");
             boolean r = cid > 0;
-            if (r)
-                return Response.ok("User is authenticated").build();
-            else {
-                return Response.status(401, "No such user.").build();
+            if (r) {
+                Client client = new Client();
+                client.find(cid);
+                if (client.isVerfied()) {
+                    output.setMessage("User is authenticated");
+                    return Response.ok(output).build();
+                } else {
+                    output.setMessage("Client is not yet verified please verify your account first.");
+                    output.setDetails("VERIFY");
+                    return Response.status(Response.Status.UNAUTHORIZED.getStatusCode(), output.getMessage()).build();
+                }
+            } else {
+                output.setMessage("No such user.");
+                output.setDetails("REGISTER");
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), output.getMessage()).build();
             }
         } catch (Exception e) {
-            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+            output.setMessage(e.getMessage());
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getMessage()).build();
         }
     }
 
@@ -287,16 +296,60 @@ public class RationalServices {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/verifyPin/{pincode}/{clientid}")
-    public Response verifyPin(@Param("pincode") String pincode, @Param("clientid") String clientid) {
+    @Transactional
+    public Response verifyPin(@PathParam("pincode") String pincode, @PathParam("clientid") String clientid) {
         try {
+            MezoDB.setEman(eman);
             ServerMessage output = new ServerMessage();
+            if (clientid == null || clientid.isBlank() || pincode == null || pincode.isBlank()) {
+                output.setMessage("Parameters of pin verification cannot be null!");
+                output.setDetails("Pincode= " + pincode + ", clientid=" + clientid);
+                return Response.serverError().entity(output).build();
+            }
             Client c = Client.findByEmail(clientid);
             if (c != null) {
-                if (c.getPincode() == pincode) {
+                if (c.getPincode().equals(pincode)) {
                     output.setMessage("Pin code verification was successful, Enjoy our app.");
+                    c.setVerfied(true);
+                    c.save();
+                    return Response.ok(output).build();
+                } else {
+                    output.setMessage("Pin code of this client does not match generated one. Please contact Technical Support.");
+                    return Response.status(Response.Status.FORBIDDEN.getStatusCode()).entity(output).build();
                 }
             } else {
-                output.setMessage("Could not verify pin code. Contact technical support.");
+                output.setMessage("Could not verify pin code, Client not registered: " + clientid + ". Please contact Technical Support.");
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode()).entity(output).build();
+            }
+
+        } catch (Exception exp) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/regenPin/{clientid}")
+    @Transactional
+    public Response regenPin(@PathParam("clientid") String clientid) {
+        ServerMessage output = new ServerMessage();
+        try {
+            if (clientid == null || clientid.isBlank()) {
+                output.setMessage("Parameters of regenPin cannot be null!");
+                output.setDetails("clientid=" + clientid);
+                return Response.serverError().entity(output).build();
+            }
+            Client c = Client.findByEmail(clientid);
+            if (c != null) {
+                if (c.isVerfied()) {
+                    output.setMessage("Client has already been verified, pin regeneration is prohibited.");
+                    return Response.serverError().entity(output).build();
+                }
+                c.setPincode(cman.generatePin(c));
+                c.save();
+                CommHub.sendSMS(c.getMobile(), c.getPincode());
+                output.setMessage("Pin code is sent via SMS please check and verify.");
             }
             return Response.ok(output).build();
         } catch (Exception exp) {

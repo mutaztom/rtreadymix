@@ -19,6 +19,7 @@ public class Tblclient {
     String mobile;
     String usertype;
     String pincode;
+    Boolean verified;
 
     public Integer getId() {
         return id;
@@ -127,5 +128,13 @@ public class Tblclient {
 
     public void setPincode(String pincode) {
         this.pincode = pincode;
+    }
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
     }
 }

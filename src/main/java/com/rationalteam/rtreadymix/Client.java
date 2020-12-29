@@ -9,6 +9,7 @@ import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.data.Tblclient;
 
+import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ public class Client extends CRtDataObject {
     private Integer accountid;
     private Integer customerid;
     private String pincode;
+    private boolean verfied;
 
     @Override
     protected void initSearch() {
@@ -50,6 +52,7 @@ public class Client extends CRtDataObject {
         data.setAddress(address);
         data.setPassword(password);
         data.setPincode(pincode);
+        data.setVerified(verfied);
         return data;
     }
 
@@ -66,6 +69,7 @@ public class Client extends CRtDataObject {
         password = data.getPassword();
         address = data.getAddress();
         pincode = data.getPincode();
+        verfied = data.getVerified() != null ? data.getVerified() : false;
     }
 
     public void fromMobileUser(MobileUser muser) {
@@ -189,6 +193,7 @@ public class Client extends CRtDataObject {
         return !filter.isEmpty();
     }
 
+    @Transactional
     public static Client findByEmail(String findemail) {
         try {
             Map<Integer, Object> map = new HashMap<>();
@@ -215,5 +220,13 @@ public class Client extends CRtDataObject {
         if (isNameUsed())
             throw new ValidationException("Username already registered.");
         return true;
+    }
+
+    public boolean isVerfied() {
+        return verfied;
+    }
+
+    public void setVerfied(boolean verfied) {
+        this.verfied = verfied;
     }
 }
