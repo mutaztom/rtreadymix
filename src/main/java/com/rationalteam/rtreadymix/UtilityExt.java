@@ -1,6 +1,7 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.Utility;
+import org.checkerframework.checker.regex.qual.Regex;
 
 import java.sql.Time;
 import java.text.SimpleDateFormat;
@@ -35,5 +36,25 @@ public class UtilityExt extends Utility {
     public static SimpleDateFormat dateFormat() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf;
+    }
+
+    public static boolean isValidEmail(String email) {
+        try {
+            String pattern = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+            return email.matches(pattern);
+        } catch (Exception e) {
+            ShowError("Error validating email, ".concat(e.getMessage()));
+            return false;
+        }
+    }
+
+    public static boolean isValidMobile(String mobile) {
+        try {
+            String pattern = "((\\+|[0]{2})[0-9]{3}|[0-9])([-.\\(]?[0-9]{1}[\\)]|[0-9]?|\\s)[0-9]+";
+            return mobile.matches(pattern);
+        } catch (Exception e) {
+            ShowError("Error validating email, ".concat(e.getMessage()));
+            return false;
+        }
     }
 }

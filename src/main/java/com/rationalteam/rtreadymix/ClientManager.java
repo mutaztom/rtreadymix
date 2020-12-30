@@ -84,4 +84,11 @@ public class ClientManager implements Serializable {
         }
         return r;
     }
+
+    public boolean isAuthentic(String clientid) {
+        boolean result = false;
+        Client c = Client.findByEmail(clientid);
+        result = (c != null) && c.isVerfied();
+        return result;
+    }
 }

@@ -243,12 +243,12 @@ public class SubscriptionServer {
 //                if (s.getMobile() != null && !s.getMobile().isEmpty()) {
                 b = CommHub.sendSMS("+249912352368", message.toString());
                 if (b)
-                    Utility.ShowSuccess("Message Sent succesfully");
+                    Utility.ShowSuccess("Message Sent successfully");
                 else
                     Utility.ShowError("Could not send message");
             } else {
                 if (ADMINEMAIL == null || ADMINEMAIL.isEmpty())
-                    throw new RuntimeException();
+                    throw new RuntimeException("No destination email to send to");
                 String encode = Json.encode(s);
                 context.put("order",encode);
                 StringWriter mailmsg = new StringWriter();
@@ -263,4 +263,7 @@ public class SubscriptionServer {
         return b;
     }
 
+    public void notifyStaff() {
+
+    }
 }

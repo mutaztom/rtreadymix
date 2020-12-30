@@ -227,13 +227,18 @@ public class RationalServices {
             }
             MezoDB.setEman(eman);
             DataManager.setEntityManager(eman);
+            if (!cman.isAuthentic(order.getClientid()))
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to place orders in this server.").build();
             //save order to our database
             Order inorder = new Order();
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-//                server.confirmOrder(order, enCommMedia.SMS);
+                //This part to inform person who placed order
+                //server.confirmOrder(order, enCommMedia.SMS);
                 server.confirmOrder(order, enCommMedia.EMAIL);
+                //make notifications to staff
+                server.notifyStaff();
                 return Response.ok("Received order from client: " + order.getClientid() + " Notes:" + order.getNotes()).build();
             } else
                 return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Cant' accept order now.").build();
@@ -269,17 +274,21 @@ public class RationalServices {
     @Path("/getOrders/{clientid}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getOrders(@PathParam("clientid") String clientid) {
-        MezoDB.setEman(eman);
-        int clid = MezoDB.getInteger("select id from tblclient where email='" + clientid + "'");
-        if (clid <= 0)
-            return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed access this service").build();
-        Order p = new Order();
-        Map<String, Object> map = new HashMap<>();
-        map.put("clientid", clid);
-        List<Order> olist = p.filter(map);
-        List<ClientOrder> list = olist.stream().map(Order::toClientOrder).collect(Collectors.toList());
-        list.sort((o1, o2) -> o1.getId() > o2.getId() ? 1 : 0);
-        return Response.ok(list).build();
+        try {
+            MezoDB.setEman(eman);
+            int clid = MezoDB.getInteger("select id from tblclient where email='" + clientid + "'");
+            if (clid <= 0)
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed access this service").build();
+            Order p = new Order();
+            Map<String, Object> map = new HashMap<>();
+            map.put("clientid", clid);
+            List<Order> olist = p.filter(map);
+            List<ClientOrder> list = olist.stream().map(Order::toClientOrder).collect(Collectors.toList());
+            list.sort((o1, o2) -> o1.getId() > o2.getId() ? 1 : 0);
+            return Response.ok(list).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
     }
 
     @GET

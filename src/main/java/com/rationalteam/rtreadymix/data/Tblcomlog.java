@@ -1,9 +1,6 @@
 package com.rationalteam.rtreadymix.data;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -20,6 +17,7 @@ public class Tblcomlog {
 
     @Basic
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = true)
     public Integer getId() {
         return id;
