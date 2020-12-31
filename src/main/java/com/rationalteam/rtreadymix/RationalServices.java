@@ -365,4 +365,26 @@ public class RationalServices {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
         }
     }
+
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/deleteOrder/{clientid}/{orderid}")
+    @Transactional
+    public Response deleteOrder(@PathParam("clientid") String clientid, @PathParam("orderid") Integer orderid) {
+        try {
+            MezoDB.setEman(eman);
+            ServerMessage output = new ServerMessage("No order was deleted");
+            if (!cman.isAuthentic(clientid))
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to use this service").build();
+            if (orderid == null || orderid <= 0)
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to use this service").build();
+            Order order = new Order();
+            boolean delteted = order.delete(orderid);
+            output.setMessage(delteted ? "Order " + orderid + " deleted succesfully" : "Order " + orderid + " was not deleted");
+            return Response.ok(output).build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
 }
