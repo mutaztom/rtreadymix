@@ -2,6 +2,7 @@ package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.CRtDataObject;
+import com.rationalteam.rterp.erpcore.CSearchOption;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.erpcore.data.TblCity;
@@ -10,6 +11,7 @@ import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
 
+import javax.transaction.Transactional;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,7 +46,13 @@ public class Order extends CRtDataObject {
         ondate = LocalDateTime.now();
         //default to one day delay
         dateNeeded = LocalDateTime.now().plusDays(1);
+        setDbTable(Tblorder.class.getSimpleName());
+    }
 
+    @Override
+    protected void initSearch() {
+        super.initSearch();
+        searchOptions.forEach(o -> o.setOptionTable("tbloptions"));
     }
 
     @Override
@@ -257,8 +265,10 @@ public class Order extends CRtDataObject {
         this.member = member;
     }
 
+    @Transactional
     public void fromClientOrder(ClientOrder cord) {
         try {
+            id=(cord.getId()!=null && cord.getId()>0)?cord.getId():null;
             clientid = Long.valueOf(MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", cord.getClientid())).intValue();
             city = Long.valueOf(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity())).intValue();
             country = Long.valueOf(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry())).intValue();
@@ -282,14 +292,24 @@ public class Order extends CRtDataObject {
         }
     }
 
+    @Transactional
+    public Client getClient() {
+        if (clientid > 0) {
+            Client c = new Client();
+            c.find(clientid);
+            return c;
+        }
+        return null;
+    }
+
     public ClientOrder toClientOrder() {
         ClientOrder cord = new ClientOrder();
         try {
             cord.setId(id);
+            cord.setClientid(getClient().getEmail());
             cord.setItemid(String.valueOf(itemid));
-            cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName())+" ");
+            cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName()) + " ");
             cord.setCity(MezoDB.getItem(city, TblCity.class.getSimpleName()));
-            cord.setClientid(clientid.toString());
             cord.setDateNeeded(dateNeeded.format(DateTimeFormatter.ISO_LOCAL_DATE));
             cord.setOndate(ondate.format(DateTimeFormatter.ISO_LOCAL_DATE));
             cord.setLocation(location);

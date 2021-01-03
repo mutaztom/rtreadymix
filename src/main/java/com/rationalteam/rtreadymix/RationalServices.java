@@ -1,11 +1,11 @@
 package com.rationalteam.rtreadymix;
 
-import com.rationalteam.reaymixcommon.ClientOrder;
-import com.rationalteam.reaymixcommon.MobileUser;
-import com.rationalteam.reaymixcommon.News;
-import com.rationalteam.reaymixcommon.ServerMessage;
+import com.rationalteam.reaymixcommon.*;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
+import com.rationalteam.rtreadymix.data.Tblnews;
+import com.rationalteam.rtreadymix.data.Tblorder;
+import io.vertx.core.json.JsonObject;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -207,8 +207,18 @@ public class RationalServices {
             MezoDB.setEman(eman);
             ServiceLocal p = new CService();
             List<CService> olist = p.listAll();
-            List<String> list = olist.stream().map(CService::getItem).collect(Collectors.toList());
-            return Response.ok(list).build();
+            List<ClientService> serlist = new ArrayList<>();
+            olist.forEach(s -> {
+                ClientService cs = new ClientService();
+                cs.setId(s.getId());
+                cs.setItem(s.getItem());
+                cs.setUnit(s.getUnit());
+                cs.setDescribtion(s.getDescription());
+                cs.setUnitprice(s.getUnitPrice());
+                serlist.add(cs);
+            });
+
+            return Response.ok(serlist).build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
@@ -217,31 +227,47 @@ public class RationalServices {
     @POST
     @Path("/placeOrder")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response placeOrder(ClientOrder order) {
         try {
+            ServerMessage output = new ServerMessage();
             if (order == null) {
-                //send sms to confirm recieval
                 return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
             }
             MezoDB.setEman(eman);
+            System.out.println(">> RECEIVED THIS ORDER .......");
+            System.out.println(JsonObject.mapFrom(order));
             DataManager.setEntityManager(eman);
             if (!cman.isAuthentic(order.getClientid()))
                 return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to place orders in this server.").build();
             //save order to our database
             Order inorder = new Order();
+            boolean modifying = order.getId() != null;
+            System.out.println("ORder id=" + order.getId());
+            if (order.getId() != null)
+                modifying = MezoDB.getInteger("select id from tblorder where id=" + order.getId()) > 0;
+            //what to do if order is not in our database
+            //TODO: discuss this later to decide but for now we will create new
+            if (modifying) {
+                inorder.find(order.getId());
+                System.out.println("Modifying");
+            }
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
                 //This part to inform person who placed order
                 //server.confirmOrder(order, enCommMedia.SMS);
-                server.confirmOrder(order, enCommMedia.EMAIL);
+
+                boolean b = server.confirmOrder(order, enCommMedia.EMAIL, cman.getMobile(order.getClientid()));
                 //make notifications to staff
                 server.notifyStaff();
-                return Response.ok("Received order from client: " + order.getClientid() + " Notes:" + order.getNotes()).build();
-            } else
-                return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Cant' accept order now.").build();
+                output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
+                return Response.ok(output).build();
+            } else {
+                output.setMessage("Could not save order, an unknown exception is thrown.");
+                return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getMessage()).build();
+            }
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
@@ -250,11 +276,11 @@ public class RationalServices {
     @GET
     @Path("/getLookup/{rtype}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getLookup(@PathParam("rtype") String rtype) {
         try {
             MezoDB.setEman(eman);
             List show_tables = MezoDB.Open("show tables");
-
             List<String> list;
             if (!rtype.startsWith("tbl") && !show_tables.contains(rtype)) {
                 rtype = "tbl" + rtype;
@@ -292,13 +318,41 @@ public class RationalServices {
     }
 
     @GET
+    @Path("/getOrder/{clientid}/{orderid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getOrder(@PathParam("clientid") String clientid, @PathParam("orderid") Integer orderid) {
+        try {
+            MezoDB.setEman(eman);
+            if (!cman.isAuthentic(clientid))
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed access this service").build();
+            Order p = new Order();
+            Client client = Client.findByEmail(clientid);
+            boolean exists = (MezoDB.getInteger("select id from tblorder where id=" + orderid + " and clientid=" + client.getId())) > 0;
+            if (!exists)
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode(), "Order Not found").build();
+            p.find(orderid);
+            if (!p.isEmpty()) {
+                return Response.ok(p.toClientOrder()).build();
+            } else
+                return Response.ok("Order Not Found").build();
+        } catch (Exception e) {
+            return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @GET
     @Path("/getNotifications")
     @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response getNotifications() {
+        MezoDB.setEman(eman);
         List<News> notes = new ArrayList<>();
-        notes.add(new News(" أسعار الخرسانة تنخفض بقدر كبير بعد رفع الحظر."));
-        notes.add(new News(" بشرى سارة، نقدم لكم باقة من الخدمات في مجال فحص المواقع"));
-        notes.add(new News("الآن يمكنكم التواصل معنا على الأرقام التالية: +249912352368"));
+        List<Tblnews> news = MezoDB.open("select * from tblnews order by id desc  limit 5 ", Tblnews.class);
+        if (news != null)
+            for (Tblnews n :
+                    news) {
+                notes.add(new News(n.getItem(), n.getDetails()));
+            }
         return Response.ok(notes).build();
     }
 

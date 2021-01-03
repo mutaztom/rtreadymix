@@ -91,4 +91,11 @@ public class ClientManager implements Serializable {
         result = (c != null) && c.isVerfied();
         return result;
     }
+
+    public String getMobile(String clientid) {
+        MezoDB.setEman(eman);
+        Object mobile=MezoDB.getValue("select mobile from tblclient where email='"+clientid+"'");
+        return mobile==null?"None":mobile.toString();
+    }
+
 }

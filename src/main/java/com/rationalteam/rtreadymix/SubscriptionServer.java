@@ -6,6 +6,7 @@ import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscribtion;
 import com.rationalteam.rterp.sales.SubscribtionLocal;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -16,6 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,6 +27,7 @@ public class SubscriptionServer {
     SubscribtionLocal subs;
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
     private String ADMINEMAIL = "mutaztom@gmail.com";
+    private static final String ADMINMOBILE = "+249912352368";
 
     public SubscriptionServer() {
         initTemplatePath(enCommMedia.EMAIL);
@@ -222,26 +226,23 @@ public class SubscriptionServer {
         this.subs = sub;
     }
 
-    public boolean confirmOrder(ClientOrder s, enCommMedia media) {
+    public boolean confirmOrder(ClientOrder s, enCommMedia media,String mobile) {
         boolean b = false;
         try {
             VelocityContext context = new VelocityContext();
             initTemplatePath(media);
             Template template = Velocity.getTemplate("placeorder.txt");
-            StringBuilder message = new StringBuilder("order received:");
+            StringBuilder message = new StringBuilder();
+            JsonObject jorder=JsonObject.mapFrom(s);
+            message.append(s.getId() > 0 ? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
             message.append("\n").append("from: ").append(s.getClientid()).append("\n")
-                    .append(" volume: ").append(s.getQuantity()).append("\n")
-                    .append(" Product: ").append(s.getGrade()).append("\n")
-                    .append(" city: ").append(s.getCity()).append("\n")
-                    .append(" Address: ").append(s.getNotes()).append("\n")
-                    .append(" location: ").append(s.getLocation()).append("\n")
-                    .append(" onmap: ").append("https://www.google.com/maps/@15.595676152192134,32.53551508323772,12z").append("\n")
-                    .append(" Required On: ").append(s.getDateNeeded()).append("\n")
-                    .append("Mobile: ").append("+249999922172");
+                    .append(jorder.toString())
+                    .append(" onmap: ").append("https://www.google.com/maps/@")
+                    .append("Mobile: ").append(mobile);
             if (media == enCommMedia.SMS) {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
 //                if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                b = CommHub.sendSMS("+249912352368", message.toString());
+                b = CommHub.sendSMS(ADMINMOBILE, message.toString());
                 if (b)
                     Utility.ShowSuccess("Message Sent successfully");
                 else
@@ -250,10 +251,10 @@ public class SubscriptionServer {
                 if (ADMINEMAIL == null || ADMINEMAIL.isEmpty())
                     throw new RuntimeException("No destination email to send to");
                 String encode = Json.encode(s);
-                context.put("order",encode);
+                context.put("order", encode);
                 StringWriter mailmsg = new StringWriter();
                 template.merge(context, mailmsg);
-                CommHub.sendEMail(message.toString(), ADMINEMAIL);
+                b=CommHub.sendEMail(message.toString(), ADMINEMAIL);
                 System.out.println(mailmsg.toString());
             }
         } catch (
