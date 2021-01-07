@@ -19,7 +19,7 @@ public class ClientManager implements Serializable {
     EntityManager eman;
 
     @PostConstruct
-    private void init() {
+    void init() {
         DataManager.setEntityManager(eman);
         DataManager.USINGHIBERNATE = false;
 
@@ -65,7 +65,7 @@ public class ClientManager implements Serializable {
 
     public String generatePin(Client c) {
         Random random = new Random();
-        int i = random.nextInt();
+        Integer i = random.nextInt(Integer.MAX_VALUE) + 1;
         return String.valueOf(i);
     }
 
@@ -94,8 +94,8 @@ public class ClientManager implements Serializable {
 
     public String getMobile(String clientid) {
         MezoDB.setEman(eman);
-        Object mobile=MezoDB.getValue("select mobile from tblclient where email='"+clientid+"'");
-        return mobile==null?"None":mobile.toString();
+        Object mobile = MezoDB.getValue("select mobile from tblclient where email='" + clientid + "'");
+        return mobile == null ? "None" : mobile.toString();
     }
 
 }

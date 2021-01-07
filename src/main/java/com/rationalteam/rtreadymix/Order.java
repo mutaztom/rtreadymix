@@ -59,6 +59,7 @@ public class Order extends CRtDataObject {
     public Object getData() {
         data = new Tblorder();
         try {
+            data.setId(id);
             data.setNotes(notes);
             data.setState(state);
             data.setStatus(status.name());
@@ -73,7 +74,6 @@ public class Order extends CRtDataObject {
             data.setClientid(clientid);
             data.setCity(city);
             data.setItem(item);
-            data.setId(id);
             data.setMember(member);
             data.setType(type);
             data.setLocation(location);
@@ -268,7 +268,8 @@ public class Order extends CRtDataObject {
     @Transactional
     public void fromClientOrder(ClientOrder cord) {
         try {
-            id=(cord.getId()!=null && cord.getId()>0)?cord.getId():null;
+            if (cord.getId() != null)
+                id = cord.getId() > 0 ? cord.getId() : null;
             clientid = Long.valueOf(MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", cord.getClientid())).intValue();
             city = Long.valueOf(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity())).intValue();
             country = Long.valueOf(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry())).intValue();

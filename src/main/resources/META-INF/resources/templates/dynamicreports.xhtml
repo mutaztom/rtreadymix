@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>Report Viewer</h:head>
+<h:body>
+    <ui:composition template="#{login_back.userTemplate}">
+        <ui:define name="content">
+            <!--<ui:include src="inc_progress.xhtml"/>-->
+            <h:form>
+                <p:messages><p:autoUpdate/></p:messages>
+                <p:growl><p:autoUpdate/></p:growl>
+                <ui:include src="inc_confirm.xhtml"/>
+                <p:outputPanel header="#{dynarepBean.report}" widgetVar="panreport" style="height: 100%;width: 100%;" styleClass="toblock">
+                    <ui:include src="inc_periodic.xhtml"/>
+                    <p:spacer width="5"/>
+                    <p:panelGrid columns="6" id="panrepman" style="width: 100%;">
+                        <p:tabView>
+                            <p:tab title="#{msg.createreport}">
+                                <p:panelGrid columns="6">
+                                    <p:outputLabel value="#{msg.table}"/>
+                                    <p:selectOneMenu value="#{dynarepBean.dynarep.table}">
+                                        <f:selectItems value="#{dynarepBean.viewlist}" var="tbl" />
+                                        <p:ajax listener="#{dynarepBean.onSetTable}" update="@(.pancolumns),@widgetVar(pancriteria),@widgetVar(keyfield)"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="#{msg.name}"/>
+                                    <p:inputText value="#{dynarepBean.dynarep.name}"/>
+                                    <p:commandButton value="#{msg.save}" icon="fa fa-save"
+                                                     action="#{dynarepBean.saveReport}"
+                                                     update="@(.pancolumns),@widgetVar(ddreports)"/>
+                                    <p:commandButton value="#{msg.reset}" action="#{dynarepBean.reset}"
+                                                     style="font-size: large;"
+                                                     update="@(.pancolumns),@widgetVar(ddreports)"
+                                                     title="Reset all dynamic report settings."
+                                                     icon="fa fa-retweet">
+                                        <p:confirm message="#{msg.insurereset}"/>
+                                    </p:commandButton>
+                                    <p:outputLabel value="#{msg.keyfield}"/>
+                                    <p:selectOneMenu value="#{dynarepBean.dynarep.keyField}" widgetVar="keyfield">
+                                        <f:selectItem itemLabel="#{msg.none}" itemValue="#{null}"/>
+                                        <f:selectItems value="#{dynarepBean.dynarep.fields}" var="f" itemLabel="#{f}"/>
+                                    </p:selectOneMenu>
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="#{msg.loadreport}">
+                                <p:selectOneMenu value="#{dynarepBean.toload}" widgetVar="ddreports">
+                                    <f:selectItem itemLabel="please select report..." itemValue="#{null}"/>
+                                    <f:selectItems value="#{dynarepBean.savedReports}" var="srep" itemLabel="#{srep}"
+                                                   itemValue="#{srep}"/>
+                                </p:selectOneMenu>
+                                <p:commandButton value="#{msg.loadreport}: #{dynarepBean.toload}" icon="fa fa-folder"
+                                                 action="#{dynarepBean.loadReport}" style="font-weight: large;"
+                                                 update="@widgetVar(pancriteria),@(.pancolumns)"/>
+                                <p:commandButton value="#{msg.delete}" icon="fa fa-trash"
+                                                 action="#{dynarepBean.deleteReport}" style="font-weight: large;"
+                                                 update="@widgetVar(ddreports)">
+                                    <p:confirm message="#{msg.insuredelete}"/>
+                                </p:commandButton>
+                            </p:tab>
+                        </p:tabView>
+                    </p:panelGrid>
+                    <p:panel widgetVar="panextra" header="Extra Report Options" closable="true" menuTitle="#{msg.add}"
+                             styleClass="repname"
+                             style="font-family: 'Tajawal', serif;">
+                        <p:outputLabel
+                                value="Click on menue in the right side of this window to add new options to report"/>
+                        <f:facet name="header">
+                            <p:commandButton value="#{msg.addreportparam}" update="@widgetVar(panextra)"
+                                             icon="fa fa-plus"
+                                             action="#{dynarepBean.dynarep.addExtraoption()}"/>
+                        </f:facet>
+                        <p:repeat value="#{dynarepBean.dynarep.extramap.keySet()}" var="k">
+                            <h:panelGrid columns="3" id="panextra">
+                                <p:inputText value="#{k}"/>
+                                <p:inputText value="#{dynarepBean.dynarep.extramap[k]}" size="30"/>
+                                <p:commandButton title="#{msg.delete}" icon="fa fa-trash"
+                                                 action="#{dynarepBean.dynarep.extramap.remove(k)}"
+                                                 update="@widgetVar(panextra),@id(panextra)"/>
+                            </h:panelGrid>
+                        </p:repeat>
+                    </p:panel>
+                    <p:spacer width="5"/>
+                    <p:panelGrid columns="1" layout="grid" style="width: 100%" id="pancriteria">
+                        <p:panelGrid columns="2">
+                            <f:facet name="header">
+                                <p:commandButton value="#{msg.addcriteria}" icon="fa fa-plus" title="#{msg.add}"
+                                                 action="#{dynarepBean.dynarep.addCriteria()}" update="pancriteria"/>
+                                <p:commandButton value="#{msg.resetcriteria}" title="#{msg.add}"
+                                                 icon="fa fa-retweet" action="#{dynarepBean.dynarep.resetCriteria}"
+                                                 update="pancriteria">
+                                    <p:confirm message="#{msg.insurereset}"/>
+                                </p:commandButton>
+                                <p:commandButton value="#{msg.check}" action="#{dynarepBean.showQuery}"
+                                                 icon="fa fa-table"/>
+                            </f:facet>
+                            <p:repeat value="#{dynarepBean.dynarep.criteriaList}" var="criteria">
+                                <p:panelGrid columns="5" id="pancond" style="width: 100%;" styleClass="pancolumns">
+                                    <p:selectOneMenu value="#{criteria.field}" title="Field Name" filter="true"
+                                                     filterMatchMode="startsWith">
+                                        <f:selectItem itemValue="#{null}" itemLabel="#{msg.none}"/>
+                                        <f:selectItems value="#{dynarepBean.fields}" var="field"
+                                                       itemLabel="#{field.name}" itemValue="#{field.name}"
+                                                       itemDisabled="#{field.equals('RECPEIPT_DATE')}"/>
+                                        <f:attribute name="cindex" value="#{criteria.id}"/>
+                                        <p:ajax update="coltype" process="@this"
+                                                listener="#{dynarepBean.onSetCriteriField}"/>
+                                    </p:selectOneMenu>
+                                    <p:selectOneMenu value="#{criteria.operation}" title="Operation">
+                                        <f:selectItem itemLabel="#{msg.none}" value="#{null}"/>
+                                        <f:selectItems value="#{dynarepBean.operations}" var="o" itemLabel="#{o}"
+                                                       itemValue="#{o}"/>
+                                    </p:selectOneMenu>
+                                    <p:inputText value="#{criteria.value}"/>
+                                    <p:outputLabel value="#{criteria.repfield.datatype}"
+                                                   id="coltype" style="color: blue"/>
+                                    <p:commandButton title="#{msg.delete}" update="pancond"
+                                                     icon="fa fa-trash" action="#{criteria.reset}"/>
+                                </p:panelGrid>
+                            </p:repeat>
+
+                        </p:panelGrid>
+                        <p:panelGrid columns="1" style="width: 100%;">
+                            <p:autoUpdate></p:autoUpdate>
+                            <p:outputLabel value="Fields to show in reports (MAXIMUM: #{dynarepBean.maxFields})"
+                                           style="font-size: large;font-weight: bold;"/>
+                            <p:dataGrid columns="3" value="#{dynarepBean.fields}" var="f" styleClass="pancolumns">
+                                <p:panelGrid columns="2" layout="grid">
+                                    <p:selectBooleanCheckbox itemLabel="#{f.name}" value="#{f.visible}"
+                                                             styleClass="ckfield"
+                                                             style="font-size: larger;font-weight: bold;">
+                                        <p:ajax listener="#{dynarepBean.onSelectField}" update="@(.btnagrigate),@widgetVar(keyfield)"/>
+                                    </p:selectBooleanCheckbox>
+                                    <p:selectBooleanButton value="#{f.sum}" onLabel="#{msg.sum}"
+                                                           offLabel="#{msg.groupby}" disabled="#{!f.visible}"
+                                                           styleClass="btnagrigate">
+                                        <f:attribute name="fname" value="#{f.name}"/>
+                                        <p:ajax listener="#{dynarepBean.onFieldAgrigate}"/>
+                                    </p:selectBooleanButton>
+                                </p:panelGrid>
+                            </p:dataGrid>
+                        </p:panelGrid>
+                    </p:panelGrid>
+                    <p:blockUI widgetVar="block" block="@(.toblock)">
+                        <h2>Generating dynamic report...</h2>
+                        <p:graphicImage value="./resources/css/images/progress.gif" alt="nophoto"/>
+                    </p:blockUI>
+                    <p:toolbar>
+                        <f:facet name="#{rtutil.dir eq 'rtl'?'right':'left'}">
+                            <p:outputLabel value="#{msg.report}"/><p:spacer width="5"/>
+                            <p:outputLabel value="#{dynarepBean.dynarep.name}" id="repname"
+                                           styleClass="repname"
+                                           style="color:blue;"/><p:spacer width="5"/>
+                            <p:commandButton value="#{msg.print}"
+                                             action="#{repmanBean.viewDynamicReport(dynarepBean.dynarep)}" id="cmdprint"
+                                             widgetVar="cmdprint" style="font-size: large;"
+                                             icon="fa fa-print" update="@widgetVar(panreport),@(.pdfviewer)"
+                                             onclick="PF('block').show();" oncomplete="PF('block').hide();">
+                                <f:setPropertyActionListener value="PDF" target="#{repmanBean.exportTo}"/>
+                            </p:commandButton>
+                            <p:spacer width="5"/>
+                            <p:outputLabel value="#{msg.export}"/><p:spacer width="5"/>
+                            <p:selectOneMenu value="#{repmanBean.exportTo}">
+                                <f:selectItems
+                                        value="#{rtutil.fromEnum('com.rationalteam.webcore.enReportExport')}"
+                                        var="exp" itemValue="#{exp}" itemLabel="#{exp}"
+                                        itemDisabled="#{['QueryPDF','QueryExcel','HTML'].contains(exp)}"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="5"/>
+                            <p:commandButton value="#{msg.export}"
+                                             action="#{repmanBean.viewDynamicReport(dynarepBean.dynarep)}"
+                                             widgetVar="cmdexport" style="font-size: large"
+                                             icon="fa fa-random"
+                                             onclick="PF('block').show();" oncomplete="PF('block').hide();"/>
+                        </f:facet>
+
+                    </p:toolbar>
+                    <p:outputPanel id="mediaview" styleClass="pdfviewer">
+                        <p:autoUpdate/>
+                        <p:media cache="false" value="#{repmanBean.media}" id="pdfviewer" width="100%" height="800px"
+                                 player="pdf"
+                                 styleClass="pdfviewer">
+                            #{msg.pdfnotice} <h:outputLink
+                                value="#{repmanBean.report}">#{msg.report}</h:outputLink>
+                        </p:media>
+                    </p:outputPanel>
+                </p:outputPanel>
+            </h:form>
+           </ui:define>
+    </ui:composition>
+</h:body>
+</html>

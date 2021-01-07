@@ -42,6 +42,9 @@ dependencies {
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.10.0-RC1'
     //the text template engine from appache velocity
     compile 'org.apache.velocity:velocity-engine-core:2.2'
+    compile 'io.vertx:vertx-web-templ-thymeleaf:4.0.1-SNAPSHOT'
+    compile 'org.thymeleaf:thymeleaf:3.0.12.RELEASE'
+    compile 'io.vertx:vertx-mysql-client:4.0.1-SNAPSHOT'
     testImplementation 'io.quarkus:quarkus-junit5'
     testImplementation 'io.rest-assured:rest-assured'
 }

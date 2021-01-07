@@ -1,14 +1,21 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.utility.CMezoTools;
 import org.checkerframework.checker.regex.qual.Regex;
 
+import javax.persistence.EntityManager;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static com.rationalteam.rterp.erpcore.MezoDB.PERSNAME;
 
 public class UtilityExt extends Utility {
     public static LocalDateTime toLocalDateTime(String strdate) {
@@ -57,4 +64,23 @@ public class UtilityExt extends Utility {
             return false;
         }
     }
+    public static EntityManager getPersistance(String pername) {
+        try {
+            Properties p =System.getProperties();
+            Map<String, Object> map = new HashMap<>();
+            map.put("javax.persistence.jdbc.driver", p.getProperty("driver"));
+            map.put("javax.persistence.jdbc.url", p.getProperty("url"));
+            map.put("javax.persistence.jdbc.user", p.getProperty("user"));
+            map.put("javax.persistence.jdbc.password", p.getProperty("password"));
+            javax.persistence.EntityManagerFactory fact = javax.persistence.Persistence.createEntityManagerFactory(pername, map);
+            javax.persistence.EntityManager eman = fact.createEntityManager();
+            return eman;
+        } catch (Exception exp) {
+            ShowError(exp);
+            return null;
+        }
+    }
+
+
+
 }

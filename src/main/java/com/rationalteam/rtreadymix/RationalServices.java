@@ -5,6 +5,10 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
 import com.rationalteam.rtreadymix.data.Tblorder;
+import io.quarkus.vertx.web.Route;
+import io.quarkus.vertx.web.RoutingExchange;
+import io.smallrye.mutiny.Multi;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.PostConstruct;
@@ -63,12 +67,22 @@ public class RationalServices {
             System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
             c.fromMobileUser(muser);
+            //check if name is used
+            if(c.isNameUsed())
+            {
+                output.setMessage("Name of account holder '"+c.getItem()+"' is used, please type a new one.");
+                return output;
+            }
             //check if user already exists
             if (!c.isRegistered()) {
                 r = cman.addClient(c);
                 if (r) {
                     output.setMessage("User created successfully");
-                    output.setDetails(c.getEmail());
+                    output.setDetails("VERIFY");
+                    //send verification sms
+                    CommHub.sendSMS(c.getMobile(), c.getPincode());
+                    //return
+                    return output;
                 }
             } else {
                 output.setMessage("This user is already registered please select a new username");
@@ -244,7 +258,7 @@ public class RationalServices {
             //save order to our database
             Order inorder = new Order();
             boolean modifying = order.getId() != null;
-            System.out.println("ORder id=" + order.getId());
+            System.out.println("ORder id=" + order.getId()+" are we modifying? "+modifying);
             if (order.getId() != null)
                 modifying = MezoDB.getInteger("select id from tblorder where id=" + order.getId()) > 0;
             //what to do if order is not in our database
@@ -266,9 +280,11 @@ public class RationalServices {
                 return Response.ok(output).build();
             } else {
                 output.setMessage("Could not save order, an unknown exception is thrown.");
+                Utility.ShowError(output.getMessage());
                 return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getMessage()).build();
             }
         } catch (Exception e) {
+            Utility.ShowError(e);
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
@@ -441,4 +457,5 @@ public class RationalServices {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
+
 }

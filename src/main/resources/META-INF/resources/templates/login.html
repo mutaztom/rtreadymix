@@ -1,0 +1,33 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../static/css/bootstrap.css" rel="stylesheet" th:href="@{/css/bootstrap.css}"/>
+    <title>Rational Reports</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-3" style="padding-top:30px;">
+            <h1 class="col-12">Rational Reports</h1>
+            <div th:if="${param.error}">
+                Invalid username and password.
+            </div>
+            <div th:if="${param.logout}">
+                You have been logged out.
+            </div>
+            <form th:action="@{/login}" method="post" action="#">
+                <label for="txtuname"> User Name : </label>
+                <input type="text" name="username" class="form-control" id="txtuname"/>
+                <label for="txtpwd"> Password: </label>
+                <input class="form-control" type="password" name="password" id="txtpwd"/>
+
+                <input class="btn btn-primary" type="submit" value="Sign In" name="command"/>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

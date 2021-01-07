@@ -234,7 +234,8 @@ public class SubscriptionServer {
             Template template = Velocity.getTemplate("placeorder.txt");
             StringBuilder message = new StringBuilder();
             JsonObject jorder=JsonObject.mapFrom(s);
-            message.append(s.getId() > 0 ? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
+            boolean modifying = s.getId() != null && s.getId()>0;
+            message.append(modifying? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
             message.append("\n").append("from: ").append(s.getClientid()).append("\n")
                     .append(jorder.toString())
                     .append(" onmap: ").append("https://www.google.com/maps/@")
