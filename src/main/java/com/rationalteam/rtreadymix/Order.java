@@ -295,12 +295,23 @@ public class Order extends CRtDataObject {
 
     @Transactional
     public Client getClient() {
-        if (clientid > 0) {
-            Client c = new Client();
-            c.find(clientid);
-            return c;
-        }
+        if (clientid != null)
+            if (clientid > 0) {
+                Client c = new Client();
+                c.find(clientid);
+                return c;
+            }
         return null;
+    }
+
+    @Transactional
+    public String getClientName() {
+        if (clientid != null) {
+            Object v = MezoDB.getValue("select item from tblclient where id=" + clientid);
+            if (v != null)
+                return v.toString();
+        }
+        return "Not Set!";
     }
 
     public ClientOrder toClientOrder() {

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="static/css/bootstrap.css" rel="stylesheet"/>
-    <link href="static/css/style.css" rel="stylesheet" />
+    <link href="../static/css/bootstrap.css" rel="stylesheet"/>
+    <link href="../static/css/style.css" rel="stylesheet" />
     <title>Rational ReadyMix</title>
 </head>
 <body>
@@ -11,9 +11,8 @@
     <div class="row justify-content-center">
         <div class="col-3 login">
             <h1 class="col-12">ReadyMix Backend</h1>
-            {rtmessage}
-            <img src="static/images/readmixphoto.png" alt="ReadyMIX" width="250px" />
-            {#if {rtmessag}}
+            <img src="../static/images/readmixphoto.png" alt="ReadyMIX" width="250px" />
+            {#if rtmessage}
             <div class="alert-danger">
                 <span>{rtmessage}</span>
             </div>

@@ -14,8 +14,8 @@
                 <div class="card-body">
                     <h5 class="card-title bg-dark text-white">Orders</h5>
                     {#for key in orderStat.items }
-                    <div class="alert alert-warning">{clnt}</div>
-                    {#for key in orstat.items }
+                    <div class="alert alert-warning">{curruser}</div>
+                    {#for key in orderstat.items }
                     <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
                             value="{key}-{clnt}">
                         {key} <span class="badge badge-light" style="color:red">{ val }</span>
