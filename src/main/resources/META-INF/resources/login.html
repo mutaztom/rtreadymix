@@ -1,28 +1,27 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
-      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="../static/css/bootstrap.css" rel="stylesheet" th:href="@{/css/bootstrap.css}"/>
+    <link href="static/css/bootstrap.css" rel="stylesheet"/>
+    <link href="static/css/style.css" rel="stylesheet" />
     <title>Rational Reports</title>
 </head>
 <body>
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-3" style="padding-top:30px;">
-            <h1 class="col-12">Rational Reports</h1>
-            <div th:if="${param.error}">
+        <div class="col-4 login">
+            <h1 class="col-12">ReadyMix Backend</h1>
+            <img src="static/images/readmixphoto.png" alt="ReadyMIX" width="250px" />
+            <div {{if param.error}}>
                 Invalid username and password.
             </div>
-            <div th:if="${param.logout}">
+            <div {{if param.logout}}>
                 You have been logged out.
             </div>
-            <form th:action="@{/login}" method="post" action="#">
-                <label for="txtuname"> User Name : </label>
+            <form  method="post" action="/server/checkin">
+                <label for="txtuname" class="h3"> User Name : </label>
                 <input type="text" name="username" class="form-control" id="txtuname"/>
-                <label for="txtpwd"> Password: </label>
+                <label for="txtpwd" class="h3"> Password: </label>
                 <input class="form-control" type="password" name="password" id="txtpwd"/>
-
                 <input class="btn btn-primary" type="submit" value="Sign In" name="command"/>
             </form>
         </div>

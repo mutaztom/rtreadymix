@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="static/css/bootstrap.css" rel="stylesheet"/>
+    <link href="static/css/style.css" rel="stylesheet"/>
+    <title>Rational ReadyMix</title>
+</head>
+<body>
+<form action="/adminspace" method="POST">
+    <div class="row justify-content-center">
+        <div class="card-deck">
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-body">
+                    <h5 class="card-title bg-dark text-white">Orders</h5>
+                    {#for key in orderStat.items }
+                    <div class="alert alert-warning">{clnt}</div>
+                    {#for key in orstat.items }
+                    <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
+                            value="{key}-{clnt}">
+                        {key} <span class="badge badge-light" style="color:red">{ val }</span>
+                    </button>
+                    {/for}
+                    {/for}
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                </div>
+            </div>
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-body">
+                    <h5 class="card-title  bg-dark text-white">Items Due</h5>
+                    <p class="card-text">Items due, need to be orderd soon { reorder }</p>
+                    <ul class="list-group">
+                        <li class="list-group-item active">Largest 5 withdrow</li>
+                        {#for key in maxcons.items }
+                        <li class="list-group-item list-group-item-warning">{clnt}</li>
+                        {#for key in cmax.items }
+                        <li class="list-group-item">
+                            {k} <span style="font-size: large;font-weight: bold;color:green;">{v}</span>
+                        </li>
+                        {/for }
+                        {/for }
+                    </ul>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                </div>
+            </div>
+            <div class="card  shadow p-3 mb-5 bg-white rounded">
+                <div class="card-body">
+                    <h5 class="card-title bg-dark text-white">Consumption</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item active">Highest 5 Consumption</li>
+                        {#for key in maxprices.items }
+                        <li class="list-group-item list-group-item-warning">{clnt}</li>
+                        {#for key in cmax.items }
+                        <li class="list-group-item">
+                            {k} <span style="font-size: large;font-weight: bold;color:green;">{v}</span>
+                        </li>
+                        {/for }
+                        {/for }
+                    </ul>
+                </div>
+            </div>
+            <div class="card shadow p-3 mb-5 bg-white rounded">
+                <div class="card-body">
+                    <h5 class="card-title bg-dark text-white">Client Management</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item"><a href="/client/" class="fa fa-plus-circle">Add Client</a></li>
+                        {#for c in clients }
+                        <li class="list-group-item list-group-item-primary">
+                            <a href="/client/?itemid={ c.id }" methods="get" class="fa fa-user">{ c.item }</a>
+                        </li>
+                        {/for }
+                    </ul>
+                    <button class="btn btn-outline-primary btn-lg btn-block fa fa-toolbox" type="button"
+                            onclick="window.location.assign('/sysconfig/')">Settings
+                    </button>
+                    <br>
+                    <button class="btn btn-outline-primary btn-lg btn-block fa fa-dollar-sign" type="button"
+                            onclick="window.location.assign('/currency/')">Currency
+                    </button>
+                    <p class="card-text"><small class="text-muted">List of registered clients</small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</body>
+</html>
