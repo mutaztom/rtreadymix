@@ -318,7 +318,8 @@ public class Order extends CRtDataObject {
         ClientOrder cord = new ClientOrder();
         try {
             cord.setId(id);
-            cord.setClientid(getClient().getEmail());
+            cord.setClientid(getClient()!=null?getClient().getEmail():"None");
+            cord.setMobile(getClient()!=null?getClient().getMobile():"None");
             cord.setItemid(String.valueOf(itemid));
             cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName()) + " ");
             cord.setCity(MezoDB.getItem(city, TblCity.class.getSimpleName()));
@@ -329,7 +330,7 @@ public class Order extends CRtDataObject {
             cord.setQuantity(quantity);
             cord.setGrade(MezoDB.getItem(type, " Tblgrade "));
             cord.setMember(MezoDB.getItem(member, " tblmember "));
-            cord.setState(MezoDB.getItem(state, "Tblprovince "));
+            cord.setState(MezoDB.getItem(state, " Tblprovince "));
             cord.setStatus(status.name());
         } catch (Exception e) {
             Utility.ShowError(e);

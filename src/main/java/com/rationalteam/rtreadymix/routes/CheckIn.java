@@ -3,6 +3,7 @@ package com.rationalteam.rtreadymix.routes;
 import com.rationalteam.core.CUmanager;
 import com.rationalteam.core.CUser;
 import com.rationalteam.reaymixcommon.ClientOrder;
+import com.rationalteam.rterp.erpcore.CService;
 import com.rationalteam.rtreadymix.ClientManager;
 import com.rationalteam.rtreadymix.Order;
 import com.rationalteam.rtreadymix.OrderStat;
@@ -11,6 +12,7 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
 import io.quarkus.resteasy.runtime.standalone.VertxHttpRequest;
+import io.quarkus.vertx.web.ReactiveRoutes;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.multipart.MultipartForm;
@@ -18,6 +20,7 @@ import io.vertx.ext.web.multipart.MultipartForm;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,15 +35,25 @@ public class CheckIn {
 
     @ResourcePath("rtbrowse")
     Template rtbrowse;
+    @ResourcePath("services")
+    Template services;
+    @ResourcePath("news")
+    Template news;
+    @ResourcePath("suppliers")
+    Template suppliers;
+
+    @ResourcePath("clients")
+    Template clients;
     @Inject
     ClientManager cman;
+    OrderStat stat = new OrderStat();
 
     @GET
     @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
     public TemplateInstance get() {
         JsonObject data = new io.vertx.core.json.JsonObject();
         data.put("error", "").put("message", "welcome to rationalteam");
-        return checkin.data("rtmessage", "welcome to rationalteam");
+        return checkin.instance();
     }
 
     @FormParam("username")
@@ -61,14 +74,15 @@ public class CheckIn {
             return checkin.data("rtmessage", uname + ": You are not allowed to use this system.");
 
     }
-
-    private TemplateInstance browseOrders() {
-        OrderStat stat = new OrderStat();
+    @Path("/orders")
+    @GET
+    public TemplateInstance browseOrders() {
         List<Order> orderList = stat.getOrders();
         List<ClientOrder> col = orderList.stream().map(Order::toClientOrder).collect(Collectors.toList());
         return rtbrowse.data("isstaff", true)
+                .data("title", "Browse Orders")
                 .data("rtlist", col)
-                .data("clientid", "None")
+                .data("clientid", "Admin")
                 .data("clients", cman.getCLients());
     }
 
@@ -78,5 +92,30 @@ public class CheckIn {
         return adminspace.data("curruser", username)
                 .data("clnt", "Mutaz")
                 .data("OrderStat", "No thing to show");
+    }
+
+    @GET
+    @Path("/services")
+    public TemplateInstance serviceManager() {
+        return services.data("title", "Service Browser")
+                .data("rtlist", stat.getServices());
+    }
+    @GET
+    @Path("/suppliers")
+    public TemplateInstance supplierManager() {
+        return suppliers.data("title", "Suppliers Browser")
+                .data("rtlist", stat.getSuppliers());
+    }
+    @GET
+    @Path("/clients")
+    public TemplateInstance clientsManager() {
+        return clients.data("title", "Clients Browser")
+                .data("rtlist", cman.getCLients());
+    }
+    @GET
+    @Path("/news")
+    public TemplateInstance newsManager() {
+        return news.data("title", "News Browser")
+                .data("rtlist", stat.getNews());
     }
 }

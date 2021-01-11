@@ -44,15 +44,8 @@
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Item</th>
+                    <th scope="col">Details</th>
                     <th scope="col">On Date</th>
-                    <th scope="col">Date Needed</th>
-                    <th scope="col">Client</th>
-                    <th scope="col">Mobile</th>
-                    <th scope="col">Grade</th>
-                    <th scope="col">Member</th>
-                    {#if title.contains('order')}
-                    <th scope="col">Status</th>
-                    {/if }
                     {#if isstaff }
                     <th scope="col">Admin Tools</th>
                     {/if }
@@ -62,16 +55,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                {#for order in rtlist }
+                {#for item in rtlist }
                 <tr>
-                    <th scope="row">{order.id}</th>
-                    <td>{order.notes}</td>
-                    <td>{order.ondate}</td>
-                    <td>{order.dateNeeded}</td>
-                    <td>{order.clientid}</td>
-                    <td style="color:blueviolet;font-weight: bold;">{order.mobile}</td>
-                    <td>{order.grade}</td>
-                    <td>{order.member}</td>
+                    <th scope="row">#</th>
+                    <td>{item.title}</td>
+                    <td>{item.details}</td>
+                    <td>{item.ondate}</td>
                     {#if title.contains('order') }
                     <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
                     {/if }

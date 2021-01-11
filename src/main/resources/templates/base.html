@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <link href="../static/css/bootstrap.css" rel="stylesheet"/>
+    <link href="../static/css/style.css" rel="stylesheet"/>
+    <link href="../static/css/all.css" rel="stylesheet"> <!--load all styles -->
+    <title>{title}</title>
+</head>
+
+<body>
+<div class=" container">
+    <nav class="navbar navbar-expand-lg navbar-expand-lg navbar-light bg-primary">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon" style="color:white"></span>
+        </button>
+        <a class="navbar-brand text-white" href="#" style="font-weight: bolder;">ReadyMix</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item active">
+                    <a class="nav-link text-white" href="/checkin/orders">Home<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/checkin/suppliers">Suppliers</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/checkin/news">News</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/checkin/clients">CLients</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="/checkin/services">Services</a>
+                </li>
+
+                <li class="nav-item">
+                    {#if isstaff }
+                    <a class="nav-link text-white" href="/checkin/orders">Orders</a>
+                    {#else }
+                    <a class="nav-link text-white" href="/checkin/orders">Orders</a>
+                    {/if}
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link text-white dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Configuration
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="/currency/">Currency</a>
+                        <a class="dropdown-item" href="/sysconfig/">Settings</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" tabindex="-1" href="javascript:onlogout();">Logout</a>
+                </li>
+            </ul>
+        </div>
+
+        <form class="form-inline">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </nav>
+    <h1>
+        <span class="badge badge-secondary col-12" style="margin-bottom: 30px;">
+            {#if user.is_staff}
+                Welcome Administrator
+            {#else}
+                Welcome {user.get_short_name}
+           {/if}
+        </span>
+    </h1>
+    <h2 style="margin: auto;text-align: center;"><i class="fa fa-list-alt"></i> {title}</h2>
+    <div class="row justify-content-center ">
+
+    </div>
+</div>
+</body>
+
+</html>

@@ -1,6 +1,7 @@
 package com.rationalteam.rtreadymix.data;
 
 import javax.persistence.*;
+import java.sql.Date;
 import java.util.Objects;
 
 @Entity
@@ -20,6 +21,7 @@ public class Tblclient {
     String usertype;
     String pincode;
     Boolean verified;
+    Date since;
 
     public Integer getId() {
         return id;
@@ -83,6 +85,14 @@ public class Tblclient {
 
     public void setMobile(String mobile) {
         this.mobile = mobile;
+    }
+
+    public Date getSince() {
+        return since;
+    }
+
+    public void setSince(Date since) {
+        this.since = since;
     }
 
     @Override

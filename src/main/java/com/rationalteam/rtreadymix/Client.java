@@ -11,6 +11,8 @@ import com.rationalteam.rtreadymix.data.Tblclient;
 
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class Client extends CRtDataObject {
     private Integer customerid;
     private String pincode;
     private boolean verfied;
+    private LocalDate since;
 
     @Override
     protected void initSearch() {
@@ -53,6 +56,7 @@ public class Client extends CRtDataObject {
         data.setPassword(password);
         data.setPincode(pincode);
         data.setVerified(verfied);
+        data.setSince(Date.valueOf(since));
         return data;
     }
 
@@ -70,6 +74,8 @@ public class Client extends CRtDataObject {
         address = data.getAddress();
         pincode = data.getPincode();
         verfied = data.getVerified() != null ? data.getVerified() : false;
+        if (data.getSince() != null)
+            since = data.getSince().toLocalDate();
     }
 
     public void fromMobileUser(MobileUser muser) {
@@ -228,5 +234,13 @@ public class Client extends CRtDataObject {
 
     public void setVerfied(boolean verfied) {
         this.verfied = verfied;
+    }
+
+    public LocalDate getSince() {
+        return since;
+    }
+
+    public void setSince(LocalDate since) {
+        this.since = since;
     }
 }
