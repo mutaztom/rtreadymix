@@ -1,5 +1,6 @@
 package com.rationalteam;
 
+import com.rationalteam.rtreadymix.security.UserManager;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +17,12 @@ public class RationalServicesTest {
           .then()
              .statusCode(200)
              .body(is("hello"));
+    }
+    @Test
+    public void addUser(){
+        UserManager uman=new UserManager();
+        uman.add("admin","admin","admin");
+        uman.add("user","user","user");
     }
 
 }

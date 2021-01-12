@@ -1,5 +1,7 @@
 package com.rationalteam.rtreadymix.data;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
 import javax.persistence.*;
 import java.sql.Date;
 import java.util.Objects;
@@ -30,7 +32,6 @@ public class Tblclient {
     public void setId(Integer id) {
         this.id = id;
     }
-
     public String getUsername() {
         return username;
     }

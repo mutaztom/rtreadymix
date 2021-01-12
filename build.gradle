@@ -19,6 +19,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.quarkus:quarkus-hibernate-orm-panache'
+    implementation 'io.quarkus:quarkus-security-jpa'
     implementation 'io.quarkus:quarkus-undertow-websockets'
     implementation 'io.quarkus:quarkus-container-image-s2i'
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
@@ -34,7 +36,6 @@ dependencies {
     //RATIONAL TEAM LIB
     implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2.1'
     implementation group: 'com.rationalteam', name: 'rtsalesejb', version: '1.2'
-    compile group: 'com.rationalteam', name: 'RationalCore', version: '1.0'
     implementation group: "com.rationalteam", name: "readymixcommon", version: "1.0"
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-quarkus'
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-hibernate-5.4'
