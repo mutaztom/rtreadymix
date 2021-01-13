@@ -3,33 +3,36 @@ package com.rationalteam.rtreadymix;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.rationalteam.core.security.enUserType;
 import com.rationalteam.reaymixcommon.MobileUser;
-import com.rationalteam.rterp.erpcore.CRtDataObject;
-import com.rationalteam.rterp.erpcore.CSearchOption;
-import com.rationalteam.rterp.erpcore.MezoDB;
-import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
 
+import javax.json.bind.annotation.JsonbProperty;
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@JsonSerialize
 public class Client extends CRtDataObject {
+    @Browsable
     String username;
+    @Browsable
     String email;
+    @Browsable
     String mobile;
     String password;
     enUserType userType;
+    @Browsable
     String address;
     Tblclient data;
     private Integer accountid;
     private Integer customerid;
     private String pincode;
     private boolean verfied;
+    @Browsable(isDate = true)
     private LocalDate since;
 
     @Override
@@ -242,5 +245,23 @@ public class Client extends CRtDataObject {
 
     public void setSince(LocalDate since) {
         this.since = since;
+    }
+
+    @Override
+    public Map<String, Object> getAsRecord() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("Id", id);
+        map.put("Name", username);
+        map.put("Item", item);
+        map.put("Mobile", mobile);
+        map.put("Email", email);
+        map.put("Country", "Sudan");
+        map.put("City", "Khartoum");
+        map.put("Address", address);
+        map.put("Accountid", this.accountid);
+        map.put("Customerid", customerid);
+        map.put("Since", since != null ? since.format(DateTimeFormatter.ISO_ORDINAL_DATE) : "None");
+        map.put("Verified", verfied);
+        return map;
     }
 }

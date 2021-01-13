@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <link href="../static/css/bootstrap.css" rel="stylesheet"/>
-    <link href="../static/css/style.css" rel="stylesheet"/>
-    <link href="../static/css/all.css" rel="stylesheet"> <!--load all styles -->
-    <title>{title}</title>
+    <link href="../css/bootstrap.css" rel="stylesheet"/>
+    <link href="../css/style.css" rel="stylesheet"/>
+    <link href="../css/all.css" rel="stylesheet"> <!--load all styles -->
+        <title>{title}</title>
 </head>
 
 <body>
+
 <div class=" container">
     <nav class="navbar navbar-expand-lg navbar-expand-lg navbar-light bg-primary">
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
@@ -21,20 +22,20 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item active">
-                    <a class="nav-link text-white" href="/readymix/orders">Home<span class="sr-only">(current)</span></a>
+                    <a class="nav-link text-white" href="/readymix/dashboard">Home<span class="sr-only">(current)</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="/readymix/suppliers">Suppliers</a>
+                    <a class="nav-link text-white" href="/readymix/rtbrowse?type=supplier">Suppliers</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="/readymix/news">News</a>
+                    <a class="nav-link text-white" href="/readymix/rtbrowse?type=news">News</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="/readymix/clients">CLients</a>
+                    <a class="nav-link text-white" href="/readymix/rtbrowse?type=client">CLients</a>
                 </li>
 
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="/readymix/services">Services</a>
+                    <a class="nav-link text-white" href="/readymix/rtbrowse?type=service">Services</a>
                 </li>
 
                 <li class="nav-item">
@@ -47,7 +48,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link text-white dropdown-toggle" href="#" id="navbarDropdown" role="button"
                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        Configuration
+                        Settings
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="/currency/">Currency</a>
@@ -69,18 +70,19 @@
     </nav>
     <h1>
         <span class="badge badge-secondary col-12" style="margin-bottom: 30px;">
-            {#if user.is_staff}
+            {#if isstaff}
                 Welcome Administrator
             {#else}
-                Welcome {user.get_short_name}
+                Welcome {username}
            {/if}
         </span>
     </h1>
-    <h2 style="margin: auto;text-align: center;"><i class="fa fa-list-alt"></i> {title}</h2>
-    <div class="row justify-content-center ">
-
-    </div>
+    <h2 style="margin: auto;text-align: center;"><i class="fa fa-list-alt"></i>{title}</h2>
+    {#insert rtbody/}
 </div>
+
+
+<script src="../js/rtscript.js" type="text/javascript"></script>
 </body>
 
 </html>

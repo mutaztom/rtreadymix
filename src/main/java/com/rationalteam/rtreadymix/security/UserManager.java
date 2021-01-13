@@ -2,6 +2,8 @@ package com.rationalteam.rtreadymix.security;
 
 import com.rationalteam.rtreadymix.data.Tblusers;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 import javax.transaction.Transactional;
 
 import static io.quarkus.elytron.security.common.BcryptUtil.bcryptHash;

@@ -1,6 +1,8 @@
 package com.rationalteam.rtreadymix;
 
+import com.rationalteam.rterp.erpcore.CRtDataObject;
 import com.rationalteam.rterp.erpcore.DataManager;
+import com.rationalteam.rterp.erpcore.IRtDataObject;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.utility.CMezoTools;
@@ -98,4 +100,23 @@ public class ClientManager implements Serializable {
         return mobile == null ? "None" : mobile.toString();
     }
 
+    public String getEmail(int clientid) {
+        MezoDB.setEman(eman);
+        Object email = MezoDB.getValue("select email from tblclient where id=" + clientid);
+        return email == null ? "None" : email.toString();
+    }
+
+    public List<Order> getClientOrders(Integer cllid) {
+        List<Order> orderlist = new ArrayList<>();
+        try {
+            Order o = new Order();
+            Map<String, Object> map = new HashMap<>();
+            map.put("clientid", getEmail(cllid));
+            orderlist = o.filterObject(map);
+        } catch (Exception e) {
+            UtilityExt.ShowError(e);
+        }
+        return orderlist;
+
+    }
 }

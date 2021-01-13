@@ -5,13 +5,16 @@ import com.rationalteam.reaymixcommon.News;
 import com.rationalteam.rterp.erpcore.CService;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rtreadymix.data.Tblnews;
+import com.rationalteam.rtreadymix.data.Tblorder;
 import com.rationalteam.rtreadymix.purchase.Supplier;
 import io.quarkus.qute.TemplateData;
 
 import javax.lang.model.element.NestingKind;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @TemplateData
 public class OrderStat {
@@ -29,9 +32,10 @@ public class OrderStat {
     public List<CService> getServices() {
         List<CService> serviceList = new ArrayList();
         CService s = new CService();
-        serviceList = s.listAllItems();
+        serviceList = s.listAll();
         return serviceList;
     }
+
     @Transactional
     public List<Supplier> getSuppliers() {
         List<Supplier> suplierlist = new ArrayList();
@@ -39,6 +43,7 @@ public class OrderStat {
         suplierlist = s.listAllItems();
         return suplierlist;
     }
+
     @Transactional
     public List<News> getNews() {
         List<News> newslist = new ArrayList();
@@ -49,5 +54,30 @@ public class OrderStat {
                 newslist.add(news);
             });
         return newslist;
+    }
+
+    public Map<String, Integer> getOrdersByStatus() {
+        Map<String, Integer> stat = new HashMap<>();
+        List open = MezoDB.Open("select count(id),status from tblorder group by status");
+        if (open != null)
+
+            for (Object o :
+                    open) {
+                Object[] rec = (Object[]) o;
+                stat.put(rec[1].toString(), Integer.valueOf(rec[0].toString()));
+            }
+        return stat;
+    }
+
+    public Map<String, Integer> getClientsByStatus() {
+        Map<String, Integer> stat = new HashMap<>();
+        List open = MezoDB.Open("select count(id) as stat,datediff(curdate(),since) bydate from tblclient group by datediff(curdate(),since) order by datediff(curdate(),since) desc ;");
+        if (open != null)
+            for (Object o :
+                    open) {
+                Object[] rec = (Object[]) o;
+                stat.put(rec[0].toString(),Integer.valueOf(rec[1].toString()));
+            }
+        return stat;
     }
 }

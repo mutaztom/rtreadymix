@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="../css/bootstrap.css" rel="stylesheet"/>
+    <link href="../css/style.css" rel="stylesheet"/>
+    <title>Rational ReadyMix</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-3 col-md-6 col-sm-12 login vertical-center">
+            <h1 style="text-align: center">ReadyMix</h1>
+            <span style="text-align: center"><p>Beta Version</p></span>
+            <img src="../images/readmixphoto.png" alt="ReadyMIX" width="250px"
+                 style="display:block;margin-left: auto;margin-right: auto;"/>
+            <div class="col-12">
+                <form action="j_security_check" method="post">
+                    <label for="txtuname" class="h5"> User Name : </label>
+                    <input type="text" name="j_username" class="form-control" id="txtuname" required/>
+                    <label for="txtpwd" class="h5"> Password: </label>
+                    <input class="form-control" type="password" name="j_password" id="txtpwd" required/>
+                    <br/>
+                    <input class="btn form-control btn-primary flex-column" type="submit" value="Sign In"
+                           name="command"/>
+                </form>
+            </div>
+            <div class="col-12"><a href="http://www.rationalteam.com"><span
+                    style="display:block;margin-left: auto;margin-right: auto;">Powered by RationalTeam</span></a></div>
+        </div>
+    </div>
+
+</div>
+</body>
+
+</html>

@@ -10,7 +10,7 @@
     left: 0;
     bottom: 0;
     right: 0;
-    background: url('META-INF/resources/static/images/login.jpg');
+    background: url('../images/login.jpg');
     opacity: .4;
     content: "";
     z-index: -1;
@@ -21,4 +21,9 @@
     top: 50%;
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
+}
+.rtcenter{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }

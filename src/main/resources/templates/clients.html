@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://java.sun.com/jsf/html">
 {#include base.html/}
 <body>
 <div class="container">
@@ -43,13 +43,9 @@
                 <table class="table table-hover table-responsive-sm">
                     <thead class="thead-dark">
                     <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Item</th>
-                        <th scope="col">Since</th>
-                        <th scope="col">Mobile</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Address</th>
-                        <th scope="col">User Name</th>
+                        {#for col in columns}
+                        <th scope="col">{col}</th>
+                        {/for}
                         {#if isstaff }
                         <th scope="col">Admin Tools</th>
                         {/if }
@@ -61,18 +57,13 @@
                     <tbody>
                     {#for item in rtlist }
                     <tr>
-                        <th scope="row">{item.id}</th>
-                        <td>{item.item}</td>
-                        <td>{item.since}</td>
-                        <td style="color:blueviolet;font-weight: bold;">{item.mobile}</td>
-                        <td>{item.email}</td>
-                        <td>{item.address}</td>
-                        <td>{item.username}</td>
-                        <td>{item.verified}</td>
+                        {#for k in columns}
+                        <td>{item.getAsRecord().get(k)}</td>
+                        {/for}
                         {#if title.contains('order') }
                         <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
                         {/if }
-                        <form id="frmbrowse" action="" method="post">
+                        <form id="frmbrowse" action="/readymix/rtbaction" method="post">
                             {#if !isstaff }
                             <td>
                                 <input id="itemid" type="hidden" name="itemid" value="{item.id }">
@@ -104,37 +95,11 @@
 
 <script type="text/javascript">
     function deleteItem(itemid) {
-        var conf = confirm("Are you sure you want to delete this item?");
-        if (conf) {
-            try {
-                var frm = document.forms['frmbrowse'];
-                var rt = window.location.href.split('?');
-                if (rt.length > 0)
-                    rt = window.location.href.split('?')[1];
-                else
-                    rt = '';
-                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                $.ajax({
-                    url: "/rtbrowse/?" + rt, // the endpoint
-                    type: "POST", // http method
-                    data: {
-                        '_method': 'delete',
-                        'itemid': itemid
-                        , 'csrfmiddlewaretoken': csrftoken
-                    }
-                    , success: function () {
-                        window.location.assign('/rtbrowse/?' + rt);
-                    }
-                    , error: function () {
-                        $("#tbar").append("<div class='alert alert-danger'>Error Deleting object</div>")
-                    }
-                });
-            } catch
-                (e) {
-                console.error(e)
-                alert(e)
-            }
-        }
+        alert("Client deletion is not allowed at this stage!");
+        // var conf = confirm("Are you sure you want to delete this item?");
+        // if (conf) {
+        //
+        // }
     }
 </script>
 </body>

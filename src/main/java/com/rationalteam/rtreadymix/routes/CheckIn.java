@@ -15,6 +15,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,25 +56,23 @@ public class CheckIn {
         return checkin.instance();
     }
 
-    @FormParam("username")
-    String username;
-    @FormParam("password")
-    String pwd;
+    @FormParam("_method")
+    String command;
 
-    @POST
-    @PermitAll
-    @Produces({MediaType.TEXT_PLAIN,MediaType.TEXT_HTML})
-    @Path("checkin")
-    public TemplateInstance checkin() {
-        JsonObject data = new io.vertx.core.json.JsonObject();
-        String uname = username;
-        boolean isauth = false;//SystemConfig.USERMANAGER.login(username, pwd);
-        if (isauth)
-            return browseOrders();
-        else
-            return checkin.data("rtmessage", uname + ": You are not allowed to use this system.");
-
-    }
+//    @POST
+//    @PermitAll
+//    @Produces({MediaType.TEXT_PLAIN,MediaType.TEXT_HTML})
+//    @Path("checkin")
+//    public TemplateInstance checkin() {
+//        JsonObject data = new io.vertx.core.json.JsonObject();
+//        String uname = username;
+//        boolean isauth = false;//SystemConfig.USERMANAGER.login(username, pwd);
+//        if (isauth)
+//            return browseOrders();
+//        else
+//            return checkin.data("rtmessage", uname + ": You are not allowed to use this system.");
+//
+//    }
 
     @Path("/orders")
     @GET
@@ -91,9 +90,11 @@ public class CheckIn {
     @GET
     @Path("/dashboard")
     public TemplateInstance dashboard() {
-        return adminspace.data("curruser", username)
+        return adminspace.data("curruser", "Amdmin")
+                .data("title","Admin Dashboard")
                 .data("clnt", "Mutaz")
-                .data("OrderStat", "No thing to show");
+                .data("orderstat", stat.getOrdersByStatus())
+                .data("clientstat", stat.getClientsByStatus());
     }
 
     @GET

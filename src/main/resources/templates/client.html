@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+{#include base}
+{#rtbody}
+<body>
+    <div class="row">
+        <div class="col-lg-4 col-md-6 col-sm-12"></div>
+        <div class="col-lg-4 col-md-6 col-sm-12 ">
+            <ul class="list-group">
+                {#if client}
+                {#for key in client.getAsRecord()}
+                <li class="list-group-item list-group-item-primary"><span style="font-weight: bold">{key}</span></li>
+                {/for}
+                {/if}
+            </ul>
+
+            <button class="btn btn-primary fa fa-backward form-control-lg form-control-sm" onclick="history.go(-1);">Close</button>
+        </div>
+        <div class="col-lg-4 col-md-6 col-sm-12"/></div>
+    </div>
+</body>
+{/rtbody}
+{/}
+</html>
