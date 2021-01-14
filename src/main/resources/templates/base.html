@@ -7,7 +7,7 @@
     <link href="../css/bootstrap.css" rel="stylesheet"/>
     <link href="../css/style.css" rel="stylesheet"/>
     <link href="../css/all.css" rel="stylesheet"> <!--load all styles -->
-        <title>{title}</title>
+    <title>{title}</title>
 </head>
 
 <body>
@@ -77,7 +77,11 @@
            {/if}
         </span>
     </h1>
-    <h2 style="margin: auto;text-align: center;"><i class="fa fa-list-alt"></i>{title}</h2>
+    <div style="margin: auto;text-align: center;">
+        {#insert icon/}
+        <h2><i class="fa fa-list-alt"></i>{title}</h2>
+
+    </div>
     {#insert rtbody/}
 </div>
 

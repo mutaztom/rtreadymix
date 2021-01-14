@@ -1,32 +1,29 @@
 package com.rationalteam.rtreadymix.routes;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rationalteam.reaymixcommon.News;
+import com.rationalteam.rterp.erpcore.CRtDataObject;
 import com.rationalteam.rterp.erpcore.CService;
+import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.*;
-import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.purchase.Supplier;
-import io.quarkus.jackson.ObjectMapperCustomizer;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import io.vertx.core.json.JsonObject;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import java.awt.*;
-import java.lang.reflect.Field;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Path("readymix")
 public class RtbrowseResource {
     @Inject
-    @ResourcePath("clients")
+    @ResourcePath("rtbrowse")
     Template template;
     @Inject
     @ResourcePath("client")
@@ -40,45 +37,80 @@ public class RtbrowseResource {
 
     String title;
     List<String> columns = new ArrayList<>();
+    String rtype="";
 
     @Path("rtbrowse")
     @GET
     public TemplateInstance browse(@QueryParam("type") String type) {
         title = "Browse " + type;
+        rtype = type;
         popColumns(type);
         TemplateInstance t = popdata(type);
-        return t.data("title", title).data("columns", columns);
+        return t.data("title", title).data("columns", columns).data("type", type);
     }
 
     private TemplateInstance popdata(String type) {
         TemplateInstance t = template.instance();
-        switch (type) {
-            case "client":
-                Client client = new Client();
-                List<Field> bf = client.getBrowsableFields();
-
-                t = template.data("rtlist", client.listAll());
-                break;
-            case "service":
-                CService service = new CService();
-                t = template.data("rtlist", service.listAll());
-                break;
-            case "news":
-                OrderStat stat = new OrderStat();
-                t = template.data("rtlist", stat.getNews());
-                break;
-            case "supplier":
-                Supplier supplier = new Supplier();
-                t = template.data("rtlist", supplier.listAll());
-                break;
-            default:
-                break;
+        List<Map<String, Object>> rtlist;
+        try {
+            List<Map<String, Object>> jar = new ArrayList<>();
+            switch (type) {
+                case "client":
+                    Client client = new Client();
+                    List<Client> clist = client.listAll();
+                    rtlist = new ArrayList<>();
+                    clist.forEach(c -> {
+                        Map<String, Object> map = new HashMap<>();
+                        c.getAsRecord().forEach((k, v) -> {
+                            if (columns.contains(k.toLowerCase()))
+                                map.put(k.toLowerCase(), v);
+                        });
+                        rtlist.add(map);
+                    });
+                    t = template.data("rtlist", rtlist);
+                    break;
+                case "service":
+                    CService service = new CService();
+                    rtlist = new ArrayList<>();
+                    generateListMap(rtlist, service.listAll(), service);
+                    t = template.data("rtlist", rtlist);
+                    break;
+                case "news":
+                    OrderStat stat = new OrderStat();
+                    stat.getNews().forEach(jn -> {
+                        Map<String, Object> map = null;
+                        jar.add(UtilityExt.jsonToMap(jn));
+                    });
+                    t = template.data("rtlist", jar);
+                    break;
+                case "supplier":
+                    Supplier supplier = new Supplier();
+                    rtlist = new ArrayList<>();
+                    generateListMap(rtlist, supplier.listAll(), supplier);
+                    t = template.data("rtlist", rtlist);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
         }
         return t;
     }
 
+    private void generateListMap(List<Map<String, Object>> rtlist, List<CRtDataObject> cRtDataObjects, CRtDataObject supplier) {
+        cRtDataObjects.forEach(c -> {
+            Map<String, Object> map = new HashMap<>();
+            c.getAsRecord().forEach((k, v) -> {
+                if (columns.contains(k))
+                    map.put(k, v);
+            });
+            rtlist.add(map);
+        });
+    }
+
     @Inject
-    JsonCustomizer jcust;
+    SupplierResource srec;
 
     @Path("rtbaction")
     @Produces(MediaType.APPLICATION_JSON)
@@ -87,12 +119,25 @@ public class RtbrowseResource {
         TemplateInstance t = clientTemplate.instance();
         if (command != null && !command.isBlank()) {
             title = command;
+            System.out.println("recived view parmetr:"+command+ " and type="+rtype);
             switch (command) {
                 case "view":
-                    Client c = new Client();
-                    c.find(itemid);
-                    System.out.println("itemid value:" + itemid);
-                    t = t.data("title", title + " itemid: " + itemid).data("client", c);
+                    if (rtype=="client") {
+                        Client c = new Client();
+                        c.find(itemid);
+                        t = t.data("title", title + " itemid: " + itemid).data("client", c);
+                    } else if (rtype.equals("supplier")) {
+                        Supplier supplier = new Supplier();
+                        supplier.find(itemid);
+                        t = t.data("title", title).data("client", supplier);
+                    }
+                    break;
+                case "edit":
+                    if(rtype.equals("supplier")){
+                        t=srec.viewSupplier(itemid);
+                    }else if(rtype.equals("client")){
+                        t=t.data("title","this shuld direct to supplier");
+                    }
                     break;
                 default:
                     title = "nothing to show";
@@ -107,25 +152,22 @@ public class RtbrowseResource {
     private void popColumns(String type) {
         if (columns == null) columns = new ArrayList<>();
         columns.clear();
-        columns.add("Id");
-        columns.add("Item");
         switch (type) {
             case "client":
                 Client client = new Client();
-                columns.clear();
                 columns.addAll(client.getBrowsable());
                 break;
             case "service":
                 CService service = new CService();
-                columns.clear();
                 columns.addAll(service.getBrowsable());
                 break;
             case "supplier":
                 Supplier supplier = new Supplier();
-                columns.clear();
                 columns.addAll(supplier.getBrowsable());
                 break;
             case "news":
+                columns.add("id");
+                columns.add("title");
                 columns.add("details");
                 columns.add("ondate");
                 break;

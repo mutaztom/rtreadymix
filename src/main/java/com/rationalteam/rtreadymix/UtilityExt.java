@@ -1,5 +1,10 @@
 package com.rationalteam.rtreadymix;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.rationalteam.rterp.erpcore.CRtDataObject;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.utility.CMezoTools;
 import org.checkerframework.checker.regex.qual.Regex;
@@ -64,9 +69,10 @@ public class UtilityExt extends Utility {
             return false;
         }
     }
+
     public static EntityManager getPersistance(String pername) {
         try {
-            Properties p =System.getProperties();
+            Properties p = System.getProperties();
             Map<String, Object> map = new HashMap<>();
             map.put("javax.persistence.jdbc.driver", p.getProperty("driver"));
             map.put("javax.persistence.jdbc.url", p.getProperty("url"));
@@ -81,6 +87,18 @@ public class UtilityExt extends Utility {
         }
     }
 
-
+    public static Map<String, Object> jsonToMap(Object rtobject) {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+                    .configure(SerializationFeature.FAIL_ON_UNWRAPPED_TYPE_IDENTIFIERS, false);
+            String json = mapper.writeValueAsString(rtobject);
+            map = mapper.readValue(json, Map.class);
+        } catch (JsonProcessingException exp) {
+            ShowError(exp);
+        }
+        return map;
+    }
 
 }

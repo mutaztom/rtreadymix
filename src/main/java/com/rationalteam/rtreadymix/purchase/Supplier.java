@@ -183,6 +183,7 @@ public class Supplier extends Person implements SupplierLocal {
         item = "New Supplier";
         dbTable = "tblSupplier";
         supplierMap = new ArrayList<>();
+        contact=new CContact();
         initSearch();
     }
 
@@ -190,6 +191,7 @@ public class Supplier extends Person implements SupplierLocal {
     private void init() {
         this.currency = SystemConfig.getDefaultCurrency();
         currencyid = SystemConfig.getDefaultCurrencyId();
+        contact=new CContact();
     }
 
 

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://java.sun.com/jsf/html">
 {#include base.html/}
 <body>
 <div class="container">
@@ -39,104 +39,67 @@
 
     <div class="row justify-content-center">
         <div class="col-12 col-md-12 col-sm-12">
-            <table class="table table-hover table-responsive-sm">
-                <thead class="thead-dark">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Item</th>
-                    <th scope="col">On Date</th>
-                    <th scope="col">Date Needed</th>
-                    <th scope="col">Client</th>
-                    <th scope="col">Mobile</th>
-                    <th scope="col">Grade</th>
-                    <th scope="col">Member</th>
-                    {#if title.contains('order')}
-                    <th scope="col">Status</th>
-                    {/if }
-                    {#if isstaff }
-                    <th scope="col">Admin Tools</th>
-                    {/if }
-                    {#if not isstaff }
-                    <th scope="col">Action</th>
-                    {/if}
-                </tr>
-                </thead>
-                <tbody>
-                {#for order in rtlist }
-                <tr>
-                    <th scope="row">{order.id}</th>
-                    <td>{order.notes}</td>
-                    <td>{order.ondate}</td>
-                    <td>{order.dateNeeded}</td>
-                    <td>{order.clientid}</td>
-                    <td style="color:blueviolet;font-weight: bold;">{order.mobile}</td>
-                    <td>{order.grade}</td>
-                    <td>{order.member}</td>
-                    {#if title.contains('order') }
-                    <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
-                    {/if }
-                    <form id="frmbrowse" action="" method="post">
-                        {#if !isstaff }
-                        <td>
-                            <input id="itemid" type="hidden" name="itemid" value="{item.id }">
-                            <button type="submit" title="View" name="_method" value="view"
-                                    class="btn btn-primary fa fa-eye"></button>
-                            <button type="submit" title="Edit" name="_method" value="edit"
-                                    class="btn btn-primary fa fa-pencil-alt"></button>
-                            <button id="cmddelete" type="button" name="_method"
-                                    onclick="deleteItem({item.id })"
-                                    value="delete" class="btn btn-danger fa fa-trash"
-                                    title="Delete this item"></button>
-                        </td>
-                        {#else}
-                        <td>
-                            <input id="itemid" type="hidden" name="itemid" value="{item.id }">
-                            <button type="submit" class="btn btn-primary fa fa-folder-open"
-                                    title="View" name="_method" value="view"></button>
-                        </td>
+            <div class="table-responsive">
+                <table class="table table-hover table-responsive-sm">
+                    <thead class="thead-dark">
+                    <tr>
+                        {#for col in columns}
+                        <th scope="col">{col}</th>
+                        {/for}
+                        {#if isstaff }
+                        <th scope="col">Admin Tools</th>
                         {/if }
-                    </form>
-                </tr>
-                {/for }
-                </tbody>
-            </table>
+                        {#if not isstaff }
+                        <th scope="col">Action</th>
+                        {/if}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {#for item in rtlist }
+                    <tr>
+                        {#for k in columns}
+                        <td>{item.get(k)}</td>
+                        {/for}
+                        {#if title.contains('order') }
+                        <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
+                        {/if }
+                        <form id="frmbrowse" action="/readymix/rtbaction" method="post">
+                            {#if !isstaff }
+                            <td>
+                                <input id="itemid" type="hidden" name="itemid" value="{item.id }">
+                                <button type="submit" title="View" name="_method" value="view"
+                                        class="btn btn-primary fa fa-eye"></button>
+                                <button type="submit" title="Edit" name="_method" value="edit"
+                                        class="btn btn-primary fa fa-pencil-alt"></button>
+                                <button id="cmddelete" type="button" name="_method"
+                                        onclick="deleteItem({item.id })"
+                                        value="delete" class="btn btn-danger fa fa-trash"
+                                        title="Delete this item"></button>
+                            </td>
+                            {#else}
+                            <td>
+                                <input id="itemid" type="hidden" name="itemid" value="{item.id }">
+                                <button type="submit" class="btn btn-primary fa fa-folder-open"
+                                        title="View" name="_method" value="view"></button>
+                            </td>
+                            {/if }
+                        </form>
+                    </tr>
+                    {/for }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <script type="text/javascript">
     function deleteItem(itemid) {
-        var conf = confirm("Are you sure you want to delete this item?");
-        if (conf) {
-            try {
-                var frm = document.forms['frmbrowse'];
-                var rt = window.location.href.split('?');
-                if (rt.length > 0)
-                    rt = window.location.href.split('?')[1];
-                else
-                    rt = '';
-                var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                $.ajax({
-                    url: "/rtbrowse/?" + rt, // the endpoint
-                    type: "POST", // http method
-                    data: {
-                        '_method': 'delete',
-                        'itemid': itemid
-                        , 'csrfmiddlewaretoken': csrftoken
-                    }
-                    , success: function () {
-                        window.location.assign('/rtbrowse/?' + rt);
-                    }
-                    , error: function () {
-                        $("#tbar").append("<div class='alert alert-danger'>Error Deleting object</div>")
-                    }
-                });
-            } catch
-                (e) {
-                console.error(e)
-                alert(e)
-            }
-        }
+        alert("Client deletion is not allowed at this stage!");
+        // var conf = confirm("Are you sure you want to delete this item?");
+        // if (conf) {
+        //
+        // }
     }
 </script>
 </body>

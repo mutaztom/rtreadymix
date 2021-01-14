@@ -51,6 +51,7 @@ public class OrderStat {
         if (newsdb != null)
             newsdb.forEach(n -> {
                 News news = new News(n.getItem(), n.getDetails());
+//                news.setId(n.getId());
                 newslist.add(news);
             });
         return newslist;

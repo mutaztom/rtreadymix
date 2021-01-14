@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://java.sun.com/jsf/html" xmlns="http://xmlns.jcp.org/jsf/passthrough">
+{#include base}
+<body>
+{#icon}
+<img src="../images/businessman.png" alt="supplier"/>
+{/}
+{#rtbody}
+<div class="row">
+    <div class="col-lg-6 col-sm-12 col-md-6">
+        <form action="/readymix/savesupplier" method="post">
+            <label for="txtid" value="{supplier.id}">Id</label>
+            <input type="text" id="txtid" name="id" class="form-control" placeholder="Read Only auto generated id"
+                   readonly>
+            <label for="txtitem">Name</label>
+            <input type="text" id="txtitem" class="form-control" name="item" placeholder="Supplier Name" value="{supplier.item}">
+            <label for="txtaritem">Arabic Name</label>
+            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="Supplier Name in Arabic"
+                   value="{supplier.aritem}">
+            <label>Country</label>
+            <select name="country" class="form-control">
+                <option value="1" label="Sudan"></option>
+            </select>
+            <label for="ddcity">City</label>
+            <select name="country" id="ddcity" class="form-control">
+                {#for city in cities}
+                <option value="{city.id}" label="{city}"></option>
+                {/for}
+            </select>
+            <label for="txtaddress">Address</label>
+            <textarea class="form-control" aria-label="Address of supplier" id="txtaddress"></textarea>
+            <div class="col">
+            <label for="txtcontacts">Contacts</label>
+                <button class="btn btn-primary fa fa-address-book" type="button" name="cmdcontact">Add Contact</button>
+            </div>
+            <div class="form-row">
+                <div class="col">
+                    <input placeholder="Name" id="txtcontacts" name="name" type="text" class="form-control"></input>
+                </div>
+                <div class="col">
+                    <input placeholder="Email" name="email" type="text" class="form-control"></div>
+                <div class="col"><input placeholder="Mobile" name="mobile" type="text" class="form-control"></div>
+            </div>
+            <label class="form-control">Prices</label>
+            <button class="btn btn-primary fa fa-dollar-sign" name="cmdprices">Manage Prices</button>
+
+            <button class="btn btn-primary fa fa-save" name="cmdsave">Save</button>
+            <button class="btn btn-danger fa fa-trash" name="cmddelete">Delete</button>
+            <button class="btn btn-primary fa fa-backward" type="button" onclick="history.go(-1);">Close</button>
+        </form>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <output>Supplier data not found</output>
+        <output>Supplier Index</output>
+    </div>
+</div>
+{/}
+</body>
+{/}
+</html>
