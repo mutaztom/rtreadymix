@@ -6,6 +6,7 @@ import com.rationalteam.rterp.erpcore.CService;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.*;
 import com.rationalteam.rtreadymix.purchase.Supplier;
+import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
@@ -30,6 +31,11 @@ public class RtbrowseResource {
     Template clientTemplate;
     @Inject
     ClientManager cman;
+    @Inject
+    SupplierResource srec;
+    @Inject
+    ServiceResource servtemp;
+
     @FormParam("_method")
     String command;
     @FormParam("itemid")
@@ -109,8 +115,6 @@ public class RtbrowseResource {
         });
     }
 
-    @Inject
-    SupplierResource srec;
 
     @Path("rtbaction")
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,7 +123,6 @@ public class RtbrowseResource {
         TemplateInstance t = clientTemplate.instance();
         if (command != null && !command.isBlank()) {
             title = command;
-            System.out.println("recived view parmetr:"+command+ " and type="+rtype);
             switch (command) {
                 case "view":
                     if (rtype=="client") {
@@ -137,6 +140,8 @@ public class RtbrowseResource {
                         t=srec.viewSupplier(itemid);
                     }else if(rtype.equals("client")){
                         t=t.data("title","this shuld direct to supplier");
+                    }else if(rtype.equals("service")){
+                        t=servtemp.viewService(itemid);
                     }
                     break;
                 default:

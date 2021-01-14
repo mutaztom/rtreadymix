@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+{#include base}
+<body>
+{#icon}
+<img src="../images/services.png" alt="service"/>
+{/}
+{#rtbody}
+{#if result}
+<div class="alert alert-danger">{result}</div>
+{/if}
+<div class="row">
+    <div class="col-lg-6 col-sm-12 col-md-6">
+        <form action="/readymix/saveservice" method="post">
+            <label for="txtid" value="{service.id}">Id</label>
+            <input type="text" id="txtid" name="id" class="form-control" value="{service.id}"
+                   placeholder="Read Only auto generated id"
+                   readonly>
+            <label for="txtitem">Name</label>
+            <input type="text" id="txtitem" class="form-control" name="item" placeholder="service Name"
+                   value="{service.item}">
+            <label for="txtaritem">Arabic Name</label>
+            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="service Name in Arabic"
+                   value="{service.aritem}">
+            <label for="txtdescription">Description</label>
+            <textarea class="form-control" id="txtdescription" name="description"
+                      value="{service.description}"></textarea>
+            <div class="col">
+                <label for="ddunit">Unit</label>
+                <select name="unit" id="ddunit" class="form-control">
+                    {#for unit in units}
+                    <option value="{unit.id}" label="{unit.item}" selected="{service.unit}"></option>
+                    {/for}
+                </select>
+            </div>
+            <div class="col">
+                <label for="txtunitprice">Unit Price</label>
+                <input class="form-control" name="unitprice" value="{service.unitPrice}" id="txtunitprice">
+            </div>
+            <label for="ddgrade"></label>
+            <select name="unit" id="ddgrade" class="form-control">
+                {#for grade in grades}
+                <option value="{grade.id}" label="{grade.item}"></option>
+                {/for}
+            </select>
+            <label for="ddmember"></label>
+
+            <select name="unit" id="ddmember" class="form-control">
+                {#for m in member}
+                <option value="{m.id}" label="{m.item}"></option>
+                {/for}
+            </select>
+
+            <button class="btn btn-primary fa fa-save" name="command" value="cmdsave">Save</button>
+            <button class="btn btn-danger fa fa-trash" name="command" value="cmddelete">Delete</button>
+            <button class="btn btn-primary fa fa-backward" type="button" name="command" value="cmdexit"
+                    onclick="onexit();">Close
+            </button>
+        </form>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <output>service data not found</output>
+        <output>service Index</output>
+    </div>
+</div>
+<script type="text/javascript">
+    function onexit() {
+        var def = confirm("Are you sure you want to exit.");
+        if (def)
+            location.assign("/readymix/rtbrowse?type=service");
+    }
+</script>
+{/}
+</body>
+{/}
+</html>

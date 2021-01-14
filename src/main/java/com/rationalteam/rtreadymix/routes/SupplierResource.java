@@ -7,8 +7,10 @@ import com.rationalteam.rtreadymix.purchase.Supplier;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import io.vertx.reactivex.ext.web.templ.TemplateEngine;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
@@ -41,41 +43,51 @@ public class SupplierResource {
     String aritem;
     Supplier supplier;
     Integer itemid;
+    @FormParam("command")
+    String command;
 
     private TemplateInstance initTemplate() {
         return supplierTemplate.data("title", "Supplier Manager")
-                .data("cities", rtutil.fromOptions("tblcity"))
-                .data("countries", rtutil.fromOptions("tblcountry"));
+                .data("cities", rtutil.fromTable("tblcity"))
+                .data("countries", rtutil.fromTable("tblcountry"));
     }
 
     @POST
     @Path("savesupplier")
+    @Transactional
     public TemplateInstance saveSupplier() {
+        TemplateInstance t = initTemplate();
         try {
-            TemplateInstance t = initTemplate();
-            supplier = itemid > 0 ? supplier : new Supplier();
-            supplier.setItem(item);
-            supplier.setAddress(address);
-            supplier.setLocation(location);
-            supplier.setCountry(country);
-            supplier.setCity(city);
-            supplier.setActive(true);
-            supplier.setAritem(aritem);
-            boolean r = supplier.save();
-            return supplierTemplate.data("supplier", supplier).data("Result", r ? "Success" : "Error saving supplier");
+            boolean r=false;
+            if(command.equals("cmdsave")) {
+                supplier = itemid > 0 ? supplier : new Supplier();
+                supplier.setItem(item);
+                supplier.setAritem(aritem);
+                supplier.setAddress(address);
+                supplier.setLocation(location);
+                supplier.setCountry(country);
+                supplier.setCity(city);
+                supplier.setEmail(email);
+                supplier.setPhone(mobile);
+                supplier.setActive(true);
+                r = supplier.save();
+            }else if(command.equals("cmddelete")){
+                return t.data("result","Are you sure you want to delete");
+            }
+            return t.data("supplier", supplier).data("result", r ? "Success" : "Error saving supplier");
         } catch (Exception e) {
             Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
-            return supplierTemplate.data("result", e.getMessage());
+            return t.data("result", e.getMessage());
         }
     }
 
     @GET
     @Path("supplier")
     public TemplateInstance viewSupplier(@QueryParam("itemid") Integer supplierid) {
+        TemplateInstance t = initTemplate();
         supplier = new Supplier();
         this.itemid = supplierid;
         supplier.find(itemid);
-        return supplierTemplate.data("supplier", supplier).data("title", "Supplier Manager")
-                .data("cities", new String[]{"Khartoum", "Shandi", "Madani", "Kusti"});
+        return t.data("supplier", supplier);
     }
 }

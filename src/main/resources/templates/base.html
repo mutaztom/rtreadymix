@@ -68,21 +68,12 @@
             <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
         </form>
     </nav>
-    <h1>
-        <span class="badge badge-secondary col-12" style="margin-bottom: 30px;">
-            {#if isstaff}
-                Welcome Administrator
-            {#else}
-                Welcome {username}
-           {/if}
-        </span>
-    </h1>
     <div style="margin: auto;text-align: center;">
         {#insert icon/}
         <h2><i class="fa fa-list-alt"></i>{title}</h2>
-
     </div>
     {#insert rtbody/}
+    <div class="row" style="height: 150px;" id="rtfooter"></div>
 </div>
 
 

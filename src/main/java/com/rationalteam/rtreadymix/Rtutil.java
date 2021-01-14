@@ -37,25 +37,13 @@ public class Rtutil implements Serializable {
     private List<CRtDataObject> dependancy;
     private boolean deleted;
     private double rate;
-    @EJB
-    private CurrencyLocal forCurrency;
-    @EJB
-    private OptionLocal newoption;
-    @EJB
-    private OptionLocal option;
-
     private String input;
     private Locale locale;
     private IRtDataObject selected;
     private int viewcount;
-    @EJB
-    private ExchangeLocal exchange;
-    @EJB
-    private CurrencyLocal currency;
-    private CurrencyLocal compcurrency;
     IRtDataObject target;
     private int itemid;
-   
+
 
     /**
      * Creates a new instance of Rtutil
@@ -69,10 +57,11 @@ public class Rtutil implements Serializable {
 
     }
 
-    
+
     public String getMessage(String msg) {
         return ResourceBundle.getBundle("com/rationalteam/ar_resources").getString(msg);
     }
+
     public List<String> fromEnum(String cname) {
         List<String> names = new ArrayList<>();
         try {
@@ -127,21 +116,16 @@ public class Rtutil implements Serializable {
         return mc;
     }
 
-    public List<CurrencyLocal> listCurrency() {
-        List<CurrencyLocal> lst = currency.listAllItems();
+    public List<CCurrency> listCurrency() {
+        List<CCurrency> lst = (new CCurrency()).listAll();
         return lst;
     }
 
-    public Double getCurrencyRate(Integer currid) {
-        return exchange.getRate(currid);
-    }
-
-    public List<OptionLocal> fromOptions(String tbl) {
+    public List<COption> fromOptions(String tbl) {
         try {
-            option = Utility.lookUp("COption!.erpcore.OptionLocal");
-            option.setDbTable(tbl);
-            List<OptionLocal> lst = option.listAllOptions(tbl,
-                    FacesContext.getCurrentInstance().getViewRoot().getLocale());
+            COption option = new COption(tbl);
+            option.setDbTable("tbl");
+            List lst = option.listAll();
             return lst;
         } catch (Exception e) {
             Utility.ShowError(e);
@@ -151,6 +135,7 @@ public class Rtutil implements Serializable {
 
     public List<OptionLocal> fromOptions(String tbl, Locale loc) {
         try {
+            COption option = new COption(tbl);
             List<OptionLocal> lst = option.listAllOptions(tbl, loc);
             return lst;
         } catch (Exception e) {
@@ -209,6 +194,7 @@ public class Rtutil implements Serializable {
 
     public List<OptionLocal> listCities() {
         try {
+            COption option = new COption("tbiclity");
             List<OptionLocal> lst = option.listAllOptions("tblcity");
             return lst;
         } catch (Exception e) {
@@ -351,7 +337,6 @@ public class Rtutil implements Serializable {
     }
 
 
-
     public String getCompanyName() {
         String loc = Utility.getProperty("locale");
         String c = "en".equals(loc) ? "company" : "arcompany";
@@ -388,7 +373,7 @@ public class Rtutil implements Serializable {
         locale = l;
     }
 
-        public String getDir() {
+    public String getDir() {
         Locale loc = getLocale();
         return "en".equals(loc.getLanguage()) ? "ltr" : "rtl";
     }
@@ -401,7 +386,7 @@ public class Rtutil implements Serializable {
         this.period = period;
     }
 
-      public String format(Object o) {
+    public String format(Object o) {
         if (o == null)
             return "<Null>";
         if (o instanceof Date)
@@ -424,14 +409,6 @@ public class Rtutil implements Serializable {
             return NumberFormat.getInstance().format(n);
         else
             return "-";
-    }
-
-    public String getCityName(Integer id) {
-        return option.getItemValue(id, "tblcity");
-    }
-
-    public String getCountryName(Integer id) {
-        return option.getItemValue(id, "tblcountry");
     }
 
     public String getStatusStyle(enRequestStatus state) {
@@ -505,7 +482,7 @@ public class Rtutil implements Serializable {
         this.plantype = plantype;
     }
 
-   public String getPlanStyle(Double val) {
+    public String getPlanStyle(Double val) {
         if (val >= 0) {
             return "font-weight: bold;color: green;";
         } else {
@@ -530,38 +507,12 @@ public class Rtutil implements Serializable {
         }
     }
 
-        public String getActiveOptionTbl() {
+    public String getActiveOptionTbl() {
         return activeOptionTbl;
     }
 
-    public void setActiveOptionTbl(String activeOptionTbl) {
-        this.activeOptionTbl = activeOptionTbl;
-        newoption = Utility.lookUp("COption!.erpcore.OptionLocal");
-        newoption.setDbTable(activeOptionTbl);
-    }
 
-     public Double getEquiv(Double n, CurrencyLocal src, CurrencyLocal tar) {
-        return exchange.convert(src, tar, n);
-    }
-
-    public Double getEquivalent(Double n, Integer src, Integer tar) {
-        try {
-            return exchange.convert(currency.getCurrency(src), currency.getCurrency(tar), n);
-        } catch (Exception exp) {
-            Utility.ShowError(exp);
-            return 0.0;
-        }
-    }
-
-    public CurrencyLocal getDefaultCurrency() {
-        return currency.getDefault();
-    }
-
-    public CurrencyLocal getCurrency(int curid) {
-        return currency.getCurrency(curid);
-    }
-
-       public boolean isDeleted() {
+    public boolean isDeleted() {
         return deleted;
     }
 
@@ -577,26 +528,6 @@ public class Rtutil implements Serializable {
         this.rate = rate;
     }
 
-    public CurrencyLocal getForCurrency() {
-        return forCurrency;
-    }
-
-    public void setForCurrency(CurrencyLocal forCurrency) {
-        this.forCurrency = forCurrency;
-    }
-
-    public void acceptCurrency() {
-        forCurrency.setRate(rate);
-        forCurrency.edit();
-    }
-
-    public OptionLocal getNewoption() {
-        return newoption;
-    }
-
-    public void setNewoption(COption newoption) {
-        this.newoption = newoption;
-    }
 
     public String getInput() {
         return input;
@@ -606,7 +537,7 @@ public class Rtutil implements Serializable {
         this.input = input;
     }
 
-      public IRtDataObject getSelected() {
+    public IRtDataObject getSelected() {
         return selected;
     }
 
@@ -622,7 +553,7 @@ public class Rtutil implements Serializable {
         this.viewcount = viewcount;
     }
 
-   public IRtDataObject getTarget() {
+    public IRtDataObject getTarget() {
         return target;
     }
 
@@ -651,29 +582,6 @@ public class Rtutil implements Serializable {
         return itemid;
     }
 
-    public void setItemid(int itemid) {
-        this.itemid = itemid;
-        try {
-            newoption = Utility.lookUp("COption!.erpcore.OptionLocal");
-            if (activeOptionTbl == null) {
-                Utility.ShowError("Table name was not set for this option");
-                return;
-            }
-            newoption.setDbTable(activeOptionTbl);
-            if (itemid > 0) {
-                this.newoption.find(itemid);
-            } else {
-                newoption.setId(-1);
-                newoption.setItem(null);
-                newoption.setAritem(null);
-                newoption.setForfield(null);
-                newoption.setMainid(0);
-            }
-        } catch (Exception e) {
-            Utility.ShowError(e);
-        }
-    }
-
     public DayOfWeek[] getWeekdays() {
         return DayOfWeek.values();
     }
@@ -690,15 +598,15 @@ public class Rtutil implements Serializable {
     }
 
 
-    public List<OptionLocal> fromTable(String tbl) {
+    public List<COption> fromTable(String tbl) {
         List open = MezoDB.Open("select id,item from " + tbl);
-        OptionLocal o = Utility.lookUp(COption.class);
-        List<OptionLocal> result = new ArrayList<>();
+        List<COption> result = new ArrayList<>();
+        COption o = new COption(tbl);
         o.setDbTable(tbl);
         if (open != null) {
             for (Object r : open) {
                 Object[] rec = (Object[]) r;
-                o = o.create();
+                o = new COption(tbl);
                 o.setId(Integer.valueOf(rec[0].toString()));
                 o.setItem(rec[1].toString());
                 result.add(o);
@@ -707,7 +615,7 @@ public class Rtutil implements Serializable {
         return result;
     }
 
-        public List<String> completeTable(String q) {
+    public List<String> completeTable(String q) {
         List filter = new ArrayList<>();
         try {
             FacesContext fc = FacesContext.getCurrentInstance();
@@ -751,12 +659,4 @@ public class Rtutil implements Serializable {
         return filter;
     }
 
-    public CurrencyLocal getCompareCurrency() {
-        compcurrency = SystemConfig.getCompCurrency();
-        return compcurrency;
-    }
-
-    public void setCompareCurrency(CurrencyLocal c) {
-        compcurrency = c;
-    }
 }

@@ -14,6 +14,7 @@ import javax.ejb.Local;
 import javax.ejb.Stateful;
 import javax.persistence.NonUniqueResultException;
 import javax.validation.ValidationException;
+import java.lang.reflect.Field;
 import java.util.*;
 
 @Stateful
@@ -183,7 +184,7 @@ public class Supplier extends Person implements SupplierLocal {
         item = "New Supplier";
         dbTable = "tblSupplier";
         supplierMap = new ArrayList<>();
-        contact=new CContact();
+        contact = new CContact();
         initSearch();
     }
 
@@ -191,7 +192,7 @@ public class Supplier extends Person implements SupplierLocal {
     private void init() {
         this.currency = SystemConfig.getDefaultCurrency();
         currencyid = SystemConfig.getDefaultCurrencyId();
-        contact=new CContact();
+        contact = new CContact();
     }
 
 
@@ -677,5 +678,25 @@ public class Supplier extends Person implements SupplierLocal {
     @Override
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    @Override
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @Override
+    public Map<String, Object> getAsRecord() {
+        Map<String, Object> map = new HashMap<>();
+        List<Field> fields = getBrowsableFields();
+        for (Field f :
+                fields) {
+            try {
+                map.put(f.getName(), f.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
     }
 }
