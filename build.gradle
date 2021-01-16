@@ -35,6 +35,7 @@ dependencies {
     compile group: 'io.quarkus', name: 'quarkus-jsonb', version: '1.9.2.Final'
     //RATIONAL TEAM LIB
     implementation group: 'com.rationalteam', name: 'rtcoreejb', version: '1.2.1'
+    //implementation files("k:\\rtgit\\rtgit\\rtcoreejb\\artificats\\RtCoreEjb-1.2.1.jar")
     implementation group: 'com.rationalteam', name: 'rtsalesejb', version: '1.2'
     implementation group: "com.rationalteam", name: "readymixcommon", version: "1.0"
     implementation group: 'com.blazebit', name: 'blaze-persistence-integration-quarkus'

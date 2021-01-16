@@ -1,5 +1,6 @@
 package com.rationalteam.rtreadymix.routes;
 
+import com.rationalteam.rterp.erpcore.COption;
 import com.rationalteam.rterp.erpcore.CService;
 import com.rationalteam.rtreadymix.Rtutil;
 import com.rationalteam.rtreadymix.purchase.Supplier;
@@ -23,9 +24,18 @@ public class ServiceResource {
     String item;
     @FormParam("aritem")
     String aritem;
-
+    @FormParam("newcat")
+    String newcat;
+    @FormParam("ddcat")
+    Integer ddcat;
     @FormParam("command")
     String command;
+    @FormParam("description")
+    String description;
+    @FormParam("unit")
+    Integer unit;
+    @FormParam("unitprice")
+    Double unitprice;
     CService service;
     Integer itemid;
 
@@ -33,7 +43,8 @@ public class ServiceResource {
         return template.data("title", "Service Manager")
                 .data("units", rtutil.fromTable("tblunits"))
                 .data("grades", rtutil.fromTable("tblgrade"))
-                .data("member", rtutil.fromTable("tblmember"));
+                .data("member", rtutil.fromTable("tblmember"))
+                .data("servicecat", rtutil.fromTable("tblservicecat"));
     }
 
     @POST
@@ -44,11 +55,27 @@ public class ServiceResource {
         try {
             boolean r = false;
             if (command.equals("cmdsave")) {
-//                r = supplier.save();
+                service.setItem(item);
+                service.setMainCat(ddcat);
+                service.setDescription(description);
+                service.setUnitid(unit);
+                service.setUnitPrice(unitprice);
+                r = service.save();
             } else if (command.equals("cmddelete")) {
                 return t.data("result", "Are you sure you want to delete");
+            } else if (command.equals("cmdaddcat")) {
+                r = newcat != null && !newcat.isBlank();
+                if (r) {
+                    COption cat = new COption("tblservicecat");
+                    cat.setItem(newcat);
+                    cat.setAritem(newcat);
+                    r = cat.save();
+                    return t.data("service", service).data("servicecat", rtutil.fromTable("tblservicecat"))
+                            .data("result", r ? "Data saved successfully" : "Error saving data");
+
+                }
             }
-            return t.data("service", service).data("result", r ? "Success" : "Error saving supplier");
+            return t.data("service", service).data("result", r ? "Data saved successfully" : "Error saving data");
         } catch (Exception e) {
             Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
             return t.data("result", e.getMessage());

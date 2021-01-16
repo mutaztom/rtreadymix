@@ -19,5 +19,6 @@ public class JsonCustomizer implements JsonbConfigCustomizer {
         config.withSerializers(new CustomerSerializer());
     }
 
+
 }
 

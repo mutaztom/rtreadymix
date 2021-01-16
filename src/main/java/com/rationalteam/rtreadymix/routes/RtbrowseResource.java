@@ -10,6 +10,7 @@ import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import org.eclipse.yasson.internal.serializer.URITypeSerializer;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -43,7 +44,7 @@ public class RtbrowseResource {
 
     String title;
     List<String> columns = new ArrayList<>();
-    String rtype="";
+    String rtype = "";
 
     @Path("rtbrowse")
     @GET
@@ -78,7 +79,7 @@ public class RtbrowseResource {
                 case "service":
                     CService service = new CService();
                     rtlist = new ArrayList<>();
-                    generateListMap(rtlist, service.listAll(), service);
+                    generateListMap(rtlist, service.listAll());
                     t = template.data("rtlist", rtlist);
                     break;
                 case "news":
@@ -92,7 +93,7 @@ public class RtbrowseResource {
                 case "supplier":
                     Supplier supplier = new Supplier();
                     rtlist = new ArrayList<>();
-                    generateListMap(rtlist, supplier.listAll(), supplier);
+                    generateListMap(rtlist, supplier.listAll());
                     t = template.data("rtlist", rtlist);
                     break;
                 default:
@@ -104,15 +105,22 @@ public class RtbrowseResource {
         return t;
     }
 
-    private void generateListMap(List<Map<String, Object>> rtlist, List<CRtDataObject> cRtDataObjects, CRtDataObject supplier) {
+    private void generateListMap(List<Map<String, Object>> rtlist, List<CRtDataObject> cRtDataObjects) {
         cRtDataObjects.forEach(c -> {
             Map<String, Object> map = new HashMap<>();
             c.getAsRecord().forEach((k, v) -> {
                 if (columns.contains(k))
                     map.put(k, v);
             });
+            if (rtype.equals("service")) {
+                CService s = (CService) c;
+                map.put("unitprice", s.getUnitPrice());
+                map.put("unit", s.getUnit());
+                map.put("maincat", s.getMainCat());
+            }
             rtlist.add(map);
         });
+
     }
 
 
@@ -125,7 +133,7 @@ public class RtbrowseResource {
             title = command;
             switch (command) {
                 case "view":
-                    if (rtype=="client") {
+                    if (rtype == "client") {
                         Client c = new Client();
                         c.find(itemid);
                         t = t.data("title", title + " itemid: " + itemid).data("client", c);
@@ -136,12 +144,12 @@ public class RtbrowseResource {
                     }
                     break;
                 case "edit":
-                    if(rtype.equals("supplier")){
-                        t=srec.viewSupplier(itemid);
-                    }else if(rtype.equals("client")){
-                        t=t.data("title","this shuld direct to supplier");
-                    }else if(rtype.equals("service")){
-                        t=servtemp.viewService(itemid);
+                    if (rtype.equals("supplier")) {
+                        t = srec.viewSupplier(itemid);
+                    } else if (rtype.equals("client")) {
+                        t = t.data("title", "this shuld direct to supplier");
+                    } else if (rtype.equals("service")) {
+                        t = servtemp.viewService(itemid);
                     }
                     break;
                 default:
@@ -165,6 +173,9 @@ public class RtbrowseResource {
             case "service":
                 CService service = new CService();
                 columns.addAll(service.getBrowsable());
+                columns.add("unit");
+                columns.add("unitprice");
+                columns.add("aritem");
                 break;
             case "supplier":
                 Supplier supplier = new Supplier();

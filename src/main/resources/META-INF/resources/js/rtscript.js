@@ -1,4 +1,5 @@
 const LOGGED_COOKIE = "quarkus-credential";
+
 function onlogout() {
     var conf = confirm('Are you sure you want to check out from the system?');
     if (conf) {
@@ -7,3 +8,5 @@ function onlogout() {
         window.location.href = "/login.html";
     }
 }
+
+
