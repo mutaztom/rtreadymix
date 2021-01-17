@@ -27,7 +27,7 @@ public class SubscriptionServer {
     SubscribtionLocal subs;
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
     private String ADMINEMAIL = "mutaztom@gmail.com";
-    private static final String ADMINMOBILE = "+249912352368";
+    private static String ADMINMOBILE = "+249912352368";
 
     public SubscriptionServer() {
         initTemplatePath(enCommMedia.EMAIL);
@@ -38,6 +38,8 @@ public class SubscriptionServer {
         Properties p = new Properties();
         p.setProperty("resource.loader.file.path", path.toString());
         Velocity.init(p);
+        ADMINEMAIL=UtilityExt.getProperty("adminmail")!=null?UtilityExt.getProperty("adminmail"):ADMINEMAIL;
+        ADMINMOBILE=UtilityExt.getProperty("adminmobile")!=null?UtilityExt.getProperty("adminmobile"):ADMINMOBILE;
     }
 
     public List<SubscribtionLocal> getDue() {
