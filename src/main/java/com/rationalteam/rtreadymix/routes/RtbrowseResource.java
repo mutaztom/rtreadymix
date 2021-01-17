@@ -1,26 +1,18 @@
 package com.rationalteam.rtreadymix.routes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rationalteam.rterp.erpcore.CRtDataObject;
-import com.rationalteam.rterp.erpcore.CService;
-import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.*;
 import com.rationalteam.rtreadymix.purchase.Supplier;
-import io.quarkus.qute.Engine;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import org.eclipse.yasson.internal.serializer.URITypeSerializer;
+import org.hibernate.internal.util.io.CharSequenceReader;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.NumberFormat;
+import java.util.*;
 
 @Path("readymix")
 public class RtbrowseResource {
@@ -36,6 +28,8 @@ public class RtbrowseResource {
     SupplierResource srec;
     @Inject
     ServiceResource servtemp;
+    @Inject
+    ProductResource productTemp;
 
     @FormParam("_method")
     String command;
@@ -45,14 +39,32 @@ public class RtbrowseResource {
     String title;
     List<String> columns = new ArrayList<>();
     String rtype = "";
+    String icon;
+    Map<String, String> iconmap = new HashMap<>();
+
+    public RtbrowseResource() {
+        iconmap.put("supplier", "businessman.png");
+        iconmap.put("product", "product.png");
+        iconmap.put("service", "service.png");
+        iconmap.put("client", "mobiles.png");
+        iconmap.put("settings", "settings.png");
+    }
+
+    private void appendCommon(TemplateInstance tmp) {
+        tmp.data("title", rtype + " Browser ")
+                .data("icon", iconmap.getOrDefault(rtype, "truck.png"));
+    }
+
+
 
     @Path("rtbrowse")
     @GET
     public TemplateInstance browse(@QueryParam("type") String type) {
-        title = "Browse " + type;
-        rtype = type;
+        rtype = type != null ? type : "Dashboard";
+        title = String.valueOf(rtype.charAt(0)).toUpperCase().concat(rtype.substring(1)).concat(" Browser ");
         popColumns(type);
         TemplateInstance t = popdata(type);
+        appendCommon(t);
         return t.data("title", title).data("columns", columns).data("type", type);
     }
 
@@ -74,13 +86,19 @@ public class RtbrowseResource {
                         });
                         rtlist.add(map);
                     });
-                    t = template.data("rtlist", rtlist);
+                    t = t.data("rtlist", rtlist);
                     break;
                 case "service":
                     CService service = new CService();
                     rtlist = new ArrayList<>();
                     generateListMap(rtlist, service.listAll());
-                    t = template.data("rtlist", rtlist);
+                    t = t.data("rtlist", rtlist);
+                    break;
+                case "product":
+                    CProduct product = new CProduct();
+                    rtlist = new ArrayList<>();
+                    generateListMap(rtlist, product.listAll());
+                    t = t.data("rtlist", rtlist);
                     break;
                 case "news":
                     OrderStat stat = new OrderStat();
@@ -88,13 +106,13 @@ public class RtbrowseResource {
                         Map<String, Object> map = null;
                         jar.add(UtilityExt.jsonToMap(jn));
                     });
-                    t = template.data("rtlist", jar);
+                    t = t.data("rtlist", jar);
                     break;
                 case "supplier":
                     Supplier supplier = new Supplier();
                     rtlist = new ArrayList<>();
                     generateListMap(rtlist, supplier.listAll());
-                    t = template.data("rtlist", rtlist);
+                    t = t.data("rtlist", rtlist);
                     break;
                 default:
                     break;
@@ -102,10 +120,12 @@ public class RtbrowseResource {
         } catch (Exception exp) {
             Utility.ShowError(exp);
         }
+
         return t;
     }
 
     private void generateListMap(List<Map<String, Object>> rtlist, List<CRtDataObject> cRtDataObjects) {
+        NumberFormat nform = NumberFormat.getInstance();
         cRtDataObjects.forEach(c -> {
             Map<String, Object> map = new HashMap<>();
             c.getAsRecord().forEach((k, v) -> {
@@ -114,9 +134,14 @@ public class RtbrowseResource {
             });
             if (rtype.equals("service")) {
                 CService s = (CService) c;
-                map.put("unitprice", s.getUnitPrice());
+                map.put("unitprice", nform.format(s.getUnitPrice()));
                 map.put("unit", s.getUnit());
-                map.put("maincat", s.getMainCat());
+                map.put("description", s.getDescription());
+            } else if (rtype.equals("product")) {
+                CProduct s = (CProduct) c;
+                map.put("unitprice", nform.format(s.getUnitPrice()));
+                map.put("unit", s.getUnit());
+                map.put("description", s.getDescription());
             }
             rtlist.add(map);
         });
@@ -141,6 +166,14 @@ public class RtbrowseResource {
                         Supplier supplier = new Supplier();
                         supplier.find(itemid);
                         t = t.data("title", title).data("client", supplier);
+                    } else if (rtype.equals("service")) {
+                        CService s = new CService();
+                        s.find(itemid);
+                        t = t.data("title", title).data("client", s);
+                    } else if (rtype.equals("product")) {
+                        CProduct p = new CProduct();
+                        p.find(itemid);
+                        t = t.data("title", title).data("client", p);
                     }
                     break;
                 case "edit":
@@ -150,6 +183,8 @@ public class RtbrowseResource {
                         t = t.data("title", "this shuld direct to supplier");
                     } else if (rtype.equals("service")) {
                         t = servtemp.viewService(itemid);
+                    } else if (rtype.equals("product")) {
+                        t = productTemp.viewproduct(itemid);
                     }
                     break;
                 default:
@@ -175,11 +210,18 @@ public class RtbrowseResource {
                 columns.addAll(service.getBrowsable());
                 columns.add("unit");
                 columns.add("unitprice");
-                columns.add("aritem");
+                columns.add("description");
                 break;
             case "supplier":
                 Supplier supplier = new Supplier();
                 columns.addAll(supplier.getBrowsable());
+                break;
+            case "product":
+                CProduct product = new CProduct();
+                columns.addAll(product.getBrowsable());
+                columns.add("unit");
+                columns.add("unitprice");
+                columns.add("description");
                 break;
             case "news":
                 columns.add("id");
@@ -191,5 +233,6 @@ public class RtbrowseResource {
                 break;
         }
     }
+
 
 }

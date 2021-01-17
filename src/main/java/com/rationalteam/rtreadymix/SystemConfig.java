@@ -4,6 +4,7 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblCurrency;
 
 import javax.transaction.Transactional;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,8 @@ import java.util.Map;
 public class SystemConfig {
     public static String CONFIGPATH = System.getenv("OPENSHIFT_DATA_DIR");
     public static String WEBINFPATH = CONFIGPATH;
+    public static final String TEMPLATE = WEBINFPATH + "/templates/";
+    public static final String PROPFILE = Paths.get(WEBINFPATH, "rtprop.properties").toString();
     private static CCurrency defaultCurrency;
     private static Integer defcurrencyid;
     private static CCurrency compcur;
@@ -39,6 +42,7 @@ public class SystemConfig {
         double rate = e.getRate(getCompCurrency());
         return rate;
     }
+
     @Transactional
     public static CurrencyLocal getCompCurrency() {
         if (compcur == null || compcur.isEmpty()) {

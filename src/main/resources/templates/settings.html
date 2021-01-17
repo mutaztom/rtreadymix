@@ -1,7 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-{#include base /}
+{#include base}
 <body>
-
+{#rtbody}
+<div class="row">
+    <div class="col-4">
+        <div class="list-group" id="list-tab" role="tablist">
+            <a class="list-group-item list-group-item-action active fa fa-building" id="list-home-list"
+               data-toggle="list"
+               href="#list-home" role="tab" aria-controls="home">Communication Templates</a>
+            <a class="list-group-item list-group-item-action fa fa-dollar-sign" id="list-profile-list"
+               data-toggle="list"
+               href="#list-profile" role="tab" aria-controls="profile">Currency Settings</a>
+            <a class="list-group-item list-group-item-action fa fa-tools" id="list-messages-list" data-toggle="list"
+               href="#list-messages" role="tab" aria-controls="messages">General</a>
+            <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-list" data-toggle="list"
+               href="#list-settings" role="tab" aria-controls="settings">Communication Settings</a>
+        </div>
+    </div>
+    <div class="col-8">
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+                <h3><i class="fa fa-building">Communication Templates</i></h3>
+                <a href="#" class="fa fa-plus-circle">Add new</a>
+                <h3 class="text-capitalize">Email Templates</h3>
+                {#for m in mail_templates}
+                <div class="clearfix border">
+                    <input name="itemid" value="_{m}" hidden>
+                    <output class="float-left">{m}</output>
+                    <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
+                            style="margin-right:5px;">Remove
+                    </button>
+                    <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
+                            style="margin-right:5px;">Edit
+                    </button>
+                </div>
+                {/for}
+                <h3 class="text-capitalize">SMS Templates</h3>
+                {#for sms in sms_templates}
+                <div class="clearfix border">
+                    <input name="itemid" value="_{sms}" hidden>
+                    <output class="float-left">{sms}</output>
+                    <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
+                            style="margin-right:5px;">Remove
+                    </button>
+                    <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
+                            style="margin-right:5px;">Edit
+                    </button>
+                </div>
+                {/for}
+            </div>
+            <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
+                <h3><i class="fa fa-dollar-sign">Currency Settings</i></h3>
+                <a href="#" class="fa fa-plus-circle">Add new</a>
+                <ul class="list-group">
+                    {#for curr in currlist}
+                    <li class="list-group-item">
+                        {curr.item} {curr.symbol}
+                        <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
+                                style="margin-right:5px;">Remove
+                        </button>
+                        <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
+                                style="margin-right:5px;">Edit
+                        </button>
+                        {/for}
+                </ul>
+            </div>
+            <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
+                <h3><a class="fa fa-tools">General Settings</a></h3>
+                {#for k in options.keys}
+                <h3 class="bg-light text-uppercase">{k}</h3>
+                <a href="#" class="fa fa-plus-circle">Add new</a>
+                {#for op in options.get(k)}
+                <div class="clearfix border">
+                    <input name="itemid" value="{k}_{op.id}" hidden>
+                    <output class="float-left ml-2">{op}</output>
+                    <output class="align-content-center ml-3 text-muted">{op.aritem}</output>
+                    <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
+                            style="margin-right:5px;" name="command" value="remove">Remove
+                    </button>
+                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right"
+                            style="margin-right:5px;" name="command" value="edit">Edit
+                    </button>
+                </div>
+                {/for}
+                {/for}
+            </div>
+            <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
+                <p>Communication Settings</p>
+                {#for p in props.keys}
+                <label for="txt{p}">{p}</label>
+                {#if str:isPassword(p)}
+                    <input id="txt{p}" type="password" name="{p}" value="{props.get(p)}" class="form-control">
+                {#else}
+                <input id="txt{p}" name="{p}" value="{props.get(p)}" class="form-control">
+                {/if}
+                {/for}
+                <button class="btn btn-primary col-2 fa fa-save" type="submit" name="command" value="cmdSaveProp">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{/}
 </body>
+{/}
 </html>

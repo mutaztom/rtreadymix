@@ -24,7 +24,7 @@
                 <div class="input-group mb-3">
                     <label for="ddcat">Category</label>
                     <select id="ddcat" name="ddcategory" class="form-control">
-                        {#for cat in servicecat}
+                        {#for cat in prodcat}
                         <option label="{cat.item}" value="{cat.id}"></option>
                         {/for}
                     </select>
@@ -35,26 +35,33 @@
                 </div>
             </div>
             <label for="txtitem">Name</label>
-            <input type="text" id="txtitem" class="form-control" name="item" placeholder="service Name"
-                   value="{service.item}">
+            <input type="text" id="txtitem" class="form-control" name="item" placeholder="product Name"
+                   value="{product.item}">
             <label for="txtaritem">Arabic Name</label>
-            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="service Name in Arabic">
+            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="product Name in Arabic">
             <label for="txtdescription">Description</label>
-            <textarea class="form-control" id="txtdescription" name="description">{service.description}</textarea>
+            <textarea class="form-control" id="txtdescription" name="description">{product.description}</textarea>
             <div class="form-row">
                 <div class="col">
                     <label for="ddunit">Unit</label>
                     <select name="unit" id="ddunit" class="form-control">
                         {#for unit in units}
-                        <option value="{unit.id}" label="{unit.item}" selected="{service.unit}"></option>
+                        <option value="{unit.id}" label="{unit.item}" selected="{product.unit}"></option>
                         {/for}
                     </select>
                 </div>
                 <div class="col">
                     <label for="txtunitprice">Unit Price</label>
-                    <input class="form-control" name="unitprice" value="{service.unitPrice}" id="txtunitprice">
+                    <input class="form-control" name="unitprice" value="{product.unitPrice}" id="txtunitprice">
                 </div>
             </div>
+            <label for="ddmember"></label>
+            <select name="unit" id="ddmember" class="form-control">
+                {#for m in member}
+                <option value="{m.id}" label="{m.item}"></option>
+                {/for}
+            </select>
+
             <button class="btn btn-primary fa fa-save" name="command" value="cmdsave">Save</button>
             <button class="btn btn-danger fa fa-trash" name="command" value="cmddelete">Delete</button>
             <button class="btn btn-primary fa fa-backward" type="button" name="command" value="cmdexit"
@@ -63,15 +70,15 @@
         </form>
     </div>
     <div class="col-lg-6 col-md-6 col-sm-12">
-        <output>service data not found</output>
-        <output>service Index</output>
+        <output>product data not found</output>
+        <output>product Index</output>
     </div>
 </div>
 <script type="text/javascript">
     function onexit() {
         var def = confirm("Are you sure you want to exit.");
         if (def)
-            location.assign("/readymix/rtbrowse?type=service");
+            location.assign("/readymix/rtbrowse?type=product");
     }
 
     function onAddCat() {
