@@ -17,7 +17,7 @@ import javax.ws.rs.QueryParam;
 @Path("/redaymix")
 public class ClientResource {
     @Inject
-    @ResourcePath("client")
+    @ResourcePath("rtviewer")
     Template template;
 
 

@@ -1,10 +1,7 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
-import com.rationalteam.rterp.erpcore.CRtDataObject;
-import com.rationalteam.rterp.erpcore.CSearchOption;
-import com.rationalteam.rterp.erpcore.MezoDB;
-import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblCity;
 import com.rationalteam.rterp.erpcore.data.TblCountry;
 import com.rationalteam.rterp.erpcore.data.TblProduct;
@@ -12,27 +9,37 @@ import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Field;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class Order extends CRtDataObject {
     Integer clientid;
+    @Browsable
     String location;
     Integer country;
     Integer state;
+
     Integer city;
+    @Browsable
     Double quantity;
     Integer type;
+    @Browsable
     String notes;
     Integer itemid;
     Integer member;
     //the date of the order
+    @Browsable(isDate = true)
     LocalDateTime ondate;
     //the date on which the order to be delivered
+    @Browsable(isDate = true)
     LocalDateTime dateNeeded;
     enOrderStatus status;
+    @Browsable
     Double unitprice;
     Double usdprice;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -318,8 +325,8 @@ public class Order extends CRtDataObject {
         ClientOrder cord = new ClientOrder();
         try {
             cord.setId(id);
-            cord.setClientid(getClient()!=null?getClient().getEmail():"None");
-            cord.setMobile(getClient()!=null?getClient().getMobile():"None");
+            cord.setClientid(getClient() != null ? getClient().getEmail() : "None");
+            cord.setMobile(getClient() != null ? getClient().getMobile() : "None");
             cord.setItemid(String.valueOf(itemid));
             cord.setCountry(MezoDB.getItem(country, TblCountry.class.getSimpleName()) + " ");
             cord.setCity(MezoDB.getItem(city, TblCity.class.getSimpleName()));
@@ -338,5 +345,20 @@ public class Order extends CRtDataObject {
         return cord;
     }
 
-
+    @Override
+    public Map<String, Object> getAsRecord() {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            getBrowsableFields().forEach(f -> {
+                try {
+                    map.put(f.getName(), f.get(this));
+                } catch (IllegalAccessException exp) {
+                    Utility.ShowError(exp);
+                }
+            });
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+        }
+        return map;
+    }
 }

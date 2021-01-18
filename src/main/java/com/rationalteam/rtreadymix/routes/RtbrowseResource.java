@@ -20,7 +20,7 @@ public class RtbrowseResource {
     @ResourcePath("rtbrowse")
     Template template;
     @Inject
-    @ResourcePath("client")
+    @ResourcePath("rtviewer")
     Template clientTemplate;
     @Inject
     ClientManager cman;

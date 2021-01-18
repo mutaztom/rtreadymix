@@ -5,26 +5,22 @@ import com.rationalteam.rterp.erpcore.COption;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.SystemOptionManager;
 import com.rationalteam.rtreadymix.*;
-import io.quarkus.qute.Mapper;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import io.vertx.core.json.JsonObject;
-import org.jboss.resteasy.annotations.Form;
 
-import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.naming.spi.DirectoryManager;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Path("readymix")
 public class AdminResource {
@@ -32,6 +28,9 @@ public class AdminResource {
     @Inject
     @ResourcePath("adminspace")
     Template adminspace;
+    @Inject
+    @ResourcePath("rtviewer")
+    Template viewTemplate;
     @Inject
     Rtutil rtutil;
     @ResourcePath("orders")
@@ -97,6 +96,8 @@ public class AdminResource {
 
     @Path("settings")
     @GET
+    @RolesAllowed("admin")
+    @Produces(MediaType.TEXT_HTML)
     public TemplateInstance settings() {
         Map<String, List<COption>> optionMap = new HashMap<>();
         List optables = MezoDB.Open("select tblname from tblsystemoption");
@@ -138,7 +139,7 @@ public class AdminResource {
 
     }
 
-    public List<COption> getOptionValues(String tbl) {
+    private List<COption> getOptionValues(String tbl) {
         SystemOptionManager man = new SystemOptionManager();
         COption op = new COption(tbl);
         List result = op.listOptions();
@@ -156,8 +157,37 @@ public class AdminResource {
         } catch (IOException e) {
             UtilityExt.ShowError(e);
         }
+    }
 
-        //templates for sms
+    @FormParam("command")
+    String command;
+    @FormParam("itemid")
+    Integer itemid;
+
+    @Path("/manageorder")
+    @POST
+    @RolesAllowed("admin")
+    @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
+    @Transactional
+    public TemplateInstance viewOrder() {
+        TemplateInstance t = viewTemplate.instance();
+        if (command == null || command.isBlank())
+            return viewTemplate.data("error", "Command cannot be blank");
+        try {
+            if (command.equals("view")) {
+                Order order = new Order();
+                order.find(itemid);
+                System.out.println(order.getAsRecord());
+                t = viewTemplate.data("client", order);
+            } else if (command.equals("process")) {
+                t = viewTemplate.data("error", "Feature not implemented yet");
+            } else if (command.equals("deliver")) {
+                t = viewTemplate.data("error", "Feature not implemented yet");
+            }
+            return t;
+        } catch (Exception exp) {
+            return viewTemplate.data("error", exp.getMessage());
+        }
     }
 }
 
@@ -166,4 +196,5 @@ class SettingExtenstion {
     public static Boolean isPassword(String item) {
         return (item.contains("password") || item.contains("Password"));
     }
+
 }

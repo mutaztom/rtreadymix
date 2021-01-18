@@ -6,6 +6,9 @@
 <div class="container">
     <div class="row justify-content-center">
         <div id="tbar" class="col-12 col-md-12 col-sm-12">
+            {#if error}
+            <div class="alert-danger">{error}</div>
+            {/if}
             <form id="frmtools" method="post" action="" class="form-inline">
                 <div class="form-group">
                     {#if isstaff}
@@ -76,17 +79,17 @@
                     {#if title.contains('order') }
                     <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
                     {/if }
-                    <form id="frmbrowse" action="" method="post">
-                        {#if !isstaff }
+                    <form id="frmbrowse" action="manageorder" method="post">
+                        {#if isstaff }
                         <td>
-                            <input id="itemid" type="hidden" name="itemid" value="{item.id }">
-                            <button type="submit" title="View" name="_method" value="view"
+                            <input id="itemid" type="hidden" name="itemid" value="{order.id}">
+                            <button type="submit" title="View" name="command" value="view"
                                     class="btn btn-primary fa fa-eye"></button>
-                            <button type="submit" title="Edit" name="_method" value="edit"
+                            <button type="submit" title="Edit" name="command" value="process"
                                     class="btn btn-primary fa fa-pencil-alt"></button>
-                            <button id="cmddelete" type="button" name="_method"
+                            <button id="cmddelete" type="button" name="command"
                                     onclick="deleteItem({item.id })"
-                                    value="delete" class="btn btn-danger fa fa-trash"
+                                    value="deliver" class="btn btn-danger fa fa-trash"
                                     title="Delete this item"></button>
                         </td>
                         {#else}
