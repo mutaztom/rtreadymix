@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+{@com.rationalteam.rtreadymix.Order order}
+<html lang="en">
+{#include base}
+<body>
+{#rtbody}
+<div class="row justify-content-center">
+    <div class="col-12">
+        {#if error}
+        <div class="col-12 alert-danger fa fa-skull-crossbones">{error}</div>
+        {/if}
+        {#if info}
+        <div class="col-12 alert-info fa fa-info">{info}</div>
+        {/if}
+        <form id="frmorderman" action="orderman" method="post">
+            <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><h5>Order Details</h5></div>
+            <div class="form-row">
+                <div class="col-1">
+                    <label>Id</label>
+                    <input readonly name="orderid" value="{order.id}" class="form-control-plaintext"/>
+                </div>
+                <div class="col-2">
+                    <label>On Date</label>
+                    <input readonly value="{order.getStrOndate}" class="form-control">
+                </div>
+                <div class="col-9">
+                    <label>Title</label>
+                    <input readonly value="{order.item}" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col">
+                    <label>Amount</label>
+                    <input id="quantity" readonly value="{order.quantity}" class="form-control font-weight-bold">
+                </div>
+
+                <div class="col">
+                    <label>Date Needed</label>
+                    <input readonly value="{order.getStrDateNeeded}"
+                           class="form-control font-weight-bold">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label>Member</label>
+                    <input readonly value="{order.getMemberName}"
+                           class="form-control font-weight-bold">
+                </div>
+                <div class="col">
+                    <label>Grade</label>
+                    <input readonly value="{order.getTypeName}"
+                           class="form-control font-weight-bold">
+                </div>
+            </div>
+            <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><h5>Calculations</h5></div>
+            <div class="form-row">
+                <div class="col">
+                    <label>Unit Price</label>
+                    <input id="unitprice" name="unitprice" value="{order.unitprice}"
+                           class="form-control font-weight-bold">
+                </div>
+                <div class="col">
+                    <label>Total Price</label>
+                    <input name="total" id="total" class="form-control font-weight-bold" value="{order.total}" readonly>
+                </div>
+                <div class="col">
+                    <label>Equivelent($)</label>
+                    <input name="equiv" id="equiv" value="{order.equiv}" class="form-control font-weight-bold" readonly>
+                </div>
+                <div class="col">
+                    <label>Rate $</label>
+                    <input name="rate" id="rate" value="{order.rate}" class="form-control font-weight-bold">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col">
+                    <button class="btn btn-outline-primary fa fa-save form-control" name="command" value="updateprices"
+                            onclick="savePrice({order.id});" type="button">Save new Price
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-primary fa fa-undo form-control" name="command" value="updateprices"
+                            onclick="updatePrice({order.itemid});" type="button">UpdatePrice
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-primary fa fa-thumbs-up form-control" name="command"
+                            value="bestprice" type="button">Best Price
+                    </button>
+                </div>
+                <div class="col">
+                    <button class="btn btn-outline-primary fa fa-check form-control" name="command"
+                            value="picksupplier" type="button">Pick Supplier
+                    </button>
+                </div>
+            </div>
+            <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><h5>Location Details</h5></div>
+            <div class="form-row">
+                <div class="col">
+                    <label>Country</label>
+                    <input readonly value="{order.getCountryName}" class="form-control">
+                </div>
+                <div class="col">
+                    <label>City</label>
+                    <input readonly value="{order.getCityName}" class="form-control">
+                </div>
+                <div class="col">
+                    <label>State</label>
+                    <input readonly name="state" value="{order.getStateName}" class="form-control">
+                </div>
+                <div class="col">
+                    <label>Province</label>
+                    <input readonly name="province" value="{order.getProvinceName}" class="form-control">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col">
+                    <label>Location</label>
+                    <input readonly value="{order.location}" class="form-control">
+                </div>
+                <div class="col-2">
+                    <label>Google Map</label>
+                    <button class="btn btn-info fa fa-map-marked form-control" {order.location ?: disabled}>Show on
+                        Map
+                    </button>
+                </div>
+                <div class="col">
+                    <label>Address</label>
+                    <input readonly value="{order.notes}" class="form-control">
+                </div>
+            </div>
+            <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded p-3"><h5>Client Details</h5></div>
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col">
+                        <label>Client Name</label>
+                        <input readonly value="{client.item}" class="form-control">
+                    </div>
+                    <div class="col">
+                        <label>Mobile</label>
+                        <input readonly value="{client.mobile}" class="form-control font-weight-bold">
+                    </div>
+                    <div class="col">
+                        <label>Email</label>
+                        <input readonly value="{client.email}" class="form-control font-weight-bold">
+                    </div>
+                </div>
+
+            </div>
+
+            {! CONTROLES !}
+            <div class="form-row">
+                <div class="col">
+                    <button name="command" value="close" class="btn btn-primary form-control fa fa-backspace"
+                            type="button" onclick="location.assign('/readymix/orders')">Close
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="save" class="btn btn-primary form-control fa fa-save"
+                            type="button">Save
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="call" class="btn btn-primary form-control fa fa-phone"
+                            type="button">Call CLient
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="sms" class="btn btn-primary form-control fa fa-mobile"
+                            type="button">SMS CLient
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="email" class="btn btn-primary form-control fa fa-envelope"
+                            type="button">Email Client
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="schedule" class="col btn btn-primary form-control fa fa-table-tennis"
+                            type="button">Schedule
+                    </button>
+                </div>
+                <div class="col">
+                    <button name="command" value="schedule" class="col btn btn-danger form-control fa fa-hand-point-up"
+                            type="button">Reject
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<style type="text/css">
+    h5 {
+        color: brown;
+        font-weight: bold;
+    }
+</style>
+<script type="text/javascript">
+    function updatePrice(prodid) {
+        $.ajax({
+            type: "GET",
+            url: "/rtmix/getPrice/" + prodid,
+            data: {},
+            Method: "GET",
+            success: function (data) {
+                $("#unitprice").val(data.price);
+                let p = parseFloat(data.price);
+                let q = parseFloat($("#quantity").val());
+                let r = parseFloat($("#rate").val());
+                $("#total").val(q * p);
+                $("#equiv").val(q * p / r);
+
+            },
+            error: function (data) {
+                alert(data);
+            }
+        });
+    }
+
+    function savePrice(orderid) {
+        let newprice = $("#unitprice").val();
+
+            $.ajax({
+                type: "POST",
+                url: "/readymix/savePrice?itemid=" + orderid + "&newprice=" + newprice,
+                data: {},
+                Method: "POST",
+                success: function (data) {
+                    alert("Price was updated successfully, " + data.result)
+                },
+                error: function (data) {
+                    console.log("could not save new price")
+                    alert(data.error);
+                }
+            });
+
+    }
+</script>
+{/}
+
+</body>
+{/}
+</html>

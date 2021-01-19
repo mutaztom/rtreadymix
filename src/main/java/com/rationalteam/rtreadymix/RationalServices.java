@@ -68,9 +68,8 @@ public class RationalServices {
             Client c = new Client();
             c.fromMobileUser(muser);
             //check if name is used
-            if(c.isNameUsed())
-            {
-                output.setMessage("Name of account holder '"+c.getItem()+"' is used, please type a new one.");
+            if (c.isNameUsed()) {
+                output.setMessage("Name of account holder '" + c.getItem() + "' is used, please type a new one.");
                 return output;
             }
             //check if user already exists
@@ -258,7 +257,7 @@ public class RationalServices {
             //save order to our database
             Order inorder = new Order();
             boolean modifying = order.getId() != null;
-            System.out.println("ORder id=" + order.getId()+" are we modifying? "+modifying);
+            System.out.println("ORder id=" + order.getId() + " are we modifying? " + modifying);
             if (order.getId() != null)
                 modifying = MezoDB.getInteger("select id from tblorder where id=" + order.getId()) > 0;
             //what to do if order is not in our database
@@ -458,4 +457,20 @@ public class RationalServices {
         }
     }
 
+    @GET
+    @Path("/getPrice/{itemid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getPrice(@PathParam("itemid") Integer itemid) {
+        try {
+            ServerMessage output = new ServerMessage();
+            Object v = MezoDB.getValue("select unitprice from tblproduct where id=" + itemid);
+            Double price = v != null ? Double.valueOf(v.toString()) : 0D;
+            JsonObject j = new JsonObject();
+            j.put("price", price);
+            return Response.ok(j).build();
+        } catch (NumberFormatException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build();
+        }
+    }
 }

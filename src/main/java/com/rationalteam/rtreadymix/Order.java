@@ -7,6 +7,7 @@ import com.rationalteam.rterp.erpcore.data.TblCountry;
 import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblorder;
+import okhttp3.internal.connection.Exchange;
 
 import javax.transaction.Transactional;
 import java.lang.reflect.Field;
@@ -23,7 +24,6 @@ public class Order extends CRtDataObject {
     String location;
     Integer country;
     Integer state;
-
     Integer city;
     @Browsable
     Double quantity;
@@ -41,16 +41,21 @@ public class Order extends CRtDataObject {
     enOrderStatus status;
     @Browsable
     Double unitprice;
+    @Browsable
+    Double rate;
     Double usdprice;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     Tblorder data;
     private Integer province;
+    CExchange exchange = new CExchange();
 
     public Order() {
         status = enOrderStatus.Created;
         unitprice = 0D;
         usdprice = 0D;
         ondate = LocalDateTime.now();
+        //rate get last rate
+        rate = SystemConfig.getRate();
         //default to one day delay
         dateNeeded = LocalDateTime.now().plusDays(1);
         setDbTable(Tblorder.class.getSimpleName());
@@ -84,6 +89,7 @@ public class Order extends CRtDataObject {
             data.setMember(member);
             data.setType(type);
             data.setLocation(location);
+            data.setRate(rate);
         } catch (Exception e) {
             Utility.ShowError(e);
         }
@@ -116,6 +122,7 @@ public class Order extends CRtDataObject {
             type = data.getType();
             member = data.getMember();
             location = data.getLocation();
+            rate = data.getRate() > 0 ? data.getRate() : rate;
         } catch (IllegalArgumentException e) {
             Utility.ShowError(e);
         }
@@ -238,6 +245,14 @@ public class Order extends CRtDataObject {
         this.usdprice = usdprice;
     }
 
+    public Integer getProvince() {
+        return province;
+    }
+
+    public void setProvince(Integer province) {
+        this.province = province;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -293,6 +308,7 @@ public class Order extends CRtDataObject {
             location = cord.getLocation();
             notes = cord.getNotes();
             member = Long.valueOf(MezoDB.getItemID("tblmember", "item", cord.getMember())).intValue();
+            item = notes + " volume of " + quantity + " q.m " + "from " + getClientName();
             if (cord.getStatus() != null)
                 status = enOrderStatus.valueOf(cord.getStatus());
         } catch (Exception exp) {
@@ -302,13 +318,13 @@ public class Order extends CRtDataObject {
 
     @Transactional
     public Client getClient() {
+        Client c=new Client();
         if (clientid != null)
             if (clientid > 0) {
-                Client c = new Client();
                 c.find(clientid);
                 return c;
             }
-        return null;
+        return c;
     }
 
     @Transactional
@@ -361,4 +377,37 @@ public class Order extends CRtDataObject {
         }
         return map;
     }
+
+    public void updatePrice() {
+        try {
+            if (itemid == null || itemid <= 0)
+                return;
+            Map<Integer, Object> param = new HashMap<>();
+            param.put(1, itemid);
+            Object v = MezoDB.getValue("select unitprice from tblproduct where id=?", param);
+            unitprice = (v == null ? 0D : Double.parseDouble(v.toString()));
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
+    }
+
+    public Double getTotal() {
+        if ((itemid != null && itemid > 0) && unitprice == 0) updatePrice();
+        return unitprice * quantity;
+    }
+
+    public Double getRate() {
+        return rate;
+    }
+
+    public void setRate(Double rate) {
+        this.rate = rate;
+    }
+
+    public Double getEquiv() {
+        Double equiv = exchange.convert(SystemConfig.getCompCurrency(), getTotal());
+        return equiv;
+    }
+
+
 }

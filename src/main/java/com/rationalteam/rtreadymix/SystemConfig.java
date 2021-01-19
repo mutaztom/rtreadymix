@@ -3,6 +3,9 @@ package com.rationalteam.rtreadymix;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblCurrency;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceUnit;
 import javax.transaction.Transactional;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -18,7 +21,6 @@ public class SystemConfig {
     private static Integer defcurrencyid;
     private static CCurrency compcur;
 
-
     @Transactional
     public static CurrencyLocal getDefaultCurrency() {
         if (defaultCurrency == null || defaultCurrency.isEmpty()) {
@@ -30,30 +32,43 @@ public class SystemConfig {
     }
 
     public static int getDefaultCurrencyId() {
-        if (defcurrencyid == null || defcurrencyid < 0) {
-            defcurrencyid = MezoDB.getInteger("select id from " + TblCurrency.class.getSimpleName() + " where ismain=true");
+        try {
+            if (defcurrencyid == null || defcurrencyid < 0) {
+                defcurrencyid = MezoDB.getInteger("select id from " + TblCurrency.class.getSimpleName() + " where ismain=true");
+            }
+        } catch (Exception e) {
+            Utility.ShowError(e);
         }
         return defcurrencyid;
     }
 
     @Transactional
     public static double getRate() {
-        ExchangeLocal e = (ExchangeLocal) Utility.lookUp(CExchange.class);
-        double rate = e.getRate(getCompCurrency());
+        double rate = 1;
+        try {
+            ExchangeLocal e = new CExchange();
+            rate = e.getRate(getCompCurrency());
+        } catch (Exception exception) {
+            Utility.ShowError(exception);
+        }
         return rate;
     }
 
     @Transactional
     public static CurrencyLocal getCompCurrency() {
-        if (compcur == null || compcur.isEmpty()) {
-            compcur = Utility.lookUp(CCurrency.class);
-            Map<String, Object> map = new HashMap<>();
-            map.put("symbol", "USD");
-            List<TblCurrency> clist = MezoDB.openNamed("TblCurrency.findBySymbol", TblCurrency.class, map);
-            if (clist != null && !clist.isEmpty()) {
-                int id = clist.get(0).getId();
-                compcur.find(id);
+        try {
+            if (compcur == null || compcur.isEmpty()) {
+                compcur = new CCurrency();
+                Map<Integer, Object> map = new HashMap<>();
+                map.put(1, "USD");
+                List<TblCurrency> clist = MezoDB.openNative("select * from TblCurrency where symbol=?", TblCurrency.class, map);
+                if (clist != null && !clist.isEmpty()) {
+                    int id = clist.get(0).getId();
+                    compcur.find(id);
+                }
             }
+        } catch (Exception e) {
+            Utility.ShowError(e);
         }
         return compcur;
     }

@@ -30,6 +30,7 @@ public class Tblorder {
     private Double usdprice;
     private String notes;
     private Integer member;
+    private Double rate;
 
 
     public Integer getId() {
@@ -166,6 +167,14 @@ public class Tblorder {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Double getRate() {
+        return rate;
+    }
+
+    public void setRate(Double rate) {
+        this.rate = rate;
     }
 
     @Override

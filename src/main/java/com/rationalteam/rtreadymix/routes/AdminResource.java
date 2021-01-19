@@ -4,14 +4,21 @@ import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.COption;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.SystemOptionManager;
+import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.*;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import io.quarkus.vertx.web.Route;
+import io.quarkus.vertx.web.RoutingExchange;
+import io.smallrye.common.constraint.NotNull;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonObject;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.json.bind.JsonbBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -19,6 +26,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +51,9 @@ public class AdminResource {
     OrderStat stat = new OrderStat();
     List<String> mailtemp;
     List<String> smstemp;
+    @Inject
+    @ResourcePath("orderman")
+    Template orderTemplate;
     //form values for settings
     @FormParam("newcat")
     String newcat;
@@ -77,11 +88,12 @@ public class AdminResource {
     public TemplateInstance browseOrders() {
         List<Order> orderList = stat.getOrders();
         List<ClientOrder> col = orderList.stream().map(Order::toClientOrder).collect(Collectors.toList());
+        enOrderStatus[] values = enOrderStatus.values();
         return orders.data("isstaff", true)
                 .data("title", "Browse Orders")
                 .data("rtlist", col)
                 .data("clientid", "Admin")
-                .data("clients", cman.getCLients());
+                .data("clients", cman.getCLients()).data("orderstatus",values);
     }
 
     @GET
@@ -159,34 +171,70 @@ public class AdminResource {
         }
     }
 
+    @Path("savePrice")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response savePrice(@QueryParam("itemid") int itid, @QueryParam("newprice") double newprice) {
+        JsonObject o = new JsonObject();
+        try {
+            String sql = "update tblorder set unitprice=" + newprice +
+                    " where id=" + itid;
+            boolean r = MezoDB.doSqlIn(sql);
+            o.put("result", r);
+            return Response.ok(o).build();
+        } catch (Exception e) {
+            o.put("result", false).put("error", e.getMessage());
+            return Response.serverError().entity(o).build();
+        }
+    }
+    @Path("updateStatus")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateStatus(@QueryParam("itemid") int itid, @QueryParam("newstatus") String newstatus) {
+        JsonObject o = new JsonObject();
+        try {
+            String sql = "update tblorder set status='" + newstatus +
+                    "' where id=" + itid;
+            boolean r = MezoDB.doSqlIn(sql);
+            o.put("result", r);
+            return Response.ok(o).build();
+        } catch (Exception e) {
+            o.put("result", false).put("error", e.getMessage());
+            return Response.serverError().entity(o).build();
+        }
+    }
+
     @FormParam("command")
     String command;
     @FormParam("itemid")
     Integer itemid;
 
-    @Path("/manageorder")
+    @Path("/orderman")
     @POST
     @RolesAllowed("admin")
     @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
     @Transactional
     public TemplateInstance viewOrder() {
-        TemplateInstance t = viewTemplate.instance();
+        TemplateInstance t = orderTemplate.data("title", "Order Manager (" + itemid + ")")
+                .data("icon", "readymix.png");
         if (command == null || command.isBlank())
             return viewTemplate.data("error", "Command cannot be blank");
         try {
             if (command.equals("view")) {
                 Order order = new Order();
                 order.find(itemid);
-                System.out.println(order.getAsRecord());
-                t = viewTemplate.data("client", order);
+                Client client = order.getClient();
+                t = t.data("order", order).data("client", client);
             } else if (command.equals("process")) {
-                t = viewTemplate.data("error", "Feature not implemented yet");
+                t = t.data("error", "Feature not implemented yet");
             } else if (command.equals("deliver")) {
-                t = viewTemplate.data("error", "Feature not implemented yet");
+                t = t.data("error", "Feature not implemented yet");
             }
             return t;
         } catch (Exception exp) {
-            return viewTemplate.data("error", exp.getMessage());
+            return t.data("error", exp.getMessage());
         }
     }
 }
@@ -197,4 +245,106 @@ class SettingExtenstion {
         return (item.contains("password") || item.contains("Password"));
     }
 
+    public static String getItem(Integer itsid, String tbl) {
+        try {
+            if (itsid == null || itsid <= 0)
+                return "Not Found";
+            return MezoDB.getItem(itsid, tbl);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+}
+
+@TemplateExtension
+class OrderTools {
+    public static String getItemName(Order order, Integer itsid, String tbl) {
+//        try {
+//            if (itsid == null || itsid <= 0)
+//                return "Not Found";
+//            return MezoDB.getItem(itsid, tbl);
+//        } catch (Exception e) {
+//            return e.getMessage();
+//        }
+        return "Test Tool";
+    }
+
+    public static String getCityName(Order order) {
+        try {
+            if (order.getCity() == null || order.getCity() <= 0)
+                return "Not Found";
+            return MezoDB.getItem(order.getCity(), "Tblcity");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getCountryName(Order order) {
+        try {
+            Integer index = order.getCountry();
+            if (index == null || index <= 0)
+                return "Not Found";
+            return MezoDB.getItem(index, "tblcountry");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getStateName(Order order) {
+        try {
+            Integer index = order.getState();
+            if (index == null || index <= 0)
+                return "Not Found";
+            return MezoDB.getItem(index, "tblState");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getProvinceName(Order order) {
+        try {
+            Integer index = order.getProvince();
+            if (index == null || index <= 0)
+                return "Not Found";
+            return MezoDB.getItem(index, "tblprovince");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getMemberName(Order order) {
+        try {
+            Integer index = order.getMember();
+            if (index == null || index <= 0)
+                return "Not Found";
+            return MezoDB.getItem(index, "tblmember");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getTypeName(Order order) {
+        try {
+            Integer index = order.getItemid();
+            if (index == null || index <= 0)
+                return "Not Found";
+            return MezoDB.getItem(index, "tblproduct");
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return "Not Set";
+        }
+    }
+
+    public static String getStrOndate(Order order) {
+        return order.getOndate().format(DateTimeFormatter.ISO_ORDINAL_DATE);
+    }
+
+    public static String getStrDateNeeded(Order order) {
+        return order.getDateNeeded().format(DateTimeFormatter.ISO_ORDINAL_DATE);
+    }
 }
