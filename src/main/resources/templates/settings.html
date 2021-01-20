@@ -70,17 +70,17 @@
                 <h3><a class="fa fa-tools">General Settings</a></h3>
                 {#for k in options.keys}
                 <h3 class="bg-light text-uppercase">{k}</h3>
-                <a href="#" class="fa fa-plus-circle">Add new</a>
+                <a href="#" class="fa fa-plus-circle" onclick="createOption('{k}')">Add new</a>
                 {#for op in options.get(k)}
                 <div class="clearfix border">
                     <input name="itemid" value="{k}_{op.id}" hidden>
-                    <output class="float-left ml-2">{op}</output>
+                    <output class="float-left ml-2">{op.item}</output>
                     <output class="align-content-center ml-3 text-muted">{op.aritem}</output>
                     <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
-                            style="margin-right:5px;" name="command" value="remove">Remove
+                            style="margin-right:5px;" onclick="removeOption({op.id},'{k}')">Remove
                     </button>
-                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right"
-                            style="margin-right:5px;" name="command" value="edit">Edit
+                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right rtinput"
+                            style="margin-right:5px;" name="command" value="edit" onclick="editOption('{op.item}','{op.aritem}','{k}_{op.id}')">Edit
                     </button>
                 </div>
                 {/for}
@@ -91,14 +91,47 @@
                 {#for p in props.keys}
                 <label for="txt{p}">{p}</label>
                 {#if str:isPassword(p)}
-                    <input id="txt{p}" type="password" name="{p}" value="{props.get(p)}" class="form-control">
+                <input id="txt{p}" type="password" name="{p}" value="{props.get(p)}" class="form-control">
                 {#else}
                 <input id="txt{p}" name="{p}" value="{props.get(p)}" class="form-control">
                 {/if}
                 {/for}
-                <button class="btn btn-primary col-2 fa fa-save" type="submit" name="command" value="cmdSaveProp">Save</button>
+                <button class="btn btn-primary col-2 fa fa-save" type="submit" name="command" value="cmdSaveProp">Save
+                </button>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="modalinput" class="modal fade bd-example-modal-sm modalinput" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <form>
+            <div class="modal-content">
+                <div class="col-8 justify-content-center">
+                    <div class="modal-header">
+                        <h5>RationalTeam</h5>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="font-weight-bold">Please enter value</label>
+                        <input id="rtnewval" class="form-control" name="newval" placeholder="New value">
+                    </div>
+                    <div class="form-row">
+                        <label class="font-weight-bold">Please enter Arabic value</label>
+                        <input id="rtarnewval" class="form-control" name="arnewval" placeholder="Arabic value">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="form-control btn btn-primary fa fa-save" name="cmdoption" value="save">Save
+                        </button>
+                        <button class="form-control btn btn-primary fa fa-cross" name="cmdoption"
+                                onclick="closeRtInput();" type="button" value="close">Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 {/}
