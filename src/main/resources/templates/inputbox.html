@@ -1,14 +1,37 @@
 <!DOCTYPE html>
-{#insert rtinput}
-<div id="modalinput" class="modal fade bd-example-modal-sm modalinput" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <label>Please enter value</label>
-            <input class="form-control" name="newval" value="newval">
-            <button class="form-control btn btn-primary fa fa-save" name="cmdoption" value="save">Save</button>
-            <button class="form-control btn btn-primary fa fa-cross" name="cmdoption" value="close">Close</button>
-        </div>
+
+<div id="modalinput" class="modal fade bd-example-modal-sm modalinput" tabindex="-1" role="dialog"
+     aria-labelledby="mySmallModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+        <form>
+            <div class="modal-content">
+                <div class="col-8 justify-content-center">
+                    <div class="modal-header">
+                        <h5>RationalTeam</h5>
+                    </div>
+                    <div class="col-12 alert-danger" id="errmsg" style="display: none"><output id="msg"/></div>
+                    <input id="recordid" name="recordid" hidden>
+                    <input id="tblname" name="tblname" hidden>
+                    <div class="form-row">
+                        <label class="font-weight-bold">Please enter value</label>
+                        <input id="rtnewval" class="form-control" name="newval" placeholder="New value">
+                    </div>
+                    <div class="form-row">
+                        <label class="font-weight-bold">Please enter Arabic value</label>
+                        <input id="rtarnewval" class="form-control" name="arnewval" placeholder="Arabic value">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="form-control btn btn-primary fa fa-save" type="button" onclick="MODIFY?modifyOption():addOption();">Save
+                        </button>
+                        <button class="form-control btn btn-primary fa fa-cross" name="cmdoption"
+                                onclick="closeRtInput();" type="button" value="close">Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
-{/}
+
 

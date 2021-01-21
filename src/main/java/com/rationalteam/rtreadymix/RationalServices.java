@@ -8,8 +8,13 @@ import com.rationalteam.rtreadymix.data.Tblorder;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import org.apache.velocity.Template;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
+import org.apache.velocity.app.VelocityEngine;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -18,6 +23,11 @@ import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.StringWriter;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -470,7 +480,23 @@ public class RationalServices {
             j.put("price", price);
             return Response.ok(j).build();
         } catch (NumberFormatException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @Path("/getTemplate/{fpath}")
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+
+    public Response getTemplate(@PathParam("fpath") String fpath) {
+        try {
+            Template template = Velocity.getTemplate(fpath);
+            StringWriter message = new StringWriter();
+            VelocityContext context = new VelocityContext();
+            template.merge(context, message);
+            return Response.ok(message).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
 }

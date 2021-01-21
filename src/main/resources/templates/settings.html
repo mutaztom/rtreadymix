@@ -6,51 +6,72 @@
 <div class="row">
     <div class="col-4">
         <div class="list-group" id="list-tab" role="tablist">
-            <a class="list-group-item list-group-item-action active fa fa-building" id="list-home-list"
+            <a class="list-group-item list-group-item-action active fa fa-tools" id="list-general" data-toggle="list"
+               href="#list-options" role="tab" aria-controls="messages">General</a>
+            <a class="list-group-item list-group-item-action  fa fa-building" id="list-home-list"
                data-toggle="list"
                href="#list-home" role="tab" aria-controls="home">Communication Templates</a>
-            <a class="list-group-item list-group-item-action fa fa-dollar-sign" id="list-profile-list"
+            <a class="list-group-item list-group-item-action fa fa-dollar-sign" id="list-templates"
                data-toggle="list"
                href="#list-profile" role="tab" aria-controls="profile">Currency Settings</a>
-            <a class="list-group-item list-group-item-action fa fa-tools" id="list-messages-list" data-toggle="list"
-               href="#list-messages" role="tab" aria-controls="messages">General</a>
             <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-list" data-toggle="list"
                href="#list-settings" role="tab" aria-controls="settings">Communication Settings</a>
         </div>
     </div>
     <div class="col-8">
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+            <div class="tab-pane fade show " id="list-home" role="tabpanel" aria-labelledby="list-home-list">
                 <h3><i class="fa fa-building">Communication Templates</i></h3>
                 <a href="#" class="fa fa-plus-circle">Add new</a>
+                <p>
+                    <button type="button" class="close" onclick="closeTemplate();" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </p>
+
+                <div class="collapse" id="collapseExample">
+                    <div class="card card-body" style="height: 250px;">
+                        <textarea rows="15" id="rtemplate" class="form-control text-primary"
+                                  placeholder="Empty Template"></textarea>
+                        <div class="form-row">
+                            <button id="cmdSaveTemplate" class="btn btn-outline-warning col-lg-2 col-sm-12 fa fa-save"
+                                    onclick="saveTemplate();" type="button">Save
+                            </button>
+                            <button id="cmdCanceTemplate" class="btn btn-outline-danger col-lg-2 col-sm-12 fa fa-external-link-alt"
+                                    type="button" onclick="closeTemplate();">Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <h3 class="text-capitalize">Email Templates</h3>
                 {#for m in mail_templates}
                 <div class="clearfix border">
                     <input name="itemid" value="_{m}" hidden>
                     <output class="float-left">{m}</output>
                     <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
-                            style="margin-right:5px;">Remove
+                            style="margin-right:5px;" onclick="alert('Not allowed at this stage');" disabled>Remove
                     </button>
                     <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
-                            style="margin-right:5px;">Edit
+                            style="margin-right:5px;" onclick="showTemplate('{m}');">Edit
                     </button>
                 </div>
                 {/for}
                 <h3 class="text-capitalize">SMS Templates</h3>
+
                 {#for sms in sms_templates}
                 <div class="clearfix border">
                     <input name="itemid" value="_{sms}" hidden>
                     <output class="float-left">{sms}</output>
                     <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
-                            style="margin-right:5px;">Remove
+                            style="margin-right:5px;" onclick="alert('Not allowed at this stage');" disabled>Remove
                     </button>
                     <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
-                            style="margin-right:5px;">Edit
+                            style="margin-right:5px;" onclick="showTemplate('{sms}');">Edit
                     </button>
                 </div>
                 {/for}
             </div>
-            <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
+            <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-templates">
                 <h3><i class="fa fa-dollar-sign">Currency Settings</i></h3>
                 <a href="#" class="fa fa-plus-circle">Add new</a>
                 <ul class="list-group">
@@ -66,21 +87,22 @@
                         {/for}
                 </ul>
             </div>
-            <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
+            <div class="tab-pane fade show active tbloptions" id="list-options" role="tabpanel"
+                 aria-labelledby="list-general">
                 <h3><a class="fa fa-tools">General Settings</a></h3>
                 {#for k in options.keys}
                 <h3 class="bg-light text-uppercase">{k}</h3>
                 <a href="#" class="fa fa-plus-circle" onclick="createOption('{k}')">Add new</a>
                 {#for op in options.get(k)}
                 <div class="clearfix border">
-                    <input name="itemid" value="{k}_{op.id}" hidden>
+                    <input id="itemid" name="itemid" value="{k}_{op.id}" hidden>
                     <output class="float-left ml-2">{op.item}</output>
                     <output class="align-content-center ml-3 text-muted">{op.aritem}</output>
                     <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
                             style="margin-right:5px;" onclick="removeOption({op.id},'{k}')">Remove
                     </button>
-                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right rtinput"
-                            style="margin-right:5px;" name="command" value="edit" onclick="editOption('{op.item}','{op.aritem}','{k}_{op.id}')">Edit
+                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right"
+                            style="margin-right:5px;" onclick="editOption('{op.item}','{op.aritem}','{k}_{op.id}')">Edit
                     </button>
                 </div>
                 {/for}
@@ -103,37 +125,33 @@
     </div>
 </div>
 
-<div id="modalinput" class="modal fade bd-example-modal-sm modalinput" tabindex="-1" role="dialog"
-     aria-labelledby="mySmallModalLabel" aria-hidden="true">
+{#include inputbox/}
+<script type="text/javascript">
+    function showTemplate(fname) {
+        let fcontent = "";
+        $.ajax({
+            url: '/rtmix/getTemplate/' + fname,
+            type: 'GET',
+            data: {},
+            success: function (r) {
+                // console.log("recieved from server:" + r);
+                $("#rtemplate").text(r);
+                $('.collapse').collapse('show');
+                $('.collapse').focus;
+                window.location.hash = '#rtemplate';
+            },
+            error: function (st, err) {
+                console.log("got error ".concat(err));
+            }
+        });
+    }
 
-    <div class="modal-dialog modal-lg">
-        <form>
-            <div class="modal-content">
-                <div class="col-8 justify-content-center">
-                    <div class="modal-header">
-                        <h5>RationalTeam</h5>
-                    </div>
-
-                    <div class="form-row">
-                        <label class="font-weight-bold">Please enter value</label>
-                        <input id="rtnewval" class="form-control" name="newval" placeholder="New value">
-                    </div>
-                    <div class="form-row">
-                        <label class="font-weight-bold">Please enter Arabic value</label>
-                        <input id="rtarnewval" class="form-control" name="arnewval" placeholder="Arabic value">
-                    </div>
-                    <div class="modal-footer">
-                        <button class="form-control btn btn-primary fa fa-save" name="cmdoption" value="save">Save
-                        </button>
-                        <button class="form-control btn btn-primary fa fa-cross" name="cmdoption"
-                                onclick="closeRtInput();" type="button" value="close">Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+    function closeTemplate() {
+        $(".collapse").collapse('hide');
+        $("#rtemplate").text("");
+        document.getElementById("closetemplate").style.display = "none";
+    }
+</script>
 {/}
 </body>
 {/}
