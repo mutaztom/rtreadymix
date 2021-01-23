@@ -34,7 +34,7 @@ public class SubscriptionServer {
     }
 
     public void initTemplatePath(enCommMedia media) {
-        Path path = Paths.get(SystemConfig.WEBINFPATH, "templates", media.name().toLowerCase());
+        Path path = Paths.get(SystemConfig.TEMPLATE,media.name().toLowerCase());
         Properties p = new Properties();
         p.setProperty("resource.loader.file.path", path.toString());
         Velocity.init(p);

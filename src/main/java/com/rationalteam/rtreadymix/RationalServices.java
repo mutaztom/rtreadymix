@@ -5,29 +5,35 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
 import com.rationalteam.rtreadymix.data.Tblorder;
+import io.quarkus.qute.Engine;
+import io.quarkus.qute.TemplateLocator;
+import io.quarkus.security.Authenticated;
+import io.quarkus.vertx.web.Body;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.common.template.TemplateEngine;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.StringWriter;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -484,19 +490,53 @@ public class RationalServices {
         }
     }
 
-    @Path("/getTemplate/{fpath}")
+    @Path("/getTemplate/{commmedia}/{fpath}")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-
-    public Response getTemplate(@PathParam("fpath") String fpath) {
+    public Response getTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia) {
         try {
-            Template template = Velocity.getTemplate(fpath);
-            StringWriter message = new StringWriter();
-            VelocityContext context = new VelocityContext();
-            template.merge(context, message);
+            enCommMedia cm = com.rationalteam.rtreadymix.enCommMedia.valueOf(cmedia.toUpperCase());
+            String subfolder = cm.name().toLowerCase();
+            java.nio.file.Path path = Paths.get(SystemConfig.TEMPLATE, subfolder, fpath);
+            String message = Files.readString(path);
             return Response.ok(message).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @Path("/deleteTemplate/{commmedia}/{fpath}/")
+    @DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("admin")
+    public Response deleteTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia) {
+        try {
+            enCommMedia cm = com.rationalteam.rtreadymix.enCommMedia.valueOf(cmedia.toUpperCase());
+            String subfolder = cm.name().toLowerCase();
+            java.nio.file.Path path = Paths.get(SystemConfig.TEMPLATE, subfolder, fpath);
+            if (Files.exists(path))
+                Files.delete(path);
+            return Response.ok("OK").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "err:" + e.getMessage()).build();
+        }
+    }
+
+    @Path("/saveTemplate/{commmedia}/{fpath}/")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.TEXT_PLAIN)
+    @RolesAllowed("admin")
+    public Response saveTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia,String body) {
+        try {
+            enCommMedia cm = com.rationalteam.rtreadymix.enCommMedia.valueOf(cmedia.toUpperCase());
+            String subfolder = cm.name().toLowerCase();
+            java.nio.file.Path path = Paths.get(SystemConfig.TEMPLATE, subfolder, fpath);
+            Files.writeString(path, body, path.toFile().exists()?StandardOpenOption.WRITE:StandardOpenOption.CREATE_NEW);
+            return Response.ok("OK").build();
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build();
         }
     }
 }

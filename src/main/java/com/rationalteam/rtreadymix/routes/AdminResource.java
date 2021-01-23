@@ -1,24 +1,16 @@
 package com.rationalteam.rtreadymix.routes;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
-import com.rationalteam.rterp.erpcore.COption;
-import com.rationalteam.rterp.erpcore.MezoDB;
-import com.rationalteam.rterp.erpcore.SystemOptionManager;
-import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.*;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import io.quarkus.vertx.web.Route;
-import io.quarkus.vertx.web.RoutingExchange;
-import io.smallrye.common.constraint.NotNull;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.json.bind.JsonbBuilder;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -143,10 +135,11 @@ public class AdminResource {
 
         return settingsTemplate.data("title", "System Settings")
                 .data("icon", "settings.png")
-                .data("sms_templates", mailtemp)
-                .data("mail_templates", smstemp)
+                .data("sms_templates",smstemp )
+                .data("mail_templates",mailtemp )
                 .data("props", properties)
                 .data("currlist", rtutil.listCurrency())
+                .data("activecur",rtutil.listCurrency().get(0))
                 .data("options", optionMap);
 
     }

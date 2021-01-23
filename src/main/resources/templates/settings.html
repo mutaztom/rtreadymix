@@ -4,7 +4,9 @@
 <body>
 {#rtbody}
 <div class="row">
-    <div class="col-4">
+    <div class="col-lg-4 col-md-4,col-sm-12">
+        <div class="col-12 alert-info" style="display: none" id="rtmessage"></div>
+        <div class="col-12 alert-danger invisible" style="display: none" id="rterror"></div>
         <div class="list-group" id="list-tab" role="tablist">
             <a class="list-group-item list-group-item-action active fa fa-tools" id="list-general" data-toggle="list"
                href="#list-options" role="tab" aria-controls="messages">General</a>
@@ -18,26 +20,29 @@
                href="#list-settings" role="tab" aria-controls="settings">Communication Settings</a>
         </div>
     </div>
-    <div class="col-8">
+    <div class="col-lg-8 col-md-8 col-sm-12">
         <div class="tab-content" id="nav-tabContent">
             <div class="tab-pane fade show " id="list-home" role="tabpanel" aria-labelledby="list-home-list">
                 <h3><i class="fa fa-building">Communication Templates</i></h3>
-                <a href="#" class="fa fa-plus-circle">Add new</a>
+                <a href="#" class="fa fa-plus-circle" onclick="createTemplate('email');">Add new</a>
                 <p>
-                    <button type="button" class="close" onclick="closeTemplate();" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                    <button type="button" class="close" onclick="closeTemplate();" aria-label="Close"
+                            id="closetemplate">
+                        <span aria-hidden="true" hidden>&times;</span>
                     </button>
                 </p>
 
                 <div class="collapse" id="collapseExample">
                     <div class="card card-body" style="height: 250px;">
-                        <textarea rows="15" id="rtemplate" class="form-control text-primary"
+                        <label for="rtemplate" class="font-weight-bold" id="rtitle">Contet</label>
+                        <textarea rows="15" id="rtemplate" name="rtemplate" class="form-control text-primary"
                                   placeholder="Empty Template"></textarea>
                         <div class="form-row">
                             <button id="cmdSaveTemplate" class="btn btn-outline-warning col-lg-2 col-sm-12 fa fa-save"
                                     onclick="saveTemplate();" type="button">Save
                             </button>
-                            <button id="cmdCanceTemplate" class="btn btn-outline-danger col-lg-2 col-sm-12 fa fa-external-link-alt"
+                            <button id="cmdCanceTemplate"
+                                    class="btn btn-outline-danger col-lg-2 col-sm-12 fa fa-external-link-alt"
                                     type="button" onclick="closeTemplate();">Cancel
                             </button>
                         </div>
@@ -46,27 +51,26 @@
                 <h3 class="text-capitalize">Email Templates</h3>
                 {#for m in mail_templates}
                 <div class="clearfix border">
-                    <input name="itemid" value="_{m}" hidden>
-                    <output class="float-left">{m}</output>
+                    <output class="float-left" name="emailtname" id="emailtname">{m}</output>
                     <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
-                            style="margin-right:5px;" onclick="alert('Not allowed at this stage');" disabled>Remove
+                            style="margin-right:5px;" onclick="deleteTemplate('{m}','email');">Remove
                     </button>
                     <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
-                            style="margin-right:5px;" onclick="showTemplate('{m}');">Edit
+                            style="margin-right:5px;" onclick="showTemplate('{m}','email');">Edit
                     </button>
                 </div>
                 {/for}
                 <h3 class="text-capitalize">SMS Templates</h3>
-
+                <h3><i class="fa fa-building">Communication Templates</i></h3>
+                <a href="#" class="fa fa-plus-circle" onclick="createTemplate('sms')">Add new</a>
                 {#for sms in sms_templates}
                 <div class="clearfix border">
-                    <input name="itemid" value="_{sms}" hidden>
-                    <output class="float-left">{sms}</output>
+                    <output class="float-left" id="smstname" name="smstname">{sms}</output>
                     <button type="button" class="btn btn-outline-danger float-right fa fa-trash"
-                            style="margin-right:5px;" onclick="alert('Not allowed at this stage');" disabled>Remove
+                            style="margin-right:5px;" onclick="deleteTemplate('{sms}','sms');">Remove
                     </button>
                     <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
-                            style="margin-right:5px;" onclick="showTemplate('{sms}');">Edit
+                            style="margin-right:5px;" onclick="showTemplate('{sms}','sms');">Edit
                     </button>
                 </div>
                 {/for}
@@ -74,6 +78,41 @@
             <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-templates">
                 <h3><i class="fa fa-dollar-sign">Currency Settings</i></h3>
                 <a href="#" class="fa fa-plus-circle">Add new</a>
+                <div class="col-12 ">
+                    <div class="collapse" id="curcol">
+                        <div class="card card-body">
+                            <form>
+                                <div class="form-row">
+                                    <label>Name</label>
+                                    <input name="curname" value="{activecur.name}" class="form-control">
+                                </div>
+                                <div class="form-row">
+                                    <label>Arabic</label>
+                                    <input name="arcurname" value="{activecur.aritem}" class="form-control">
+                                </div>
+                                <div class="form-row">
+                                    <label>Symbol</label>
+                                    <input name="cursymbol" class="form-control" value="{activecur.symbol}">
+                                </div>
+                                <div class="form-row">
+                                    <label>Fraction</label>
+                                    <input name="curfraction" class="form-control" {activecur.fraction}>
+                                </div>
+                                <div class="form-row">
+                                    <label>ISO Code</label>
+                                    <input name="curiso" class="form-control" value="{activecur.syscur}">
+                                </div>
+                                <div class="form-row">
+                                    <button class="btn btn-secondary form-control col-2 fa fa-save" type="button">Save
+                                    </button>
+                                    <button class="btn btn-secondary form-control col-2 fa fa-save" type="button"
+                                            onclick="$('.collapse').collapse('hide');">Close
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
                 <ul class="list-group">
                     {#for curr in currlist}
                     <li class="list-group-item">
@@ -82,7 +121,7 @@
                                 style="margin-right:5px;">Remove
                         </button>
                         <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
-                                style="margin-right:5px;">Edit
+                                style="margin-right:5px;" onclick="showCurrency({curr.id});">Edit
                         </button>
                         {/for}
                 </ul>
@@ -118,7 +157,8 @@
                 <input id="txt{p}" name="{p}" value="{props.get(p)}" class="form-control">
                 {/if}
                 {/for}
-                <button class="btn btn-primary col-2 fa fa-save" type="submit" name="command" value="cmdSaveProp">Save
+                <button class="btn btn-primary col-2 fa fa-save" type="button" name="command" value="cmdSaveProp"
+                        onclick="saveProps();">Save
                 </button>
             </div>
         </div>
@@ -127,18 +167,28 @@
 
 {#include inputbox/}
 <script type="text/javascript">
-    function showTemplate(fname) {
-        let fcontent = "";
+    var tmpfile;
+    var commmedia;
+
+    function showTemplate(fname, commtype) {
+        tmpfile = fname;
+        commmedia = commtype;
         $.ajax({
-            url: '/rtmix/getTemplate/' + fname,
+            url: '/rtmix/getTemplate/' + commmedia + "/" + tmpfile,
             type: 'GET',
+            headers: {'Contet-Type': 'text/plain'},
             data: {},
             success: function (r) {
                 // console.log("recieved from server:" + r);
-                $("#rtemplate").text(r);
+                $("#rtemplate").val(r);
+                $("#rtemplate").load
+
+                $("#rtitle").text(tmpfile);
                 $('.collapse').collapse('show');
                 $('.collapse').focus;
                 window.location.hash = '#rtemplate';
+                document.getElementById("closetemplate").style.display = "block";
+                console.log(r);
             },
             error: function (st, err) {
                 console.log("got error ".concat(err));
@@ -150,6 +200,116 @@
         $(".collapse").collapse('hide');
         $("#rtemplate").text("");
         document.getElementById("closetemplate").style.display = "none";
+    }
+
+    function saveTemplate() {
+        let fcontent = $("#rtemplate").val();
+        console.log(fcontent);
+        $.ajax({
+            url: '/rtmix/saveTemplate/' + commmedia + "/" + tmpfile,
+            type: 'POST',
+            data: fcontent,
+            headers: {'Content-Type': 'text/plain'},
+            success: function (r) {
+                // console.log("recieved from server:" + r);
+                $("#rtmessage").text(r);
+                $("#rtmessage").css('display:block;')
+                closeTemplate();
+                ///it may be wise to reload page
+                location.reload();
+            },
+            error: function (st, err) {
+                console.log("got error ".concat(err));
+                $("#rterror").text(err);
+                $("#rterror").css('display:block;')
+
+            }
+        });
+    }
+
+    function deleteTemplate(fname, mtype) {
+        let conf = confirm("Are you sure you want to delete this template?");
+        if (!conf)
+            return;
+        tmpfile = fname;
+        commmedia = mtype;
+        $.ajax({
+            url: '/rtmix/deleteTemplate/' + commmedia + "/" + tmpfile,
+            type: 'DELETE',
+            data: {},
+            headers: {'Content-Type': 'text/plain'},
+            success: function (r) {
+                // console.log("recieved from server:" + r);
+                $("#rtmessage").text(r);
+                $('.collapse').collapse('hide');
+                $("#rtmessage").css('display:block;')
+                location.reload();
+            },
+            error: function (st, err) {
+                console.log("got error ".concat(err));
+                $("#rterror").text(err);
+                $("#rterror").css('display:block;')
+            }
+        });
+    }
+
+    function showCurrency(dat) {
+        console.log(dat)
+        //populate currency
+        $('.collapse').collapse('show');
+        // $('curname').val(dat('item'));
+    }
+
+    function createTemplate(comtype) {
+        let tname = prompt("Enter template name (Must be unique)");
+        let exist = false;
+
+        //make sure it doesn't exist
+        exist = checkTemplateExist(tname, comtype);
+        commmedia = comtype;
+        if (exist) {
+            alert("File already exists");
+        } else {
+            tmpfile = tname;
+            $(".collapse").collapse('show');
+            $('.collapse').focus;
+            $("#rtemplate").val(null);
+            $("#rtitle").val('New Template: ' + tname);
+            document.getElementById("closetemplate").style.display = "block";
+        }
+    }
+
+    function checkTemplateExist(tfile, comtype) {
+        let elist = document.getElementsByName(comtype === 'email' ? 'emailtname' : 'smstname');
+        let found = false;
+        elist.forEach(
+            function (currentValue, currentIndex, listObj) {
+                if (currentValue.innerText === tfile) {
+                    found = true;
+                    return true;
+                }
+            },
+            // 'myThisArg'
+        );
+
+        console.log("CHecking if item found in list: " + found);
+        return found;
+    }
+
+    function saveProps() {
+        $.ajax(
+            {
+                url: '/rtmix/saveProps',
+                data: "formdata",
+                headers: {'Content-Type:application/json'},
+                success: function (result) {
+                    console.log(result);
+                },
+                error: function (e, s, err) {
+                    console.log(err);
+                }
+            }
+        )
     }
 </script>
 {/}
