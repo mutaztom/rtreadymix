@@ -2,8 +2,10 @@ package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.reaymixcommon.News;
+import com.rationalteam.rterp.erpcore.CProduct;
 import com.rationalteam.rterp.erpcore.CService;
 import com.rationalteam.rterp.erpcore.MezoDB;
+import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.data.Tblnews;
 import com.rationalteam.rtreadymix.data.Tblorder;
 import com.rationalteam.rtreadymix.purchase.Supplier;
@@ -34,6 +36,19 @@ public class OrderStat {
         CService s = new CService();
         serviceList = s.listAll();
         return serviceList;
+    }
+
+    @Transactional
+    public List<CProduct> getProducts() {
+        List<CProduct> prodlist = null;
+        try {
+            prodlist = new ArrayList();
+            CProduct s = new CProduct();
+            prodlist = s.listAll();
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
+        return prodlist;
     }
 
     @Transactional
@@ -77,7 +92,7 @@ public class OrderStat {
             for (Object o :
                     open) {
                 Object[] rec = (Object[]) o;
-                stat.put(rec[0].toString(),Integer.valueOf(rec[1].toString()));
+                stat.put(rec[0].toString(), Integer.valueOf(rec[1].toString()));
             }
         return stat;
     }

@@ -2,6 +2,7 @@ package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.*;
 import com.rationalteam.rterp.erpcore.*;
+import com.rationalteam.rterp.erpcore.data.TblCurrency;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
 import com.rationalteam.rtreadymix.data.Tblorder;
@@ -34,6 +35,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -522,21 +525,87 @@ public class RationalServices {
         }
     }
 
+    @Path("/deleteCurrency/{currid}")
+    @DELETE
+    @Produces(MediaType.TEXT_PLAIN)
+    @RolesAllowed("admin")
+    @Transactional
+    public Response deleteCurrency(@PathParam("currid") Integer currid) {
+        try {
+            //check if is main currency
+            Integer main = MezoDB.getInteger("select ismain from tblcurrency where id=" + currid);
+            if (main > 0)
+                return Response.ok("error:Can't delete system's main currency.").build();
+
+            boolean r = MezoDB.doSqlIn("delete from tblcurrency where id=" + currid);
+            return Response.ok(r ? "OK" : "error:could not delete currency").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "err:" + e.getMessage()).build();
+        }
+    }
+
     @Path("/saveTemplate/{commmedia}/{fpath}/")
     @POST
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
     @RolesAllowed("admin")
-    public Response saveTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia,String body) {
+    public Response saveTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia, String body) {
         try {
             enCommMedia cm = com.rationalteam.rtreadymix.enCommMedia.valueOf(cmedia.toUpperCase());
             String subfolder = cm.name().toLowerCase();
             java.nio.file.Path path = Paths.get(SystemConfig.TEMPLATE, subfolder, fpath);
-            Files.writeString(path, body, path.toFile().exists()?StandardOpenOption.WRITE:StandardOpenOption.CREATE_NEW);
+            Files.writeString(path, body, path.toFile().exists() ? StandardOpenOption.WRITE : StandardOpenOption.CREATE_NEW);
             return Response.ok("OK").build();
         } catch (Exception e) {
             Utility.ShowError(e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @Path("/saveProp")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
+    public Response saveProp(Map<String, String> body) {
+        try {
+            if (body == null || body.isEmpty())
+                return Response.ok("Properties cant be null or empty").build();
+            Properties prop = new Properties();
+            Properties p = new Properties();
+            File f = new File(SystemConfig.PROPFILE);
+            FileOutputStream fs = new FileOutputStream(f);
+            body.forEach(p::putIfAbsent);
+            p.store(fs, "Updated By RedyMix on: " + LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
+            fs.close();
+            return Response.ok("OK").build();
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @Path("/saveCurrency")
+    @POST
+    @Produces(MediaType.TEXT_PLAIN)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
+    @Transactional
+    public Response saveCurrency(CCurrency body) {
+        try {
+            if (body == null || body.isEmpty())
+                return Response.ok("Currency cant be null or empty").build();
+            System.out.println(body);
+            TblCurrency tcur = (TblCurrency) body.getData();
+            if (tcur.getId() == null || tcur.getId() < 0) {
+                tcur.setId(null);
+                body.getFacade().create(tcur);
+            } else
+                body.getFacade().edit(tcur);
+            return Response.ok("OK").build();
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
 }

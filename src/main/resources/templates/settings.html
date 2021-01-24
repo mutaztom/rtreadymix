@@ -17,7 +17,7 @@
                data-toggle="list"
                href="#list-profile" role="tab" aria-controls="profile">Currency Settings</a>
             <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-list" data-toggle="list"
-               href="#list-settings" role="tab" aria-controls="settings">Communication Settings</a>
+               href="#list-settings" role="tab" aria-controls="settings">System Properties (Advanced)</a>
         </div>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-12">
@@ -77,35 +77,36 @@
             </div>
             <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-templates">
                 <h3><i class="fa fa-dollar-sign">Currency Settings</i></h3>
-                <a href="#" class="fa fa-plus-circle">Add new</a>
+                <a href="#" class="fa fa-plus-circle" onclick="createCurrency();">Add new</a>
                 <div class="col-12 ">
                     <div class="collapse" id="curcol">
                         <div class="card card-body">
                             <form>
                                 <div class="form-row">
                                     <label>Name</label>
-                                    <input name="curname" value="{activecur.name}" class="form-control">
+                                    <input id="act-curitem" name="act-curitem" class="form-control">
                                 </div>
                                 <div class="form-row">
                                     <label>Arabic</label>
-                                    <input name="arcurname" value="{activecur.aritem}" class="form-control">
+                                    <input id="act-curname" name="act-curname" class="form-control">
                                 </div>
                                 <div class="form-row">
                                     <label>Symbol</label>
-                                    <input name="cursymbol" class="form-control" value="{activecur.symbol}">
+                                    <input id="act-cursymbol" name="act-cursymbol" class="form-control">
                                 </div>
                                 <div class="form-row">
                                     <label>Fraction</label>
-                                    <input name="curfraction" class="form-control" {activecur.fraction}>
+                                    <input id="act-curfraction" name="act-curfraction" class="form-control">
                                 </div>
                                 <div class="form-row">
                                     <label>ISO Code</label>
-                                    <input name="curiso" class="form-control" value="{activecur.syscur}">
+                                    <input id="act-curiso" name="curiso" class="form-control">
                                 </div>
                                 <div class="form-row">
-                                    <button class="btn btn-secondary form-control col-2 fa fa-save" type="button">Save
+                                    <button class="btn btn-primary form-control col-2 fa fa-save" type="button"
+                                            onclick="saveCurrency(4)">Save
                                     </button>
-                                    <button class="btn btn-secondary form-control col-2 fa fa-save" type="button"
+                                    <button class="btn btn-primary form-control col-2 fa fa-save" type="button"
                                             onclick="$('.collapse').collapse('hide');">Close
                                     </button>
                                 </div>
@@ -115,10 +116,20 @@
                 </div>
                 <ul class="list-group">
                     {#for curr in currlist}
-                    <li class="list-group-item">
-                        {curr.item} {curr.symbol}
+                    <li class="list-group-item" id="row_{curr.id}">
+                        <output class="border border-light" name="curid" id="curid_{curr.id}">{curr.id}</output>
+                        <output class="border border-light" name="curitem" id="curitem_{curr.id}">{curr.item}</output>
+                        <output class="border border-light" name="curname" id="curname_{curr.id}">{curr.name}</output>
+                        <output class="border border-light" name="cursymbol" id="cursymbol_{curr.id}">{curr.symbol}
+                        </output>
+                        <output class="border border-light" name="curfraction" id="curfraction_{curr.id}">
+                            {curr.fraction}
+                        </output>
+                        <output class="border border-light" name="curfraction" hidden id="curiso_{curr.id}">
+                            {curr.shortName}
+                        </output>
                         <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
-                                style="margin-right:5px;">Remove
+                                style="margin-right:5px;" onclick="deleteCurrency({curr.id})">Remove
                         </button>
                         <button type="button" class="btn btn-outline-primary float-right fa fa-pencil-alt"
                                 style="margin-right:5px;" onclick="showCurrency({curr.id});">Edit
@@ -148,13 +159,13 @@
                 {/for}
             </div>
             <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
-                <p>Communication Settings</p>
+                <h5>System Properties (Advanced)</h5>
                 {#for p in props.keys}
-                <label for="txt{p}">{p}</label>
+                <output name="propname" class="font-weight-bold">{p}</output>
                 {#if str:isPassword(p)}
-                <input id="txt{p}" type="password" name="{p}" value="{props.get(p)}" class="form-control">
+                <input id="{p}" type="password" name="propbal" value="{props.get(p)}" class="form-control">
                 {#else}
-                <input id="txt{p}" name="{p}" value="{props.get(p)}" class="form-control">
+                <input id="{p}" name="propval" value="{props.get(p)}" class="form-control">
                 {/if}
                 {/for}
                 <button class="btn btn-primary col-2 fa fa-save" type="button" name="command" value="cmdSaveProp"
@@ -169,6 +180,7 @@
 <script type="text/javascript">
     var tmpfile;
     var commmedia;
+    var actcurid;
 
     function showTemplate(fname, commtype) {
         tmpfile = fname;
@@ -253,11 +265,70 @@
         });
     }
 
-    function showCurrency(dat) {
-        console.log(dat)
-        //populate currency
+    function showCurrency(curid) {
+        actcurid = curid;
+        $("#act-curitem").val($("#curitem_" + curid).val());
+        $("#act-curname").val($("#curname_" + curid).val());
+        $("#act-cursymbol").val($("#cursymbol_" + curid).val());
+        $("#act-curfraction").val($("#curfraction_" + curid).val());
+        $("#act-curiso").val($("#curiso_" + curid).val());
         $('.collapse').collapse('show');
-        // $('curname').val(dat('item'));
+        $('.collapse').focus();
+    }
+
+    function saveCurrency() {
+        let currency = {};
+        currency['id'] = actcurid;
+        currency['item'] = $("#act-curitem").val().trim();
+        currency['name'] = $("#act-curname").val().trim();
+        currency['symbol'] = $("#act-cursymbol").val().trim();
+        currency['fraction'] = $("#act-curfraction").val().trim();
+        currency['shortName'] = $("#act-curiso").val().trim();
+        console.log(currency)
+        $.ajax({
+            type: 'POST',
+            url: '/rtmix/saveCurrency',
+            data: JSON.stringify(currency),
+            headers: {'Content-Type': 'application/json'},
+            success: function (result) {
+                console.log(result);
+                if (result === 'OK') {
+                    $('.collapse').collapse('hide');
+                    location.reload();
+                }
+            },
+            error: function (e, st, error) {
+                console.log(error);
+                $("#rterror").text(error);
+            }
+        })
+
+    }
+
+    function deleteCurrency(curid) {
+        let conf = confirm("Are you sure you want to delete this currency?");
+        if (!conf)
+            return;
+        $.ajax({
+            url: '/rtmix/deleteCurrency/' + curid,
+            type: 'DELETE',
+            data: {},
+            headers: {'Content-Type': 'text/plain'},
+            success: function (r) {
+                console.log("recieved from server:" + r);
+                if (r === 'OK') {
+                    document.getElementById("rtmessage").innerText=r;
+                    $('.collapse').collapse('hide');
+                    document.getElementById("rtmessage").style.display='block';
+                    location.reload();
+                }
+            },
+            error: function (st, en, err) {
+                console.log("got error ".concat(err));
+                $("#rterror").text(err);
+                document.getElementById("rterror").style.display='block';
+            }
+        });
     }
 
     function createTemplate(comtype) {
@@ -279,6 +350,16 @@
         }
     }
 
+    function createCurrency() {
+        actcurid = -1;
+        $("#act-curitem").val("");
+        $("#act-curname").val("");
+        $("#act-cursymbol").val("");
+        $("#act-curfraction").val("");
+        $("#act-curiso").val("");
+        $(".collapse").collapse('show');
+    }
+
     function checkTemplateExist(tfile, comtype) {
         let elist = document.getElementsByName(comtype === 'email' ? 'emailtname' : 'smstname');
         let found = false;
@@ -291,19 +372,28 @@
             },
             // 'myThisArg'
         );
-
-        console.log("CHecking if item found in list: " + found);
         return found;
     }
 
     function saveProps() {
+        let plist = document.getElementsByName('propval');
+        let pdata = {'p': 'val'};
+        plist.forEach(
+            function (curval, curindex, nodeList) {
+                pdata[nodeList.item(curindex).id] = curval.value;
+                // console.log(nodeList.item(curindex).id + " : " + curval.value);
+            },);
         $.ajax(
             {
-                url: '/rtmix/saveProps',
-                data: "formdata",
-                headers: {'Content-Type:application/json'},
+                url: '/rtmix/saveProp',
+                data: JSON.stringify(pdata),
+                headers: {'Content-Type': 'application/json'},
+                type: 'POST',
                 success: function (result) {
                     console.log(result);
+                    if (result === 'OK') {
+                        alert("Preoperties were saved successfully");
+                    }
                 },
                 error: function (e, s, err) {
                     console.log(err);

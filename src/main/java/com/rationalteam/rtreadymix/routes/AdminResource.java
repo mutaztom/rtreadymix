@@ -2,6 +2,7 @@ package com.rationalteam.rtreadymix.routes;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.*;
+import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.*;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
@@ -18,6 +19,7 @@ import javax.ws.rs.core.Response;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -85,17 +87,25 @@ public class AdminResource {
                 .data("title", "Browse Orders")
                 .data("rtlist", col)
                 .data("clientid", "Admin")
-                .data("clients", cman.getCLients()).data("orderstatus",values);
+                .data("clients", cman.getCLients()).data("orderstatus", values);
     }
 
     @GET
     @Path("/dashboard")
+    @Transactional
     public TemplateInstance dashboard() {
-        return adminspace.data("curruser", "Amdmin")
-                .data("title", "Admin Dashboard")
-                .data("clnt", "Mutaz")
-                .data("orderstat", stat.getOrdersByStatus())
-                .data("clientstat", stat.getClientsByStatus());
+        try {
+            List<CProduct> plist = stat.getProducts();
+            return adminspace.data("curruser", "Amdmin")
+                    .data("title", "Admin Dashboard")
+                    .data("clnt", "Mutaz")
+                    .data("prodlist", plist)
+                    .data("orderstat", stat.getOrdersByStatus())
+                    .data("clientstat", stat.getClientsByStatus());
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+            return adminspace.instance();
+        }
     }
 
     @Path("settings")
@@ -135,11 +145,10 @@ public class AdminResource {
 
         return settingsTemplate.data("title", "System Settings")
                 .data("icon", "settings.png")
-                .data("sms_templates",smstemp )
-                .data("mail_templates",mailtemp )
+                .data("sms_templates", smstemp)
+                .data("mail_templates", mailtemp)
                 .data("props", properties)
                 .data("currlist", rtutil.listCurrency())
-                .data("activecur",rtutil.listCurrency().get(0))
                 .data("options", optionMap);
 
     }
@@ -181,6 +190,7 @@ public class AdminResource {
             return Response.serverError().entity(o).build();
         }
     }
+
     @Path("updateStatus")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -236,6 +246,11 @@ public class AdminResource {
 class SettingExtenstion {
     public static Boolean isPassword(String item) {
         return (item.contains("password") || item.contains("Password"));
+    }
+
+    public static String format(Number n) {
+        NumberFormat nfor=NumberFormat.getNumberInstance(Locale.forLanguageTag("en"));
+        return nfor.format(n);
     }
 
     public static String getItem(Integer itsid, String tbl) {

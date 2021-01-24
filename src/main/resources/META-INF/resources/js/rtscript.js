@@ -12,11 +12,6 @@ function onlogout() {
     }
 }
 
-// $(".rtinput").click(function () {
-//     console.log("showing new popup box:");
-//     var dlg = $('#modalinput').modal({show: false, focus: false});
-//     dlg.modal('show');
-// });
 
 function editOption(oldval, oldarval, optionid) {
     var dlg = $('#modalinput').modal({show: false, focus: false});
