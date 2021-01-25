@@ -153,7 +153,7 @@
             <div class="form-row">
                 <div class="col">
                     <button name="command" value="close" class="btn btn-primary form-control fa fa-backspace"
-                            type="button" onclick="location.assign('/readymix/orders')">Close
+                            type="button" onclick="closeManager();">Close
                     </button>
                 </div>
                 <div class="col">
@@ -221,20 +221,29 @@
     function savePrice(orderid) {
         let newprice = $("#unitprice").val();
 
-            $.ajax({
-                type: "POST",
-                url: "/readymix/savePrice?itemid=" + orderid + "&newprice=" + newprice,
-                data: {},
-                Method: "POST",
-                success: function (data) {
-                    alert("Price was updated successfully, " + data.result)
-                },
-                error: function (data) {
-                    console.log("could not save new price")
-                    alert(data.error);
-                }
-            });
+        $.ajax({
+            type: "POST",
+            url: "/readymix/savePrice?itemid=" + orderid + "&newprice=" + newprice,
+            data: {},
+            Method: "POST",
+            success: function (data) {
+                alert("Price was updated successfully, " + data.result)
+            },
+            error: function (data) {
+                console.log("could not save new price")
+                alert(data.error);
+            }
+        });
 
+    }
+
+    function closeManager() {
+        console.log(location.href);
+        if (window.location.href.endsWith("orderman")) {
+            location.assign("/readymix/orders");
+        }else if(window.location.href.endsWith('manageOrder')){
+            location.assign("/readymix/dashboard");
+        }
     }
 </script>
 {/}

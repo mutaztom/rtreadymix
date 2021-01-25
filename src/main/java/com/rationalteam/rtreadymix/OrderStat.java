@@ -13,10 +13,7 @@ import io.quarkus.qute.TemplateData;
 
 import javax.lang.model.element.NestingKind;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @TemplateData
 public class OrderStat {
@@ -95,5 +92,23 @@ public class OrderStat {
                 stat.put(rec[0].toString(), Integer.valueOf(rec[1].toString()));
             }
         return stat;
+    }
+
+    @Transactional
+    public List<Order> getLatestOrders(Optional<Integer> limit) {
+        List<Order> orderlist = new ArrayList<>();
+        try {
+            List<Tblorder> olist = MezoDB.open("select * from tblorder where status='Created' and datediff(curdate(),ondate)<" +
+                    limit.orElse(3) + " limit 10", Tblorder.class);
+            if (olist != null)
+                olist.forEach(t -> {
+                    Order o = new Order();
+                    o.setData(t);
+                    orderlist.add(o);
+                });
+        } catch (Exception e) {
+            Utility.ShowError(e);
+        }
+        return orderlist;
     }
 }

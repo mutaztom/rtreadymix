@@ -2,18 +2,22 @@ package com.rationalteam.rtreadymix.routes;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.*;
-import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.*;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.jboss.resteasy.annotations.ContentEncoding;
+import org.jboss.resteasy.annotations.Form;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -42,6 +46,9 @@ public class AdminResource {
     Template settingsTemplate;
     @Inject
     ClientManager cman;
+    @Context
+    javax.ws.rs.core.HttpHeaders request;
+
     OrderStat stat = new OrderStat();
     List<String> mailtemp;
     List<String> smstemp;
@@ -53,25 +60,9 @@ public class AdminResource {
     String newcat;
     @FormParam("adminmail")
     String adminmail;
-    @FormParam("smshost")
-    String smshost;
-    @FormParam("smsport")
-    String smsport;
-    @FormParam("smsuser")
-    String smsuser;
-    @FormParam("smspassword")
-    String smspassword;
-    @FormParam("smtphost")
-    String smtphost;
-    @FormParam("mailuser")
-    String mailuser;
-    @FormParam("smtpport")
-    String smtpport;
-    @FormParam("smtppassword")
-    String smtppassword;
-    @FormParam("mailpassword")
-    String mailpassword;
-
+    @FormParam("adminmobile")
+    String adminmobile;
+    Integer dayslimit;
     //properties
     Properties properties;
 
@@ -90,22 +81,47 @@ public class AdminResource {
                 .data("clients", cman.getCLients()).data("orderstatus", values);
     }
 
+
     @GET
     @Path("/dashboard")
+    @Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
     @Transactional
     public TemplateInstance dashboard() {
         try {
             List<CProduct> plist = stat.getProducts();
-            return adminspace.data("curruser", "Amdmin")
+            dayslimit = dayslimit == null ? 5 : dayslimit;
+            List<Order> newarrivals = stat.getLatestOrders(Optional.of(dayslimit));
+            TemplateInstance t = adminspace.data("curruser", "Amdmin")
                     .data("title", "Admin Dashboard")
-                    .data("clnt", "Mutaz")
+                    .data("dayslimit", dayslimit)
                     .data("prodlist", plist)
+                    .data("newarrivals", newarrivals)
                     .data("orderstat", stat.getOrdersByStatus())
                     .data("clientstat", stat.getClientsByStatus());
+            if (command == "vieworder") {
+                return orderTemplate.data("order", plist.get(itemid));
+            }
+            return t;
         } catch (Exception exp) {
             Utility.ShowError(exp);
             return adminspace.instance();
         }
+    }
+
+    @Path("/manageOrder")
+    @POST
+    public TemplateInstance manageOrder(@FormParam("orderid") Integer orderid) {
+        itemid = orderid;
+        command = "view";
+        return viewOrder();
+    }
+
+    @Path("/dashboard/setdays/{days}")
+    @GET
+    public TemplateInstance setDays(@PathParam("days") Integer days) {
+        dayslimit = days;
+        TemplateInstance t = dashboard();
+        return t.data("dayslimit", days).data("newarrivals", stat.getLatestOrders(Optional.of(days)));
     }
 
     @Path("settings")
@@ -225,6 +241,7 @@ public class AdminResource {
         if (command == null || command.isBlank())
             return viewTemplate.data("error", "Command cannot be blank");
         try {
+            System.out.println("received command: " + command+ "with itemid= "+itemid);
             if (command.equals("view")) {
                 Order order = new Order();
                 order.find(itemid);
@@ -249,7 +266,7 @@ class SettingExtenstion {
     }
 
     public static String format(Number n) {
-        NumberFormat nfor=NumberFormat.getNumberInstance(Locale.forLanguageTag("en"));
+        NumberFormat nfor = NumberFormat.getNumberInstance(Locale.forLanguageTag("en"));
         return nfor.format(n);
     }
 

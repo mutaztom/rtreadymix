@@ -4,40 +4,40 @@
 <body>
 {#rtbody}
 <div class="row justify-content-center">
-    <div class="card-columns">
-        <div class="col-12">
-            <div class="card shadow p-1 mb-3 bg-white rounded">
-                <div class="card-body">
-                    <h5 class="card-title bg-dark text-white">Orders</h5>
-                    {#if orderstat}
-                    {#for key in orderstat.keySet }
-                    <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
-                            value="{key}-{clnt}">
-                        {key} <span class="badge badge-light" style="color:red">{orderstat.get(key)}</span>
-                    </button>
-                    {/for}
-                    {/if}
-                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                </div>
+    <div class="card-deck">
+        <div class="card shadow p-1 mb-3 bg-white rounded">
+            <div class="card-header">
+                New arrivals
             </div>
-            <div class="card shadow p-1 mb-3 bg-white rounded">
-                <div class="card-body">
-                    <h5 class="card-title bg-dark text-white">Client Registration</h5>
-                    {#if orderstat}
-                    {#for key in clientstat.keySet }
-                    <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
-                            value="{key}-{clnt}">
-                        {key} <span class="badge badge-light"
-                                    style="color:red">Before {clientstat.get(key)} days</span>
-                    </button>
-                    {/for}
-                    {/if}
-                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+            <div class="card-body" id="newarrivals">
+                <div class="form-inline">
+                    <label>Search period</label>
+                    <input class="form-control" name="dayslimit" value="{dayslimit}" id="dayslimit">
+                    (days)
+                    <button class="btn btn-link fa fa-undo-alt" onclick="updateDayslimit();"
+                            type="button">Refresh</button>
                 </div>
-            </div>
+                <form action="/readymix/manageOrder" method="post">
+                    {#if newarrivals}
+                    {#for nord in newarrivals}
 
-            <div class="card shadow p-1 mb-3 bg-white rounded">
-                <div class="card-body">
+                    <div class="clearfix" title="{nord.asRecord}">
+                        <input name="orderid" value="{nord.id}" hidden>
+                        <button class="btn btn-link" type="submit" name="command" value="view">
+                            <span style="font-size: small;">{nord.id}| {nord.item} |{nord.dateNeeded.format('dd-MM-yyyy')}</span>
+                        </button>
+                    </div>
+                    {/for}
+                    {#else}
+                    <p><span style="color:red;font-weight: bold;" class="fa fa-exclamation">No new orders for the last {dayslimit} days.</span>
+                    </p>
+                    {/if}
+                    <a href="/readymix/orders" class="btn btn-primary">See more..</a>
+                </form>
+            </div>
+        </div>
+        <div class="card shadow p-1 mb-3 bg-white rounded" style="width:350px;">
+            <div class="card-body">
                 <h5 class="bg-dark text-white">Product Prices (SDG)</h5>
                 <form action="#" name="/readymix/dashboard">
                     {#if prodlist}
@@ -47,13 +47,17 @@
                             <label style="font-weight: bold;color:darkgreen;">{item.item}</label>
                         </div>
                         <div class="col-6">
-                            <output id="t_{item.id}" name="lastprice" style="font-size: large;font-weight: bold">{str:format(item.unitPrice)}
+                            <output id="t_{item.id}" name="lastprice" style="font-size: large;font-weight: bold">
+                                {str:format(item.unitPrice)}
                             </output>
-                            <input name="product" id="p_{item.id}" value="{item.unitPrice}" class="form-control" style="display: none;">
+                            <input name="product" id="p_{item.id}" value="{item.unitPrice}" class="form-control"
+                                   style="display: none;">
                         </div>
                         <div class="col-3">
-                            <a class="fa fa-pencil-alt" id="edit_{item.id}" href="javascript:setPrice({item.id})"></a>
-                            <a class="fa fa-save" id="save_{item.id}" href="javascript:savePrice({item.id})" style="display: none;"></a>
+                            <a class="fa fa-pencil-alt" id="edit_{item.id}"
+                               href="javascript:setPrice({item.id})"></a>
+                            <a class="fa fa-save" id="save_{item.id}" href="javascript:savePrice({item.id})"
+                               style="display: none;"></a>
                         </div>
                     </div>
                     {/for}
@@ -61,47 +65,114 @@
                     <output id="lastupdated" class="text-secondary"></output>
                 </form>
             </div>
+        </div>
+        <div class="card-columns">
+            <div class="col-12">
+                <div class="card shadow p-1 mb-3 bg-white rounded">
+                    <div class="card-body">
+                        <h5 class="card-title bg-dark text-white">Orders</h5>
+                        {#if orderstat}
+                        {#for key in orderstat.keySet }
+                        <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
+                                value="{key}-{clnt}">
+                            {key} <span class="badge badge-light" style="color:red">{orderstat.get(key)}</span>
+                        </button>
+                        {/for}
+                        {/if}
+                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                    </div>
+                </div>
+                <div class="card shadow p-1 mb-3 bg-white rounded">
+                    <div class="card-body">
+                        <h5 class="card-title bg-dark text-white">Client Registration</h5>
+                        {#if orderstat}
+                        {#for key in clientstat.keySet }
+                        <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
+                                value="{key}-{clnt}">
+                            {key} <span class="badge badge-light"
+                                        style="color:red">Before {clientstat.get(key)} days</span>
+                        </button>
+                        {/for}
+                        {/if}
+                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-</div>
+
 
 <script type="text/javascript">
     function setPrice(pid) {
-        document.getElementById("p_"+pid).style.display='block';
-        document.getElementById("t_"+pid).style.display='none';
-        document.getElementById("edit_"+pid).style.display='none';
-        document.getElementById("save_"+pid).style.display='block';
-        document.getElementById("p_"+pid).focus();
+        document.getElementById("p_" + pid).style.display = 'block';
+        document.getElementById("t_" + pid).style.display = 'none';
+        document.getElementById("edit_" + pid).style.display = 'none';
+        document.getElementById("save_" + pid).style.display = 'block';
+        document.getElementById("p_" + pid).focus();
     }
-    function savePrice(pid) {
 
-        let newprice = $("#p_"+pid).val();
-        console.log(newprice);
+    function savePrice(pid) {
+        var oldVar = $("#t_" + pid).val();
+        let newprice = $("#p_" + pid).val();
+        if (oldVar === newprice) {
+            //close without need to save and annoy the system
+            document.getElementById("p_" + pid).style.display = 'none';
+            document.getElementById("t_" + pid).style.display = 'block';
+            document.getElementById("edit_" + pid).style.display = 'block';
+            document.getElementById("save_" + pid).style.display = 'none';
+            return;
+        }
         $.ajax({
             type: "POST",
             url: "/readymix/updateProdPrice?prodid=" + pid + "&newprice=" + newprice,
-            headers:{'Content-Type':'text/plain'},
+            headers: {'Content-Type': 'text/plain'},
             success: function (data) {
                 console.log("Price was updated successfully, " + data)
-                if(data.startsWith('OK')){
-                    $("#t_"+pid).val(newprice);
-                    $("#lastupdated").val("last updated on"+data.replace('OK',''));
-                    document.getElementById("p_"+pid).style.display='none';
-                    document.getElementById("t_"+pid).style.display='block';
-                    document.getElementById("edit_"+pid).style.display='block';
-                    document.getElementById("save_"+pid).style.display='none';
+                if (data.startsWith('OK')) {
+                    $("#t_" + pid).val(newprice);
+                    $("#lastupdated").val("last updated on" + data.replace('OK', ''));
+                    document.getElementById("p_" + pid).style.display = 'none';
+                    document.getElementById("t_" + pid).style.display = 'block';
+                    document.getElementById("edit_" + pid).style.display = 'block';
+                    document.getElementById("save_" + pid).style.display = 'none';
                 }
             },
-            error: function (d,st,err) {
-                console.log("could not save new price:"+err);
+            error: function (d, st, err) {
+                console.log("could not save new price:" + err);
                 alert(err);
             }
         });
-
     }
 
+    function updateDayslimit() {
+        let dlimit = $("#dayslimit").val();
+        $.ajax({
+            url: '/readymix/dashboard/setdays/' + dlimit,
+            type: 'get',
+            data: "",
+            success: function (r) {
+                $('#newarrivals').load(document.URL + ' #newarrivals');
+            },
+            error: function (d, s, err) {
+                console.log(err);
+            }
+        })
+    }
+
+    function openOrder(itemid) {
+        $.ajax({
+            url: '/readymix/dashboard',
+            data: ["itemid=" + itemid],
+            method: 'get',
+            success: function (r) {
+                console.log(r)
+            },
+            error: function (d, s, err) {
+                console.log(err);
+            }
+        });
+    }
 </script>
 {/}
 </body>
