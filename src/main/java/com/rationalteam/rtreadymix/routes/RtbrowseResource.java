@@ -6,7 +6,6 @@ import com.rationalteam.rtreadymix.purchase.Supplier;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import org.hibernate.internal.util.io.CharSequenceReader;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -21,11 +20,14 @@ public class RtbrowseResource {
     Template template;
     @Inject
     @ResourcePath("rtviewer")
-    Template clientTemplate;
+    Template browseTemplate;
     @Inject
     ClientManager cman;
     @Inject
     SupplierResource srec;
+    @Inject
+    @ResourcePath("client")
+    Template ctemp;
     @Inject
     ServiceResource servtemp;
     @Inject
@@ -54,7 +56,6 @@ public class RtbrowseResource {
         tmp.data("title", rtype + " Browser ")
                 .data("icon", iconmap.getOrDefault(rtype, "truck.png"));
     }
-
 
 
     @Path("rtbrowse")
@@ -153,12 +154,12 @@ public class RtbrowseResource {
     @Produces(MediaType.APPLICATION_JSON)
     @POST
     public TemplateInstance handleView() {
-        TemplateInstance t = clientTemplate.instance();
+        TemplateInstance t = browseTemplate.instance();
         if (command != null && !command.isBlank()) {
             title = command;
             switch (command) {
                 case "view":
-                    if (rtype == "client") {
+                    if (rtype.equals("client")) {
                         Client c = new Client();
                         c.find(itemid);
                         t = t.data("title", title + " itemid: " + itemid).data("client", c);
@@ -180,7 +181,11 @@ public class RtbrowseResource {
                     if (rtype.equals("supplier")) {
                         t = srec.viewSupplier(itemid);
                     } else if (rtype.equals("client")) {
-                        t = t.data("title", "this shuld direct to supplier");
+                        Client client = new Client();
+                        client.find(itemid);
+                        return ctemp.data("client", client)
+                                .data("title", "Client Profile")
+                                .data("cities",new String[]{"Khartoum","Shandi","PortSudan"});
                     } else if (rtype.equals("service")) {
                         t = servtemp.viewService(itemid);
                     } else if (rtype.equals("product")) {

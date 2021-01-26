@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+{#include base}
+<body>
+{#icon}
+<img src="../images/mobiles.png" alt="client"/>
+{/}
+{#rtbody}
+{#if result}
+<div class="alert alert-danger">{result}</div>
+{/if}
+<div class="row">
+    <div class="col-12">
+        <h1>{client.item}</h1>
+        <h5>{client.mobile}</h5>
+    </div>
+    <div class="col-lg-6 col-sm-12 col-md-6">
+        <ul class="list-group">
+            {#if client}
+            {#for key in client.getAsRecord()}
+            <li class="list-group-item list-group-item-secondary"><span style="font-weight: bold">{key}</span></li>
+            {/for}
+            {/if}
+        </ul>
+
+        <button class="btn btn-primary fa fa-arrow-circle-left form-control-lg form-control-sm" onclick="history.go(-1);">Close
+        </button>
+    </div>
+    <div class="col-lg-6 col-md-6 col-sm-12">
+        <form action="" method="post">
+            <output>client data not found</output>
+            <output>client Index</output>
+            <h2>Send SMS</h2>
+            <label>From SMS Template</label>
+            <select name="template" class="form-control">
+                <option label="Template1" value="1"></option>
+                <option label="Template2" value="2"></option>
+                <option label="Template3" value="3"></option>
+            </select>
+            <textarea class="form-control" name="sms"></textarea>
+            <button class="btn btn-primary form-control fa fa-mobile">Send</button>
+            <h2>Send Email</h2>
+            <label>From Template</label>
+            <select name="template" class="form-control">
+                <option label="Template1" value="1"></option>
+                <option label="Template2" value="2"></option>
+                <option label="Template3" value="3"></option>
+            </select>
+            <textarea class="form-control" name="email"></textarea>
+            <button class="btn btn-primary form-control fa fa-envelope">Send</button>
+            <h2>Phone Call</h2>
+            <label>Conversation Summery</label>
+            <textarea class="form-control" name="email"></textarea>
+            <button class="btn btn-primary form-control fa fa-phone">Send</button>
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    function onexit() {
+        var def = confirm("Are you sure you want to exit.");
+        if (def)
+            location.assign("/readymix/rtbrowse?type=client");
+    }
+
+    function addContact() {
+        var cont = $('#contacts').clone()
+        var index = $('#totalContacts').val()
+        cont.html(newTable.html().replace(/__id/g, index));
+        cont.insertBefore($('#contacts'))
+        $('#totalContacts').val(
+            parseInt($('#totalContacts').val()) + 1
+        )
+        cont.slideDown();
+        cont.reload();
+    }
+</script>
+{/}
+</body>
+{/}
+</html>

@@ -4,16 +4,19 @@ import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.ClientManager;
 import com.rationalteam.rtreadymix.SystemConfig;
+import io.quarkus.qute.TemplateInstance;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.undertow.Handlers;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -37,15 +40,10 @@ public class ReadymixRoutes {
     @Inject
     ClientManager cman;
 
-    // neither path nor regex is set - match a path derived from the method name
-    @Route(methods = HttpMethod.GET)
-    void hello(RoutingContext rc) {
-        rc.response().end("hello");
-    }
+    @Route(path = "/")
+    void root(RoutingContext rc) {
+        rc.reroute("/readymix/dashboard");
 
-    @Route(path = "/world")
-    String helloWorld() {
-        return "Hello world!";
     }
 
     @Route(path = "/readymix/removeOption", methods = HttpMethod.POST)
@@ -125,13 +123,14 @@ public class ReadymixRoutes {
     public Uni<String> updateProdPrice(RoutingExchange cont) {
         try {
             String ondate = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
-            boolean r = MezoDB.doSqlIn("update tblproduct set datasheet='"+ondate+"', unitprice="
+            boolean r = MezoDB.doSqlIn("update tblproduct set datasheet='" + ondate + "', unitprice="
                     + cont.getParam("newprice").get() + " where id="
                     + cont.getParam("prodid").get());
-            return Uni.createFrom().item(r ? "OK : "+ondate : "error:Could not update price");
+            return Uni.createFrom().item(r ? "OK : " + ondate : "error:Could not update price");
         } catch (Exception exp) {
             Utility.ShowError(exp);
             return Uni.createFrom().item("error:Price updated succesfully");
         }
     }
+
 }
