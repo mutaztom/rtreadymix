@@ -608,4 +608,28 @@ public class RationalServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
+    @Path("/monthlyOrders")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response getMonthlyOrders(@QueryParam("clientid") Integer clientid, @QueryParam("year") Integer year) {
+        Map<Integer, Double> data = new HashMap<>();
+        try {
+            List list = MezoDB.Open("select month(ondate),sum(tblorder.quantity) from tblorder " +
+                    "where clientid=" + clientid + " and year(ondate)="
+                    + year + " group by month(ondate)");
+            if (list != null && !list.isEmpty()) {
+                list.forEach(t -> {
+                    Object[] rec = (Object[]) t;
+                    data.put(Integer.valueOf(rec[0].toString()), Double.valueOf(rec[1].toString()));
+                });
+            }
+            return Response.ok(data).build();
+        } catch (
+                Exception e) {
+            Utility.ShowError(e);
+            Map.Entry<Integer, Double> empty = new AbstractMap.SimpleEntry<Integer, Double>(-1, -1D);
+            return Response.ok("Error:" + e.getMessage()).build();
+        }
+    }
 }

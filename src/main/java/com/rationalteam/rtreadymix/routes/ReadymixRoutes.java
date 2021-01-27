@@ -3,35 +3,25 @@ package com.rationalteam.rtreadymix.routes;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.ClientManager;
-import com.rationalteam.rtreadymix.SystemConfig;
-import io.quarkus.qute.TemplateInstance;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.groups.MultiCollect;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
-import io.undertow.Handlers;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceUnit;
 import javax.transaction.Transactional;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.Path;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.StringReader;
-import java.nio.file.Paths;
+import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 
@@ -43,7 +33,6 @@ public class ReadymixRoutes {
     @Route(path = "/")
     void root(RoutingContext rc) {
         rc.reroute("/readymix/dashboard");
-
     }
 
     @Route(path = "/readymix/removeOption", methods = HttpMethod.POST)
@@ -132,5 +121,12 @@ public class ReadymixRoutes {
             return Uni.createFrom().item("error:Price updated succesfully");
         }
     }
+
+    @Route(path = "/readymix/months", methods = HttpMethod.GET)
+    Uni<List<String>> getMonths() {
+        Multi<Month> multi = Multi.createFrom().items(Month.values());
+        return multi.map(Month::name).collectItems().asList();
+    }
+
 
 }

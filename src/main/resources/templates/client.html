@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+</html>
 {#include base}
 <body>
 {#icon}
@@ -17,44 +18,79 @@
     <div class="col-lg-6 col-sm-12 col-md-6">
         <ul class="list-group">
             {#if client}
-            {#for key in client.getAsRecord()}
-            <li class="list-group-item list-group-item-secondary"><span style="font-weight: bold">{key}</span></li>
+            {#let rec=client.getAsRecord()}
+            {#for key in rec.keys()}
+            <li class="list-group-item list-group-item-secondary">{key} : <span
+                    style="font-weight: bold">{rec.get(key)}</span></li>
             {/for}
+            {/let}
             {/if}
         </ul>
 
-        <button class="btn btn-primary fa fa-arrow-circle-left form-control-lg form-control-sm" onclick="history.go(-1);">Close
+        <button class="btn btn-primary fa fa-arrow-circle-left form-control-lg form-control-sm"
+                onclick="history.go(-1);">Close
         </button>
     </div>
     <div class="col-lg-6 col-md-6 col-sm-12">
         <form action="" method="post">
-            <output>client data not found</output>
-            <output>client Index</output>
-            <h2>Send SMS</h2>
-            <label>From SMS Template</label>
-            <select name="template" class="form-control">
-                <option label="Template1" value="1"></option>
-                <option label="Template2" value="2"></option>
-                <option label="Template3" value="3"></option>
-            </select>
-            <textarea class="form-control" name="sms"></textarea>
-            <button class="btn btn-primary form-control fa fa-mobile">Send</button>
-            <h2>Send Email</h2>
-            <label>From Template</label>
-            <select name="template" class="form-control">
-                <option label="Template1" value="1"></option>
-                <option label="Template2" value="2"></option>
-                <option label="Template3" value="3"></option>
-            </select>
-            <textarea class="form-control" name="email"></textarea>
-            <button class="btn btn-primary form-control fa fa-envelope">Send</button>
-            <h2>Phone Call</h2>
-            <label>Conversation Summery</label>
-            <textarea class="form-control" name="email"></textarea>
-            <button class="btn btn-primary form-control fa fa-phone">Send</button>
+            <nav>
+                <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                    <a class="nav-item nav-link active" id="nav-contact-tab" data-toggle="tab" href="#nav-contact"
+                       role="tab" aria-controls="nav-home" aria-selected="true">Contact</a>
+                    <a class="nav-item nav-link" id="nav-orders-tab" data-toggle="tab" href="#nav-orders" role="tab"
+                       aria-controls="nav-orders" aria-selected="false">Orders</a>
+                    <a class="nav-item nav-link" id="nav-stat-tab" data-toggle="tab" href="#nav-stat" role="tab"
+                       aria-controls="nav-stat" aria-selected="false">Statistics</a>
+                </div>
+            </nav>
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="nav-contact" role="tabpanel"
+                     aria-labelledby="nav-contact-tab">
+                    <h2>Send SMS</h2>
+                    <label>From SMS Template</label>
+                    <select name="template" class="form-control">
+                        {#let tmp=rtutil:listTemplate('sms')}
+                        {#for t in tmp}
+                        <option label="{t}" value="{t}"></option>
+                        {/for}
+                        {/let}
+                    </select>
+                    <textarea class="form-control" name="sms"></textarea>
+                    <button class="btn btn-primary form-control fa fa-mobile">Send</button>
+                    <h2>Send Email</h2>
+                    <label>From Template</label>
+                    <select name="template" class="form-control">
+                        {#let tmp=rtutil:listTemplate('email')}
+                        {#for t in tmp}
+                        <option label="{t}" value="{t}"></option>
+                        {/for}
+                        {/let}
+                    </select>
+                    <textarea class="form-control" name="email"></textarea>
+                    <button class="btn btn-primary form-control fa fa-envelope">Send</button>
+                    <h2>Phone Call</h2>
+                    <label>Conversation Summery</label>
+                    <textarea class="form-control" name="email"></textarea>
+                    <button class="btn btn-primary form-control fa fa-phone">Send</button>
+                </div>
+                <div class="tab-pane fade" id="nav-orders" role="tabpanel" aria-labelledby="nav-orders-tab">
+                    <ul class="list-group list-group-flush">
+                        {#for o in rtutil:listOrders(client.id)}
+                        <li class="list-group-item">{o.item}</li>
+                        {/for}
+                    </ul>
+                </div>
+                <div class="tab-pane fade" id="nav-stat" role="tabpanel" aria-labelledby="nav-stat-tab">
+                    <canvas id="myChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+
         </form>
     </div>
 </div>
+{/}
+</body>
+{/}
 <script type="text/javascript">
     function onexit() {
         var def = confirm("Are you sure you want to exit.");
@@ -62,19 +98,47 @@
             location.assign("/readymix/rtbrowse?type=client");
     }
 
-    function addContact() {
-        var cont = $('#contacts').clone()
-        var index = $('#totalContacts').val()
-        cont.html(newTable.html().replace(/__id/g, index));
-        cont.insertBefore($('#contacts'))
-        $('#totalContacts').val(
-            parseInt($('#totalContacts').val()) + 1
-        )
-        cont.slideDown();
-        cont.reload();
+    var ctx = document.getElementById('myChart').getContext('2d');
+    let months = [];
+    let vpermonth=[];
+    $(document).ready(function () {
+        $.get("/readymix/months/", function (data) {
+            months = data;
+            var d = new Date();
+            let ordcount = {};
+            "{#for o in rtutil:listOrders(client.id)}"
+                d=new Date("{o.ondate}");
+            vpermonth.push(d.getMonth()+1,'{o.quantity}');
+            console.log(d.getMonth()+1+" : "+'{o.quantity}');
+            "{/for}"
+
+            buildChart(vpermonth);
+        });
+    })
+
+    function buildChart(data) {
+        var myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [1,2,3,4,5,6,7,8,9,10,11,12],
+                datasets: [{
+                    label: '# Qubic Meters',
+                    data: data,
+                    borderWidth: 2,
+                    borderColor: 'rgba(4, 11, 22, 0.1)'
+                }]
+            },
+            options: {
+                showLine: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
     }
 </script>
-{/}
-</body>
-{/}
 </html>
