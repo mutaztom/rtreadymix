@@ -126,7 +126,8 @@ public class RtbrowseResource {
     }
 
     private void generateListMap(List<Map<String, Object>> rtlist, List<CRtDataObject> cRtDataObjects) {
-        NumberFormat nform = NumberFormat.getInstance();
+        NumberFormat nform = NumberFormat.getInstance(Locale.US);
+        CExchange xchange = new CExchange();
         cRtDataObjects.forEach(c -> {
             Map<String, Object> map = new HashMap<>();
             c.getAsRecord().forEach((k, v) -> {
@@ -136,11 +137,16 @@ public class RtbrowseResource {
             if (rtype.equals("service")) {
                 CService s = (CService) c;
                 map.put("unitprice", nform.format(s.getUnitPrice()));
+                double sequiv = xchange.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), s.getUnitPrice());
+                map.put("unitprice ($)", nform.format(sequiv));
                 map.put("unit", s.getUnit());
                 map.put("description", s.getDescription());
             } else if (rtype.equals("product")) {
                 CProduct s = (CProduct) c;
                 map.put("unitprice", nform.format(s.getUnitPrice()));
+                double equiv = xchange.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), s.getUnitPrice());
+                map.put("unitprice", nform.format(s.getUnitPrice()));
+                map.put("unitprice($)", nform.format(equiv));
                 map.put("unit", s.getUnit());
                 map.put("description", s.getDescription());
             }
@@ -185,7 +191,7 @@ public class RtbrowseResource {
                         client.find(itemid);
                         return ctemp.data("client", client)
                                 .data("title", "Client Profile")
-                                .data("cities",new String[]{"Khartoum","Shandi","PortSudan"});
+                                .data("cities", new String[]{"Khartoum", "Shandi", "PortSudan"});
                     } else if (rtype.equals("service")) {
                         t = servtemp.viewService(itemid);
                     } else if (rtype.equals("product")) {

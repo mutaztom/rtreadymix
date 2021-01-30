@@ -55,21 +55,19 @@ public class SystemConfig {
     }
 
     @Transactional
-    public static CurrencyLocal getCompCurrency() {
+    public static CCurrency getCompCurrency() {
         try {
-            if (compcur == null || compcur.isEmpty()) {
+            if (compcur == null || compcur.isEmpty() || compcur.getId()<=0) {
                 compcur = new CCurrency();
-                Map<Integer, Object> map = new HashMap<>();
-                map.put(1, "USD");
-                List<TblCurrency> clist = MezoDB.openNative("select * from TblCurrency where symbol=?", TblCurrency.class, map);
-                if (clist != null && !clist.isEmpty()) {
-                    int id = clist.get(0).getId();
+                int id = MezoDB.getInteger("select id from TblCurrency where symbol='USD'");
+                if (id > 0)
                     compcur.find(id);
-                }
             }
         } catch (Exception e) {
             Utility.ShowError(e);
         }
         return compcur;
     }
+
+
 }

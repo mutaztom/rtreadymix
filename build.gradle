@@ -30,6 +30,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-hibernate-orm'
     implementation 'io.quarkus:quarkus-vertx-web'
+    implementation 'io.quarkus:quarkus-mailer'
     compile 'io.vertx:vertx-web:3.9.4'
     // https://mvnrepository.com/artifact/io.quarkus/quarkus-jsonb
     compile group: 'io.quarkus', name: 'quarkus-jsonb', version: '1.9.2.Final'

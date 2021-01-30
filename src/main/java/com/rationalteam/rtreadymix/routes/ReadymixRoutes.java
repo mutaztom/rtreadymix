@@ -1,5 +1,7 @@
 package com.rationalteam.rtreadymix.routes;
 
+import com.rationalteam.reaymixcommon.ServerMessage;
+import com.rationalteam.rterp.erpcore.CExchange;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.ClientManager;
@@ -122,10 +124,19 @@ public class ReadymixRoutes {
         }
     }
 
-    @Route(path = "/readymix/months", methods = HttpMethod.GET)
-    Uni<List<String>> getMonths() {
-        Multi<Month> multi = Multi.createFrom().items(Month.values());
-        return multi.map(Month::name).collectItems().asList();
+    @Route(path = "/readymix/updateRate", methods = HttpMethod.POST, produces = "application/json")
+    @Transactional
+    Uni<ServerMessage> updateRate(RoutingContext rex) {
+        if (rex.getBodyAsJson().containsKey("rate")
+                && rex.getBodyAsJson().containsKey("compcur")) {
+            double rate = Double.parseDouble(rex.getBodyAsJson().getString("rate"));
+            Integer compcur = Integer.valueOf(rex.getBodyAsJson().getString("compcur"));
+            return Uni.createFrom().item(new CExchange()).onItem().invoke(t -> t.saveRate(compcur, rate)).runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
+                    .onItem().transform(t -> new ServerMessage("Exchange was saved :" + t))
+                    .onFailure().recoverWithItem(t -> new ServerMessage("failed to save"));
+        } else
+            return Uni.createFrom().item(new ServerMessage("body didn't contain all required params "+rex.getBodyAsString()));
+
     }
 
 

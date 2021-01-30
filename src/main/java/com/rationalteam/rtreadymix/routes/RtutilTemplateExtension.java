@@ -1,8 +1,6 @@
 package com.rationalteam.rtreadymix.routes;
 
-import com.rationalteam.rterp.erpcore.COption;
-import com.rationalteam.rterp.erpcore.MezoDB;
-import com.rationalteam.rterp.erpcore.Utility;
+import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblOption;
 import com.rationalteam.rtreadymix.SystemConfig;
 import com.rationalteam.rtreadymix.data.Tblorder;
@@ -13,11 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,5 +45,23 @@ public class RtutilTemplateExtension {
             Utility.ShowError(e);
             return orders;
         }
+    }
+
+    @Transactional
+    public static double rate() {
+        CExchange xchange = new CExchange();
+        double rate = xchange.getRate(SystemConfig.getCompCurrency());
+        return rate;
+    }
+
+    @Transactional
+    public static CCurrency compCur() {
+        return SystemConfig.getCompCurrency();
+    }
+
+    public static double equiv(double amount) {
+        CExchange ex = new CExchange();
+        double eq = ex.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), amount);
+        return Math.round(eq);
     }
 }

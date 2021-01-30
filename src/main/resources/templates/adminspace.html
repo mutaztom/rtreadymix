@@ -15,7 +15,8 @@
                     <input class="form-control" name="dayslimit" value="{dayslimit}" id="dayslimit">
                     (days)
                     <button class="btn btn-link fa fa-undo-alt" onclick="updateDayslimit();"
-                            type="button">Refresh</button>
+                            type="button">Refresh
+                    </button>
                 </div>
                 <form action="/readymix/manageOrder" method="post">
                     {#if newarrivals}
@@ -47,11 +48,15 @@
                             <label style="font-weight: bold;color:darkgreen;">{item.item}</label>
                         </div>
                         <div class="col-6">
-                            <output id="t_{item.id}" name="lastprice" style="font-size: large;font-weight: bold">
-                                {str:format(item.unitPrice)}
-                            </output>
-                            <input name="product" id="p_{item.id}" value="{item.unitPrice}" class="form-control"
-                                   style="display: none;">
+                                <output id="t_{item.id}" style="font-size: large;font-weight: bold">
+                                    {str:format(item.unitPrice)}
+                                </output>
+                            <input name="realvalue" value="{item.unitPrice}" hidden id="v_{item.id}">
+                                <output id="usd_{item.id}" for="t_{item.id}" name="usdprice" style="font-size: medium;color: darkgray;padding-left: 10%;">
+                                    {str:format(rtutil:equiv(item.unitPrice))} $
+                                </output>
+                                <input name="product" id="p_{item.id}" value="{item.unitPrice}" class="form-control"
+                                       style="display: none;">
                         </div>
                         <div class="col-3">
                             <a class="fa fa-pencil-alt" id="edit_{item.id}"
@@ -62,7 +67,24 @@
                     </div>
                     {/for}
                     {/if}
-                    <output id="lastupdated" class="text-secondary"></output>
+                    <div class="row">
+                        <div class="col-3">
+                            <label>Rate ({rtutil:compCur.symbol})</label>
+                        </div>
+                        <div class="col-3">
+                            <output id='lblrate' name="lblrate" class="font-weight-bold text-success">{rtutil:rate}
+                            </output>
+                            <input class="form-control" id="txtrate" name="rate" value="{rtutil:rate}"
+                                   style="display: none;">
+                        </div>
+                        <div class="col-3">
+                            <a class="fa fa-pencil-alt" id="editrate"
+                               href="javascript:setRate()"></a>
+                            <a class="fa fa-save" id="saverate" href="javascript:saveRate()"
+                               style="display: none;"></a>
+                        </div>
+                        <output id="lastupdated" style="font-size: smaller;" class="text-secondary"></output>
+                    </div>
                 </form>
             </div>
         </div>
@@ -107,18 +129,28 @@
     function setPrice(pid) {
         document.getElementById("p_" + pid).style.display = 'block';
         document.getElementById("t_" + pid).style.display = 'none';
+        document.getElementById("usd_" + pid).style.display = 'none';
         document.getElementById("edit_" + pid).style.display = 'none';
         document.getElementById("save_" + pid).style.display = 'block';
         document.getElementById("p_" + pid).focus();
     }
 
+    function setRate() {
+        document.getElementById("editrate").style.display = 'none';
+        document.getElementById("saverate").style.display = 'block';
+        document.getElementById("lblrate").style.display = 'none';
+        document.getElementById("txtrate").style.display = 'block';
+    }
+
     function savePrice(pid) {
-        var oldVar = $("#t_" + pid).val();
+        var oldVar = $("#v_" + pid).val();
         let newprice = $("#p_" + pid).val();
-        if (oldVar === newprice) {
+        console.log("oldprice is "+parseFloat(oldVar)+" and new "+parseFloat(newprice))
+        if (parseFloat(oldVar) === parseFloat(newprice)) {
             //close without need to save and annoy the system
             document.getElementById("p_" + pid).style.display = 'none';
             document.getElementById("t_" + pid).style.display = 'block';
+            document.getElementById("usd_" + pid).style.display = 'block';
             document.getElementById("edit_" + pid).style.display = 'block';
             document.getElementById("save_" + pid).style.display = 'none';
             return;
@@ -134,6 +166,7 @@
                     $("#lastupdated").val("last updated on" + data.replace('OK', ''));
                     document.getElementById("p_" + pid).style.display = 'none';
                     document.getElementById("t_" + pid).style.display = 'block';
+                    document.getElementById("usd_" + pid).style.display = 'block';
                     document.getElementById("edit_" + pid).style.display = 'block';
                     document.getElementById("save_" + pid).style.display = 'none';
                 }
@@ -172,6 +205,29 @@
                 console.log(err);
             }
         });
+    }
+
+    function saveRate() {
+        let rate = $("#txtrate").val();
+        $.post('/readymix/saveRate', rate);
+        $.ajax({
+            url: '/readymix/updateRate',
+            type: 'post',
+            headers: {'Content-Type': 'applicaiton/json'},
+            data: JSON.stringify({"rate": rate, "compcur": '{rtutil:compCur.id}'}),
+            success: function (r) {
+                console.log(r);
+                document.getElementById('txtrate').style.display = 'none';
+                document.getElementById('lblrate').style.display = 'block';
+                document.getElementById('editrate').style.display = 'block';
+                document.getElementById('saverate').style.display = 'none';
+                $("#lastupdated").val("Last modified: " + (new Date()))
+                $("#lblrate").val('{rtutil:rate}');
+            },
+            error: function (e, sd, err) {
+                console.log(err);
+            }
+        })
     }
 </script>
 {/}
