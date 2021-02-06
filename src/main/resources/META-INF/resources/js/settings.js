@@ -2,6 +2,7 @@ var tmpfile;
 var commmedia;
 var actcurid;
 
+
 function showTemplate(fname, commtype) {
     tmpfile = fname;
     commmedia = commtype;
@@ -137,16 +138,16 @@ function deleteCurrency(curid) {
         success: function (r) {
             console.log("recieved from server:" + r);
             if (r === 'OK') {
-                document.getElementById("rtmessage").innerText=r;
+                document.getElementById("rtmessage").innerText = r;
                 $('.collapse').collapse('hide');
-                document.getElementById("rtmessage").style.display='block';
+                document.getElementById("rtmessage").style.display = 'block';
                 location.reload();
             }
         },
         error: function (st, en, err) {
             console.log("got error ".concat(err));
             $("#rterror").text(err);
-            document.getElementById("rterror").style.display='block';
+            document.getElementById("rterror").style.display = 'block';
         }
     });
 }
@@ -220,4 +221,71 @@ function saveProps() {
             }
         }
     )
+
+    function saveNotify() {
+        $.ajax({
+            url: 'read'
+        })
+    }
 }
+
+function addNotifySettings(ntype) {
+    let newitem = prompt("Please enter new admin " + ntype);
+    let allmail = null;
+    let props = {};
+    if (ntype === 'adminmail') {
+        allmail = "{rtutil:prop('adminmail')}";
+        props = {"adminmail": allmail.concat(",").concat(newitem)};
+    } else if (ntype === "adminmobile") {
+        allmail = "{rtutil:prop('adminmobile')}";
+        props = {"adminmobile": allmail.concat(",").concat(newitem)};
+    }
+    updateNotify(props);
+}
+
+function saveNotifyMethod() {
+    let sms = $('#cksms').is(":checked") ? true : false;
+    let email = $('#ckemail').is(":checked") ? true : false;
+    let props = {"notify.sms": sms, "notify.email": email};
+    updateNotify(props);
+}
+
+function updateNotify(props) {
+    $.ajax({
+        url: "/readymix/setNotification",
+        data: JSON.stringify(props),
+        type: "post",
+        headers: {"Content-Type": "application/json"},
+        success: function (data) {
+            console.log(data);
+            location.reload();
+            $('#list-notification').load(document.URL + ' #list-notification');
+            $('#list-tab a[href="#list-notification-list"]').tab('show');
+        },
+        error: function (e, st, err) {
+            console.log(err);
+        }
+    });
+}
+
+function addProp() {
+    let prop = prompt("Please enter key=value pairs to prop");
+    $.ajax({
+        url: '/rtmix/addprop/' + prop,
+        type: 'POST',
+        headers: {"Content-Type": "Application/json"},
+        data: null,
+        onsuccess: function (dat) {
+            console.log("properties processed, with result:" + dat);
+            $('#list-settings').load(document.URL + '#list-settings');
+        },
+        onerror: function (e, s, err) {
+            console.log("Error encountered: " + err);
+        }
+    });
+}
+
+$('#list-tab a').on('click', function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+})

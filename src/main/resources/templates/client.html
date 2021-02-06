@@ -102,8 +102,6 @@
     let months = [];
     let vpermonth=[];
     $(document).ready(function () {
-        $.get("/readymix/months/", function (data) {
-            months = data;
             var d = new Date();
             let ordcount = {};
             "{#for o in rtutil:listOrders(client.id)}"
@@ -111,9 +109,8 @@
             vpermonth.push(d.getMonth()+1,'{o.quantity}');
             console.log(d.getMonth()+1+" : "+'{o.quantity}');
             "{/for}"
-
             buildChart(vpermonth);
-        });
+
     })
 
     function buildChart(data) {

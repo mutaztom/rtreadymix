@@ -138,7 +138,7 @@ public class RtbrowseResource {
                 CService s = (CService) c;
                 map.put("unitprice", nform.format(s.getUnitPrice()));
                 double sequiv = xchange.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), s.getUnitPrice());
-                map.put("unitprice ($)", nform.format(sequiv));
+                map.put("equivPrice", nform.format(sequiv));
                 map.put("unit", s.getUnit());
                 map.put("description", s.getDescription());
             } else if (rtype.equals("product")) {
@@ -146,7 +146,7 @@ public class RtbrowseResource {
                 map.put("unitprice", nform.format(s.getUnitPrice()));
                 double equiv = xchange.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), s.getUnitPrice());
                 map.put("unitprice", nform.format(s.getUnitPrice()));
-                map.put("unitprice($)", nform.format(equiv));
+                map.put("equivPrice", nform.format(equiv));
                 map.put("unit", s.getUnit());
                 map.put("description", s.getDescription());
             }
@@ -221,6 +221,7 @@ public class RtbrowseResource {
                 columns.addAll(service.getBrowsable());
                 columns.add("unit");
                 columns.add("unitprice");
+                columns.add("equivPrice");
                 columns.add("description");
                 break;
             case "supplier":
@@ -232,6 +233,7 @@ public class RtbrowseResource {
                 columns.addAll(product.getBrowsable());
                 columns.add("unit");
                 columns.add("unitprice");
+                columns.add("equivPrice");
                 columns.add("description");
                 break;
             case "news":

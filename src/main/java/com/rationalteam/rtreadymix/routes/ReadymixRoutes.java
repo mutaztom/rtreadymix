@@ -5,6 +5,9 @@ import com.rationalteam.rterp.erpcore.CExchange;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.ClientManager;
+import com.rationalteam.rtreadymix.UtilityExt;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Multi;
@@ -15,15 +18,20 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import jdk.jshell.execution.Util;
+import org.eclipse.microprofile.config.ConfigProvider;
 
+import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 
@@ -31,6 +39,8 @@ import java.util.function.Consumer;
 public class ReadymixRoutes {
     @Inject
     ClientManager cman;
+    @Inject
+    ReactiveMailer remail;
 
     @Route(path = "/")
     void root(RoutingContext rc) {
@@ -130,12 +140,25 @@ public class ReadymixRoutes {
         if (rex.getBodyAsJson().containsKey("rate")
                 && rex.getBodyAsJson().containsKey("compcur")) {
             double rate = Double.parseDouble(rex.getBodyAsJson().getString("rate"));
-            Integer compcur = Integer.valueOf(rex.getBodyAsJson().getString("compcur"));
+            Integer compcur = Integer.parseInt(rex.getBodyAsJson().getString("compcur"));
             return Uni.createFrom().item(new CExchange()).onItem().invoke(t -> t.saveRate(compcur, rate)).runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                     .onItem().transform(t -> new ServerMessage("Exchange was saved :" + t))
                     .onFailure().recoverWithItem(t -> new ServerMessage("failed to save"));
         } else
-            return Uni.createFrom().item(new ServerMessage("body didn't contain all required params "+rex.getBodyAsString()));
+            return Uni.createFrom().item(new ServerMessage("body didn't contain all required params " + rex.getBodyAsString()));
+
+    }
+
+    @Route(path = "/readymix/sendMail", methods = HttpMethod.POST, produces = "application/json", consumes = "application/json")
+    @RolesAllowed("admin")
+    public CompletionStage<Response> sendMail(RoutingContext cont) {
+        @Nullable JsonObject json = cont.getBodyAsJson();
+        String msg = json.getString("message");
+        String mailto = json.getString("mailto");
+        ServerMessage m = new ServerMessage("Mail sent succesfully");
+
+        return remail.send(Mail.withText(mailto, "Admin Message", msg)).subscribeAsCompletionStage()
+                .thenApply(t -> Response.ok(m).build()).exceptionally(t -> Response.ok(new ServerMessage(t.getMessage())).build());
 
     }
 

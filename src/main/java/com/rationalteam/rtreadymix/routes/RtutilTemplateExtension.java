@@ -64,4 +64,8 @@ public class RtutilTemplateExtension {
         double eq = ex.convert(SystemConfig.getDefaultCurrencyId(), SystemConfig.getCompCurrency().getId(), amount);
         return Math.round(eq);
     }
+
+    public static String prop(String key) {
+        return Utility.getProperty(key);
+    }
 }

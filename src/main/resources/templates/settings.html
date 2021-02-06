@@ -8,9 +8,12 @@
         <div class="col-12 alert-info" style="display: none" id="rtmessage"></div>
         <div class="col-12 alert-danger" style="display: none" id="rterror"></div>
         <div class="list-group" id="list-tab" role="tablist">
-            <a class="list-group-item list-group-item-action active fa fa-tools" id="list-general" data-toggle="list"
+            <a class="list-group-item list-group-item-action fa fa-tools" id="list-general" data-toggle="list"
                href="#list-options" role="tab" aria-controls="messages">General</a>
-            <a class="list-group-item list-group-item-action  fa fa-building" id="list-home-list"
+            <a class="list-group-item list-group-item-action fa fa-microphone-alt" id="list-notification-list"
+               data-toggle="list"
+               href="#list-notification" role="tab" aria-controls="notifications">System Notifications</a>
+            <a class="list-group-item list-group-item-action fa fa-building" id="list-home-list"
                data-toggle="list"
                href="#list-home" role="tab" aria-controls="home">Communication Templates</a>
             <a class="list-group-item list-group-item-action fa fa-dollar-sign" id="list-templates"
@@ -22,7 +25,7 @@
     </div>
     <div class="col-lg-8 col-md-8 col-sm-12">
         <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show " id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+            <div class="tab-pane fade" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
                 <h3><i class="fa fa-building">Communication Templates</i></h3>
                 <a href="#" class="fa fa-plus-circle" onclick="createTemplate('email');">Add new</a>
                 <p>
@@ -74,6 +77,70 @@
                     </button>
                 </div>
                 {/for}
+            </div>
+            <div class="tab-pane fade" id="list-notification" role="tabpanel" aria-labelledby="list-notification">
+                <h3>Notification Settings</h3>
+                <div class="col-12">
+                    <div class="rtnotify" id="rtnotify">
+                        <form action="/readymix/setNotification" method="post">
+                            <h6 class="font-weight-bold">Admin Emails</h6>
+                            <button type="button" id="addmail" class="btn btn-primary fa fa-plus-circle" name="addwhat"
+                                    value="addmail" onclick="addNotifySettings('adminmail')">Add new
+                            </button>
+                            {#for e in adminmails}
+                            <div class="input-group mb-3 rtconf">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="{e}">@</span>
+                                </div>
+                                <input type="text" class="form-control" placeholder="Email" aria-label="{e}"
+                                       aria-describedby="basic-addon1" value="{e}">
+                            </div>
+                            {/for}
+                            <h6 class="font-weight-bold">Admin Mobiles</h6>
+                            <button type="button" id="addmobile" class="btn btn-primary fa fa-plus-circle"
+                                    name="addwhat"
+                                    value="addmail" onclick="addNotifySettings('adminmobile')">Add new
+                            </button>
+                            {#for m in adminmobiles}
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="{m}">#</span>
+                                </div>
+                                <input type="text" class="form-control" placeholder="Username" aria-label="mail"
+                                       aria-describedby="basic-addon1" value="{m}">
+                            </div>
+                            {/for}
+                            <h6 class="font-weight-bold">Notification Methods (at lease one must be active)</h6>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input id="ckemail" type="checkbox" checked="{rtutil:prop('notify.email')}"
+                                               aria-label="Checkbox for following text input">
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" value="Notify via Email"
+                                       aria-label="Text input with checkbox" readonly>
+                            </div>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <input id="cksms" type="checkbox" checked="{rtutil:prop('notify.sms')}"
+                                               aria-label="Checkbox for following text input">
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" value="Notify via SMS"
+                                       aria-label="Text input with checkbox" readonly>
+                            </div>
+                            <div class="form-group">
+                                <button name="cmdsave" id="cmdsavenotification" onclick="saveNotifyMethod();"
+                                        class="btn btn-primary fa fa-save form-control"
+                                        type="button">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
             <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-templates">
                 <h3><i class="fa fa-dollar-sign">Currency Settings</i></h3>
@@ -137,7 +204,7 @@
                         {/for}
                 </ul>
             </div>
-            <div class="tab-pane fade show active tbloptions" id="list-options" role="tabpanel"
+            <div class="tab-pane fade tbloptions" id="list-options" role="tabpanel"
                  aria-labelledby="list-general">
                 <h3><a class="fa fa-tools">General Settings</a></h3>
                 {#for k in options.keys}
@@ -149,10 +216,10 @@
                     <output class="float-left ml-2">{op.item}</output>
                     <output class="align-content-center ml-3 text-muted">{op.aritem}</output>
                     <button type="button" class="btn btn-outline-danger fa fa-trash float-right"
-                            style="margin-right:5px;" onclick="removeOption({op.id},'{k}')">Remove
+                            style="margin-right:5px;" onclick="removeOption({op.id},'{k}')" title="Remove">
                     </button>
-                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right"
-                            style="margin-right:5px;" onclick="editOption('{op.item}','{op.aritem}','{k}_{op.id}')">Edit
+                    <button type="button" class="btn btn-outline-primary fa fa-pencil-alt float-right" title="Edit"
+                            style="margin-right:5px;" onclick="editOption('{op.item}','{op.aritem}','{k}_{op.id}')">
                     </button>
                 </div>
                 {/for}
@@ -160,6 +227,8 @@
             </div>
             <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
                 <h5>System Properties (Advanced)</h5>
+                <button class="btn btn-secondary fa fa-plus-square" onclick="addProp();">Add</button>
+                <br>
                 {#for p in props.keys}
                 <output name="propname" class="font-weight-bold">{p}</output>
                 {#if str:isPassword(p)}
@@ -177,7 +246,7 @@
 </div>
 
 {#include inputbox/}
-<script type="text/javascript" src="js/settings.js"></script>
+<script type="text/javascript" src="../js/settings.js"></script>
 {/}
 </body>
 {/}

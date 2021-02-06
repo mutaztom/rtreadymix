@@ -608,6 +608,7 @@ public class RationalServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
     }
+
     @Path("/monthlyOrders")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -630,6 +631,21 @@ public class RationalServices {
             Utility.ShowError(e);
             Map.Entry<Integer, Double> empty = new AbstractMap.SimpleEntry<Integer, Double>(-1, -1D);
             return Response.ok("Error:" + e.getMessage()).build();
+        }
+    }
+
+    @Path("/addprop/{keyval}")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addProp(@PathParam("keyval") String keyval) {
+        try {
+            System.out.println("Property optained as param: "+keyval);
+            UtilityExt.addProperty(keyval);
+            ServerMessage sm = new ServerMessage("OK:property added succesfully");
+            return Response.ok(sm).build();
+        } catch (Exception e) {
+            Utility.ShowError(e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Error:" + e.getMessage()).build();
         }
     }
 }

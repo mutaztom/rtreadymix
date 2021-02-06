@@ -7,6 +7,7 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.data.Tblclient;
 
 import javax.json.bind.annotation.JsonbProperty;
+import javax.swing.text.DateFormatter;
 import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.sql.Date;
@@ -260,7 +261,7 @@ public class Client extends CRtDataObject {
         map.put("Address", address);
         map.put("Accountid", this.accountid);
         map.put("Customerid", customerid);
-        map.put("Since", since != null ? since.format(DateTimeFormatter.ISO_ORDINAL_DATE) : "None");
+        map.put("Since", since != null ? since.format(DateTimeFormatter.ISO_LOCAL_DATE) : "None");
         map.put("Verified", verfied);
         return map;
     }

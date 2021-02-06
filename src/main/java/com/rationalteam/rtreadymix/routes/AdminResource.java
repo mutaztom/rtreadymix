@@ -161,6 +161,8 @@ public class AdminResource {
         mailtemp = new ArrayList<>();
         smstemp = new ArrayList<>();
         listTemplates();
+        String[] adminmails = Utility.getProperty("adminmail").split(",");
+        String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
 
         return settingsTemplate.data("title", "System Settings")
                 .data("icon", "settings.png")
@@ -168,8 +170,23 @@ public class AdminResource {
                 .data("mail_templates", mailtemp)
                 .data("props", properties)
                 .data("currlist", rtutil.listCurrency())
+                .data("adminmails", adminmails)
+                .data("adminmobiles", adminmobiles)
                 .data("options", optionMap);
 
+    }
+
+    @Path("/setNotification")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
+    @Produces(MediaType.TEXT_HTML)
+    public void setNotification(JsonObject body) {
+        body.forEach(k ->
+        {
+            Utility.updateProperty(k.getKey(), k.getValue().toString(), SystemConfig.PROPFILE);
+        });
+        Utility.saveProperties();
     }
 
     private List<COption> getOptionValues(String tbl) {

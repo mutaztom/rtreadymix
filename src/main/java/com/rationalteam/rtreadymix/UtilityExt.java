@@ -10,12 +10,16 @@ import com.rationalteam.utility.CMezoTools;
 import org.checkerframework.checker.regex.qual.Regex;
 
 import javax.persistence.EntityManager;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -101,4 +105,25 @@ public class UtilityExt extends Utility {
         return map;
     }
 
+    public static void addProperty(String keyval) {
+        try {
+            PropFile=SystemConfig.PROPFILE;
+            FileReader fr = new FileReader(PropFile);
+            Properties pt = new Properties();
+            String key=keyval.split("=")[0];
+            String value=keyval.split("=")[1];
+            pt.load(fr);
+            if (!pt.stringPropertyNames().contains(key)) {
+                pt.put(key, value);
+            }
+            fr.close();
+            FileWriter ft = new FileWriter(PropFile, false);
+            pt.store(ft, "upated on : " + GregorianCalendar.getInstance().getTime().toString());
+            ft.close();
+            PropertyLoaded = false;
+            Utility.loadProperties(PropFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
