@@ -80,7 +80,6 @@ public class CommHub {
             }
         } catch (Exception exp) {
             Utility.ShowError(exp);
-            Utility.ShowError(exp);
         }
         return r;
     }
@@ -89,6 +88,7 @@ public class CommHub {
         mobiles = mobiles.contains("+") ? mobiles.replace("+", "") : mobiles;
         mobiles = mobiles.contains(",") ? mobiles.replace(",", ";") : mobiles;
         mobiles = mobiles.startsWith("249") ? mobiles : "249" + mobiles;
+        mobiles=mobiles.replace("%3b",";");
         return mobiles;
     }
     public static boolean sendEMail(String message, String email) {

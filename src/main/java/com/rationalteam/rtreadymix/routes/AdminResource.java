@@ -94,7 +94,7 @@ public class AdminResource {
             List<CProduct> plist = stat.getProducts();
             dayslimit = dayslimit == null ? 5 : dayslimit;
             List<Order> newarrivals = stat.getLatestOrders(Optional.of(dayslimit));
-            TemplateInstance t = adminspace.data("curruser", "Amdmin")
+                        TemplateInstance t = adminspace.data("curruser", "Amdmin")
                     .data("title", "Admin Dashboard")
                     .data("dayslimit", dayslimit)
                     .data("prodlist", plist)

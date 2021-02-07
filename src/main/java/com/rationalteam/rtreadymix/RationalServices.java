@@ -14,6 +14,7 @@ import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.common.template.TemplateEngine;
@@ -47,7 +48,10 @@ public class RationalServices {
     ClientManager cman;
     @Inject
     EntityManager eman;
-    SubscriptionServer server = new SubscriptionServer();
+    @Inject
+    SubscriptionServer server;
+    @Inject
+    EventBus bus;
 
     @PostConstruct
     public void init() {
@@ -288,12 +292,7 @@ public class RationalServices {
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-                //This part to inform person who placed order
-                //server.confirmOrder(order, enCommMedia.SMS);
-
-                boolean b = server.confirmOrder(order, enCommMedia.EMAIL, cman.getMobile(order.getClientid()));
-                //make notifications to staff
-                server.notifyStaff();
+                bus.send("rtorderevent",order);
                 output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
                 return Response.ok(output).build();
             } else {

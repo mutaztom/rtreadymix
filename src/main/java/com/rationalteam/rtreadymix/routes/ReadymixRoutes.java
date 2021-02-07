@@ -149,7 +149,7 @@ public class ReadymixRoutes {
 
     }
 
-    @Route(path = "/readymix/sendMail", methods = HttpMethod.POST, produces = "application/json", consumes = "application/json")
+    @Route(path = "/readymix/sendMail", methods = HttpMethod.PUT, produces = "application/json", consumes = "application/json")
     @RolesAllowed("admin")
     public CompletionStage<Response> sendMail(RoutingContext cont) {
         @Nullable JsonObject json = cont.getBodyAsJson();

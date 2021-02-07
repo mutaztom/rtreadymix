@@ -5,6 +5,8 @@ import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscribtion;
 import com.rationalteam.rterp.sales.SubscribtionLocal;
+import io.quarkus.vertx.ConsumeEvent;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
@@ -12,6 +14,8 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 import javax.ejb.EJB;
+import javax.enterprise.context.ApplicationScoped;
+import javax.ws.rs.Consumes;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,24 +26,29 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@ApplicationScoped
 public class SubscriptionServer {
-    @EJB
     SubscribtionLocal subs;
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
     private String ADMINEMAIL = "mutaztom@gmail.com";
     private static String ADMINMOBILE = "+249912352368";
+    private boolean NotifyEmail;
+    private boolean NotifySMS;
+
 
     public SubscriptionServer() {
         initTemplatePath(enCommMedia.EMAIL);
     }
 
     public void initTemplatePath(enCommMedia media) {
-        Path path = Paths.get(SystemConfig.TEMPLATE,media.name().toLowerCase());
+        Path path = Paths.get(SystemConfig.TEMPLATE, media.name().toLowerCase());
         Properties p = new Properties();
         p.setProperty("resource.loader.file.path", path.toString());
         Velocity.init(p);
-        ADMINEMAIL=UtilityExt.getProperty("adminmail")!=null?UtilityExt.getProperty("adminmail"):ADMINEMAIL;
-        ADMINMOBILE=UtilityExt.getProperty("adminmobile")!=null?UtilityExt.getProperty("adminmobile"):ADMINMOBILE;
+        ADMINEMAIL = UtilityExt.getProperty("adminmail") != null ? UtilityExt.getProperty("adminmail") : ADMINEMAIL;
+        ADMINMOBILE = UtilityExt.getProperty("adminmobile") != null ? UtilityExt.getProperty("adminmobile") : ADMINMOBILE;
+        NotifyEmail = Boolean.parseBoolean(Utility.getProperty("notify.email"));
+        NotifySMS = Boolean.parseBoolean(Utility.getProperty("notify.sms"));
     }
 
     public List<SubscribtionLocal> getDue() {
@@ -228,16 +237,16 @@ public class SubscriptionServer {
         this.subs = sub;
     }
 
-    public boolean confirmOrder(ClientOrder s, enCommMedia media,String mobile) {
+    public boolean confirmOrder(ClientOrder s, enCommMedia media, String mobile) {
         boolean b = false;
         try {
             VelocityContext context = new VelocityContext();
             initTemplatePath(media);
             Template template = Velocity.getTemplate("placeorder.txt");
             StringBuilder message = new StringBuilder();
-            JsonObject jorder=JsonObject.mapFrom(s);
-            boolean modifying = s.getId() != null && s.getId()>0;
-            message.append(modifying? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
+            JsonObject jorder = JsonObject.mapFrom(s);
+            boolean modifying = s.getId() != null && s.getId() > 0;
+            message.append(modifying ? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
             message.append("\n").append("from: ").append(s.getClientid()).append("\n")
                     .append(jorder.toString())
                     .append(" onmap: ").append("https://www.google.com/maps/@")
@@ -245,7 +254,7 @@ public class SubscriptionServer {
             if (media == enCommMedia.SMS) {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
 //                if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                b = CommHub.sendSMS(ADMINMOBILE, message.toString());
+                b = CommHub.sendSMS(ADMINMOBILE, "New Order was received");
                 if (b)
                     Utility.ShowSuccess("Message Sent successfully");
                 else
@@ -257,7 +266,7 @@ public class SubscriptionServer {
                 context.put("order", encode);
                 StringWriter mailmsg = new StringWriter();
                 template.merge(context, mailmsg);
-                b=CommHub.sendEMail(message.toString(), ADMINEMAIL);
+                b = CommHub.sendEMail(message.toString(), ADMINEMAIL);
                 System.out.println(mailmsg.toString());
             }
         } catch (
@@ -267,7 +276,15 @@ public class SubscriptionServer {
         return b;
     }
 
-    public void notifyStaff() {
-
+    @ConsumeEvent("rtorderevent")
+    public void notifyStaff(ClientOrder order) {
+        try {
+//            if (NotifyEmail)
+//                confirmOrder(order, enCommMedia.EMAIL, order.getMobile());
+            if (NotifySMS)
+                confirmOrder(order, enCommMedia.SMS, order.getMobile());
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+        }
     }
 }

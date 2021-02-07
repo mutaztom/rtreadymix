@@ -99,7 +99,7 @@ public class OrderStat {
         List<Order> orderlist = new ArrayList<>();
         try {
             List<Tblorder> olist = MezoDB.open("select * from tblorder where status='Created' and datediff(curdate(),ondate)<" +
-                    limit.orElse(3) + " limit 10", Tblorder.class);
+                    limit.orElse(3) + " order by id desc limit 10", Tblorder.class);
             if (olist != null)
                 olist.forEach(t -> {
                     Order o = new Order();
