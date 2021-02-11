@@ -15,6 +15,7 @@ import org.apache.velocity.app.Velocity;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import java.io.StringWriter;
 import java.nio.file.Path;
@@ -29,6 +30,9 @@ import java.util.stream.Collectors;
 @ApplicationScoped
 public class SubscriptionServer {
     SubscribtionLocal subs;
+    @Inject
+    CommHub commHub;
+    
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
     private String ADMINEMAIL = "mutaztom@gmail.com";
     private static String ADMINMOBILE = "+249912352368";
@@ -99,7 +103,7 @@ public class SubscriptionServer {
                 System.out.println(s.getMobile() + " " + message);
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
                 if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                    boolean b = CommHub.sendSMS(s.getMobile(), message.toString());
+                    boolean b = commHub.sendSMS(s.getMobile(), message.toString());
                     if (b)
                         Utility.ShowSuccess("Message Sent succesfully");
                     else
@@ -122,7 +126,7 @@ public class SubscriptionServer {
                 template.merge(context, message);
                 System.out.println(message.toString());
                 if (c == 0)
-                    CommHub.sendEMail(message.toString(), "mutaztom@gmail.com");
+                    commHub.sendEMail(message.toString(), "mutaztom@gmail.com");
                 c++;
 
             }
@@ -154,7 +158,7 @@ public class SubscriptionServer {
                 System.out.println(s.getMobile() + " " + message);
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
                 if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                    boolean b = CommHub.sendSMS(s.getMobile(), message.toString());
+                    boolean b = commHub.sendSMS(s.getMobile(), message.toString());
                     if (b)
                         Utility.ShowSuccess("Message Sent succesfully");
                     else
@@ -179,7 +183,7 @@ public class SubscriptionServer {
                 template.merge(context, message);
                 System.out.println(message.toString());
                 if (c == 0)
-                    CommHub.sendEMail(message.toString(), "mutaztom@gmail.com");
+                    commHub.sendEMail(message.toString(), "mutaztom@gmail.com");
                 c++;
 
             }
@@ -203,7 +207,7 @@ public class SubscriptionServer {
                 System.out.println(s.getMobile() + " " + message);
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
                 if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                    b = CommHub.sendSMS(s.getMobile().concat(",+249912352368"), message.toString());
+                    b = commHub.sendSMS(s.getMobile(), message.toString());
                     if (b)
                         Utility.ShowSuccess("Message Sent succesfully");
                     else
@@ -254,7 +258,7 @@ public class SubscriptionServer {
             if (media == enCommMedia.SMS) {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");
 //                if (s.getMobile() != null && !s.getMobile().isEmpty()) {
-                b = CommHub.sendSMS(ADMINMOBILE, "New Order was received");
+                b = commHub.sendSMS(ADMINMOBILE, "New Order was received");
                 if (b)
                     Utility.ShowSuccess("Message Sent successfully");
                 else
@@ -266,7 +270,7 @@ public class SubscriptionServer {
                 context.put("order", encode);
                 StringWriter mailmsg = new StringWriter();
                 template.merge(context, mailmsg);
-                b = CommHub.sendEMail(message.toString(), ADMINEMAIL);
+                b = commHub.sendEMail(message.toString(), ADMINEMAIL);
                 System.out.println(mailmsg.toString());
             }
         } catch (
@@ -279,8 +283,8 @@ public class SubscriptionServer {
     @ConsumeEvent("rtorderevent")
     public void notifyStaff(ClientOrder order) {
         try {
-//            if (NotifyEmail)
-//                confirmOrder(order, enCommMedia.EMAIL, order.getMobile());
+            if (NotifyEmail)
+                confirmOrder(order, enCommMedia.EMAIL, order.getMobile());
             if (NotifySMS)
                 confirmOrder(order, enCommMedia.SMS, order.getMobile());
         } catch (Exception exp) {

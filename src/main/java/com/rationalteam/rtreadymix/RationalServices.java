@@ -6,6 +6,8 @@ import com.rationalteam.rterp.erpcore.data.TblCurrency;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
 import com.rationalteam.rtreadymix.data.Tblorder;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.Mailer;
 import io.quarkus.qute.Engine;
 import io.quarkus.qute.TemplateLocator;
 import io.quarkus.security.Authenticated;
@@ -14,9 +16,11 @@ import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.common.template.TemplateEngine;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -52,7 +56,10 @@ public class RationalServices {
     SubscriptionServer server;
     @Inject
     EventBus bus;
-
+    @Inject
+    CommHub commHub;
+    @Inject
+    Mailer remail;
     @PostConstruct
     public void init() {
         System.out.println(">>>> INITIALIZING DATASOURCE....");
@@ -102,7 +109,7 @@ public class RationalServices {
                     output.setMessage("User created successfully");
                     output.setDetails("VERIFY");
                     //send verification sms
-                    CommHub.sendSMS(c.getMobile(), c.getPincode());
+                    commHub.sendSMS(c.getMobile(), c.getPincode());
                     //return
                     return output;
                 }
@@ -292,7 +299,7 @@ public class RationalServices {
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-                bus.send("rtorderevent",order);
+                bus.send("rtorderevent", order);
                 output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
                 return Response.ok(output).build();
             } else {
@@ -444,7 +451,7 @@ public class RationalServices {
                 }
                 c.setPincode(cman.generatePin(c));
                 c.save();
-                CommHub.sendSMS(c.getMobile(), c.getPincode());
+                commHub.sendSMS(c.getMobile(), c.getPincode());
                 output.setMessage("Pin code is sent via SMS please check and verify.");
             }
             return Response.ok(output).build();
@@ -638,13 +645,32 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addProp(@PathParam("keyval") String keyval) {
         try {
-            System.out.println("Property optained as param: "+keyval);
+            System.out.println("Property optained as param: " + keyval);
             UtilityExt.addProperty(keyval);
             ServerMessage sm = new ServerMessage("OK:property added succesfully");
             return Response.ok(sm).build();
         } catch (Exception e) {
             Utility.ShowError(e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Error:" + e.getMessage()).build();
+        }
+    }
+
+    @Path("/sendMail")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("admin")
+    public Response sendMail(@Body JsonObject json) {
+        try {
+            System.out.println(json);
+            String msg = json.getString("message");
+            String mailto = json.getString("mailto");
+            remail.send(Mail.withText(mailto, "Admin Message", msg));
+            System.out.println("Email sent successfully");
+            return Response.ok(new ServerMessage("Mail sent successfully")).build();
+        } catch (Exception exp) {
+            System.out.println("Error Sending Mail: " + exp);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
         }
     }
 }

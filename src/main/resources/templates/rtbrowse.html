@@ -69,8 +69,10 @@
                             {#if !isstaff }
                             <td>
                                 <input id="itemid" type="hidden" name="itemid" value="{item.id }">
+                                {#if rtype != client}
                                 <button type="submit" title="View" name="_method" value="view"
                                         class="btn btn-primary fa fa-eye"></button>
+                                {/if}
                                 <button type="submit" title="Edit" name="_method" value="edit"
                                         class="btn btn-primary fa fa-pencil-alt"></button>
                                 <button id="cmddelete" type="button" name="_method"

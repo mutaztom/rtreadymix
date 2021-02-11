@@ -2,9 +2,9 @@ package com.rationalteam.rtreadymix;
 
 import com.rationalteam.rterp.erpcore.DataManager;
 import com.rationalteam.rterp.erpcore.Utility;
-
 import com.rationalteam.rtreadymix.data.Tblcomlog;
-import com.rationalteam.utility.enSystemMessage;
+import io.quarkus.mailer.Mail;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -13,32 +13,29 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.mail.MessagingException;
-import javax.validation.ValidationException;
 import java.io.File;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-//Communication Hub For RationalTeam
+/*
+Communication Hub For RationalTeam
+ */
+@ApplicationScoped
 public class CommHub {
-    static MailMan mengine;
+    @Inject
+    ReactiveMailer remail;
 
-    static {
-        initMail();
-    }
-
-    public static void initMail() {
-        mengine = new MailMan();
-        mengine.setRecipients(new HashMap<String, String>());
-        mengine.setEmailFromAddress(System.getProperty("mailSender"));
-    }
-
-    public static boolean sendSMS(String mobiles, String message) {
+    public boolean sendSMS(String mobiles, String message) {
         boolean r = false;
         try {
             StringBuilder sms = new StringBuilder();
@@ -46,7 +43,7 @@ public class CommHub {
                 throw new RuntimeException("You must provide mobile number");
             if (message.isEmpty())
                 throw new RuntimeException("you must provide sms message");
-            mobiles=fixNumbers(mobiles);
+            mobiles = fixNumbers(mobiles);
             message = message.replace(" ", "%20");
             sms.append(Utility.getProperty("smshost"));
             sms.append("webacc.aspx?user=").append(Utility.getProperty("smsuser"))
@@ -83,34 +80,27 @@ public class CommHub {
         }
         return r;
     }
-    private static String fixNumbers(String mobiles) {
+
+    private String fixNumbers(String mobiles) {
         mobiles = mobiles.startsWith("0") ? mobiles.substring(1) : mobiles;
         mobiles = mobiles.contains("+") ? mobiles.replace("+", "") : mobiles;
         mobiles = mobiles.contains(",") ? mobiles.replace(",", ";") : mobiles;
         mobiles = mobiles.startsWith("249") ? mobiles : "249" + mobiles;
-        mobiles=mobiles.replace("%3b",";");
+        mobiles = mobiles.replace("%3b", ";");
         return mobiles;
     }
-    public static boolean sendEMail(String message, String email) {
+
+    public boolean sendEMail(String message, String email) {
         try {
-            mengine.setEmailFromAddress("mutaz@rationalteam.net");
-            mengine.setMessage(message);
-            HashMap<String, String> recepients = new HashMap<>();
-            recepients.put(email, email);
-            mengine.setRecipients((HashMap<String, String>) recepients);
-            mengine.setSubject("RationalTeam Service Hub");
-            mengine.setAttachments(null);
-            if (mengine.checkEntries()) {
-                boolean r = mengine.postMail();
-                Tblcomlog clog = new Tblcomlog();
-                clog.setAddress(email);
-                clog.setByuser("rtmixadmin");
-                clog.setMessage(message);
-                clog.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
-                CommHub.log(clog);
-                return r;
-            }
-        } catch (ValidationException | MessagingException | javax.xml.bind.ValidationException ex) {
+            String subject = ("RationalTeam Service Hub");
+            remail.send(Mail.withText(email, subject, message));
+            Tblcomlog clog = new Tblcomlog();
+            clog.setAddress(email);
+            clog.setByuser("rtmixadmin");
+            clog.setMessage(message);
+            clog.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
+            CommHub.log(clog);
+        } catch (Exception ex) {
             Utility.ShowError(ex);
         }
         return false;
@@ -123,6 +113,7 @@ public class CommHub {
             dmlog.create(tbl);
             r = true;
         } catch (Exception exp) {
+            Utility.ShowError(exp);
         }
         return r;
     }

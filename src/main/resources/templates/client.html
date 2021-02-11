@@ -55,8 +55,9 @@
                         {/for}
                         {/let}
                     </select>
-                    <textarea class="form-control" name="sms"></textarea>
-                    <button class="btn btn-primary form-control fa fa-mobile">Send</button>
+                    <textarea class="form-control" name="sms" id="txtsms"></textarea>
+                    <button class="btn btn-primary form-control fa fa-mobile" onclick="sendSMS();" type="button">Send
+                    </button>
                     <h2>Send Email</h2>
                     <label>From Template</label>
                     <select name="template" class="form-control">
@@ -66,12 +67,15 @@
                         {/for}
                         {/let}
                     </select>
-                    <textarea class="form-control" name="email"></textarea>
-                    <button class="btn btn-primary form-control fa fa-envelope">Send</button>
+                    <textarea class="form-control" name="email" id="txtmail"></textarea>
+                    <button class="btn btn-primary form-control fa fa-envelope" onclick="sendEmail();" type="button">
+                        Send
+                    </button>
                     <h2>Phone Call</h2>
                     <label>Conversation Summery</label>
-                    <textarea class="form-control" name="email"></textarea>
-                    <button class="btn btn-primary form-control fa fa-phone" name="sendmail" type="button">Send</button>
+                    <textarea class="form-control" name="email" id="txtcall"></textarea>
+                    <button class="btn btn-primary form-control fa fa-phone" onclick="saveCall();" type="button">Send
+                    </button>
                 </div>
                 <div class="tab-pane fade" id="nav-orders" role="tabpanel" aria-labelledby="nav-orders-tab">
                     <ul class="list-group list-group-flush">
@@ -100,16 +104,16 @@
 
     var ctx = document.getElementById('myChart').getContext('2d');
     let months = [];
-    let vpermonth=[];
+    let vpermonth = [];
     $(document).ready(function () {
-            var d = new Date();
-            let ordcount = {};
-            "{#for o in rtutil:listOrders(client.id)}"
-                d=new Date("{o.ondate}");
-            vpermonth.push(d.getMonth()+1,'{o.quantity}');
-            console.log(d.getMonth()+1+" : "+'{o.quantity}');
-            "{/for}"
-            buildChart(vpermonth);
+        var d = new Date();
+        let ordcount = {};
+        "{#for o in rtutil:listOrders(client.id)}"
+        d = new Date("{o.ondate}");
+        vpermonth.push(d.getMonth() + 1, '{o.quantity}');
+        console.log(d.getMonth() + 1 + " : " + '{o.quantity}');
+        "{/for}"
+        buildChart(vpermonth);
 
     })
 
@@ -117,7 +121,7 @@
         var myChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: [1,2,3,4,5,6,7,8,9,10,11,12],
+                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
                 datasets: [{
                     label: '# Qubic Meters',
                     data: data,
@@ -134,6 +138,61 @@
                         }
                     }]
                 }
+            }
+        });
+    }
+
+    function sendEmail() {
+        let msg = $("#txtmail").text();
+        let mail = '{client.email}';
+        console.log("Sending email to client: " + mail);
+        $.ajax({
+            url: '/readymix/sendMail',
+            data: JSON.stringify({"mailto": mail, "message": msg}),
+            headers: {'Content-Type': 'application/json'},
+            method: 'PUT',
+            onscroll: function (r) {
+                console.log("Message sent succesfully! " + r);
+            },
+            onerror: function (e, s, err) {
+                console.log("Send failed, " + err);
+            }
+        });
+    }
+
+    function sendSMS() {
+        let msg = $("#txtsms").text();
+        let mobile = '{client.mobile}';
+        console.log("Sending SMS to client: " + mobile);
+        $.ajax({
+            url: '/readymix/sendSMS',
+            data: JSON.stringify({"smsto": mobile, "message": msg}),
+            headers: {'Content-Type': 'application/json'},
+            method: 'PUT',
+            onscroll: function (r) {
+                console.log("Message sent succesfully! " + r);
+            },
+            onerror: function (e, s, err) {
+                console.log("Send failed, " + err);
+            }
+        });
+    }
+
+    function saveCall() {
+        let msg = $("#txtcall").text();
+        let mobile = '{client.mobile}';
+        let email = '{client.email}';
+        console.log("Saving conversation : " + mobile);
+        $.ajax({
+            url: '/readymix/saveCall',
+            data: JSON.stringify({"mobile": mobile, "message": msg, 'clientid': email}),
+            headers: {'Content-Type': 'application/json'},
+            method: 'POST',
+            onscroll: function (r) {
+                console.log("Phone call saved succesfully !" + r);
+            },
+            onerror: function (e, s, err) {
+                console.log("Send failed, " + err);
             }
         });
     }
