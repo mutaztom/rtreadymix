@@ -1,5 +1,6 @@
 package com.rationalteam.rtreadymix.routes;
 
+import com.arjuna.common.logging.commonLogger;
 import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.CExchange;
 import com.rationalteam.rterp.erpcore.MezoDB;
@@ -19,6 +20,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.MultiCollect;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -27,6 +29,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.ApplicationScoped;
+import javax.faces.component.ActionSource;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.HeaderParam;
@@ -177,28 +180,25 @@ public class ReadymixRoutes {
 
     }
 
-    @Route(path = "/readymix/sendSMS", methods = HttpMethod.PUT, produces = "application/json", consumes = "application/json")
+    @Route(path = "/readymix/sendSMS", methods = HttpMethod.PUT, produces = "application/json", consumes = "application/json",type = Route.HandlerType.BLOCKING)
     @RolesAllowed({"admin","user"})
-    public CompletionStage<Response> sendSMS(RoutingContext cont) {
-        String mobile = cont.getBodyAsJson().getString("mobile");
-        String msg = cont.getBodyAsJson().getString("message");
-        Action action = new Action() {
-            @Override
-            public void run() throws Exception {
-                boolean b = commHub.sendSMS(mobile, msg);
-                if (!b)
-                    throw new RuntimeException("Could not send sms");
-            }
-        };
-        return Uni.createFrom().item(action).subscribeAsCompletionStage().
-                thenApply(t -> {
-                    System.out.println("SMS sent successfully");
-                    return Response.ok("SMS Sent succesfully").build();
-                })
-                .exceptionally(t -> {
-                    System.out.println("Could not send sms: " + t.getMessage());
-                    return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
-                });
+    public Uni<Response> sendSMS(RoutingContext cont) {
+        try {
+            String mobile = cont.getBodyAsJson().getString("mobile");
+            String msg = cont.getBodyAsJson().getString("message");
+            System.out.println("Message"+ msg);
+            return Uni.createFrom().completionStage(Uni.createFrom().item(commHub.sendSMS(mobile, msg)).subscribe().asCompletionStage())
+                    .onItem().transform(t -> {
+                        System.out.println("SMS sent successfully");
+                        return Response.ok("SMS Sent succesfully").build();
+                    })
+                    .onFailure().recoverWithItem(t -> {
+                        System.out.println("Could not send sms: " + t.getMessage());
+                        return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
+                    });
+        }catch (Exception e){
+            return Uni.createFrom().item(Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build());
+        }
     }
 
     @Route(path = "/readymix/saveCall", methods = HttpMethod.POST, produces = "application/json")

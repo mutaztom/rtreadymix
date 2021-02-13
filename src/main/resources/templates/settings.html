@@ -246,7 +246,15 @@
 </div>
 
 {#include inputbox/}
+{#jscript}
+<script type="text/javascript">
+    $(document ).ready(function() {
+        document.location=document.location+" #list-options";
+        console.log("Locading: "+document.location);
+    });
+</script>
 <script type="text/javascript" src="../js/settings.js"></script>
+
 {/}
 </body>
 {/}

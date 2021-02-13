@@ -161,12 +161,12 @@
     }
 
     function sendSMS() {
-        let msg = $("#txtsms").text();
+        let msg = $("#txtsms").val();
         let mobile = '{client.mobile}';
         console.log("Sending SMS to client: " + mobile);
         $.ajax({
             url: '/readymix/sendSMS',
-            data: JSON.stringify({"smsto": mobile, "message": msg}),
+            data: JSON.stringify({"mobile": mobile, "message": msg}),
             headers: {'Content-Type': 'application/json'},
             method: 'PUT',
             onscroll: function (r) {
