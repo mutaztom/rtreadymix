@@ -143,7 +143,7 @@
     }
 
     function sendEmail() {
-        let msg = $("#txtmail").text();
+        let msg = $("#txtmail").val();
         let mail = '{client.email}';
         console.log("Sending email to client: " + mail);
         $.ajax({
@@ -179,7 +179,7 @@
     }
 
     function saveCall() {
-        let msg = $("#txtcall").text();
+        let msg = $("#txtcall").val();
         let mobile = '{client.mobile}';
         let email = '{client.email}';
         console.log("Saving conversation : " + mobile);
