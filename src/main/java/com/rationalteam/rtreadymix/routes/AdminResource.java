@@ -7,19 +7,12 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import io.quarkus.vertx.web.Route;
-import io.quarkus.vertx.web.RoutingExchange;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import org.jboss.resteasy.annotations.ContentEncoding;
-import org.jboss.resteasy.annotations.Form;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
-import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -47,6 +40,8 @@ public class AdminResource {
     @Inject
     @ResourcePath("settings")
     Template settingsTemplate;
+    @ResourcePath("schedule")
+    Template schedTemp;
     @Inject
     ClientManager cman;
     @Context
@@ -261,7 +256,7 @@ public class AdminResource {
         if (command == null || command.isBlank())
             return viewTemplate.data("error", "Command cannot be blank");
         try {
-            System.out.println("received command: " + command + "with itemid= " + itemid);
+
             if (command.equals("view")) {
                 Order order = new Order();
                 order.find(itemid);
@@ -271,6 +266,11 @@ public class AdminResource {
                 t = t.data("error", "Feature not implemented yet");
             } else if (command.equals("deliver")) {
                 t = t.data("error", "Feature not implemented yet");
+            } else if (command.equals("schedule")) {
+                Order order=new Order();
+                List<Order> orlist = order.listAll();
+                return schedTemp.data("title","ReadyMix Schedule Manager")
+                        .data("orders",orlist);
             }
             return t;
         } catch (Exception exp) {

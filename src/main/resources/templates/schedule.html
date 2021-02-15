@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<link href="../css/themes/month_green.css" type="text/css" rel="stylesheet">
+{#include base}
+<body>
+{#rtbody}
+<div class="row">
+    <button class="btn btn-primary" id="start">Go to date</button>
+    <select id="view" onchange="updateView()">
+        <option value="1" label="Day"></option>
+        <option value="2" label="Week"></option>
+    </select>
+</div>
+<div class="row float-left">
+<div class="col-3" id="nav"></div>
+<div class="col-9" id="dp"></div>
+</div>
+{/}
+</body>
+{/}
+
+<script type="text/javascript">
+
+    Date.prototype.addHours = function(h) {
+        this.setTime(this.getTime() + (h*60*60*1000));
+        return this;
+    }
+    var nav = new DayPilot.Navigator("nav");
+    nav.showMonths = 3;
+    nav.selectMode = "week";
+    nav.onTimeRangeSelected = function (args) {
+        dp.startDate = args.start;
+        dp.update();
+    };
+    nav.init();
+
+    var dp = new DayPilot.Calendar("dp");
+
+    // view
+    dp.viewType = "Day";
+
+    // event creating
+    dp.onTimeRangeSelected = function (args) {
+        var name = prompt("New event name:", "Event");
+        if (!name) return;
+        var e = new DayPilot.Event({
+            start: args.start,
+            end: args.end,
+            id: DayPilot.guid(),
+            text: name
+        });
+        dp.events.add(e);
+        dp.clearSelection();
+    };
+
+    dp.onEventClick = function (args) {
+        alert("clicked: " + args.e.id());
+    };
+
+    dp.init();
+var st=new Date();
+var end=new Date();
+    '{#for item in orders}'
+    st=new Date('{item.dateNeeded}');
+    end=new Date('{item.dateNeeded}');
+    st.addHours(8)
+    end.addHours(10);
+    // console.log(st+" >>>>>  "+end);
+    var e = new DayPilot.Event({
+        start: st,
+        end:end,
+        id: DayPilot.guid(),
+        text: "{item.item} {item.total}",
+        backColor: "#80bed7",
+        borderColor: "#F1C232"
+    });
+    dp.events.add(e);
+    '{/for}'
+    var picker = new DayPilot.DatePicker({
+        target: 'start',
+        pattern: 'yyyy-MM-dd',
+        onTimeRangeSelected: function(args) {
+            dp.startDate = args.start;
+            dp.update();
+        }
+    });
+    function updateView(){
+        let d=$("#view").val();
+        dp.viewType = d===1?"Day":"Week";
+        dp.update();
+    }
+</script>

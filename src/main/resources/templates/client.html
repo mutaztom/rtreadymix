@@ -32,55 +32,25 @@
         </button>
     </div>
     <div class="col-lg-6 col-md-6 col-sm-12">
-        <form action="" method="post">
+        <form action="/readymix/clientorder" method="post" >
             <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
                     <a class="nav-item nav-link active" id="nav-contact-tab" data-toggle="tab" href="#nav-contact"
                        role="tab" aria-controls="nav-home" aria-selected="true">Contact</a>
                     <a class="nav-item nav-link" id="nav-orders-tab" data-toggle="tab" href="#nav-orders" role="tab"
-                       aria-controls="nav-orders" aria-selected="false">Orders</a>
+                       aria-controls="nav-orders" aria-selecoted="false">Orders</a>
                     <a class="nav-item nav-link" id="nav-stat-tab" data-toggle="tab" href="#nav-stat" role="tab"
                        aria-controls="nav-stat" aria-selected="false">Statistics</a>
                 </div>
             </nav>
             <div class="tab-content" id="nav-tabContent">
-                <div class="tab-pane fade show active" id="nav-contact" role="tabpanel"
-                     aria-labelledby="nav-contact-tab">
-                    <h2>Send SMS</h2>
-                    <label>From SMS Template</label>
-                    <select name="template" class="form-control">
-                        {#let tmp=rtutil:listTemplate('sms')}
-                        {#for t in tmp}
-                        <option label="{t}" value="{t}"></option>
-                        {/for}
-                        {/let}
-                    </select>
-                    <textarea class="form-control" name="sms" id="txtsms"></textarea>
-                    <button class="btn btn-primary form-control fa fa-mobile" onclick="sendSMS();" type="button">Send
-                    </button>
-                    <h2>Send Email</h2>
-                    <label>From Template</label>
-                    <select name="template" class="form-control">
-                        {#let tmp=rtutil:listTemplate('email')}
-                        {#for t in tmp}
-                        <option label="{t}" value="{t}"></option>
-                        {/for}
-                        {/let}
-                    </select>
-                    <textarea class="form-control" name="email" id="txtmail"></textarea>
-                    <button class="btn btn-primary form-control fa fa-envelope" onclick="sendEmail();" type="button">
-                        Send
-                    </button>
-                    <h2>Phone Call</h2>
-                    <label>Conversation Summery</label>
-                    <textarea class="form-control" name="email" id="txtcall"></textarea>
-                    <button class="btn btn-primary form-control fa fa-phone" onclick="saveCall();" type="button">Send
-                    </button>
-                </div>
+                {#include rtcom/}
                 <div class="tab-pane fade" id="nav-orders" role="tabpanel" aria-labelledby="nav-orders-tab">
                     <ul class="list-group list-group-flush">
                         {#for o in rtutil:listOrders(client.id)}
-                        <li class="list-group-item">{o.item}</li>
+                        <button class="btn-link" name="orderid" value="{o.id}" type="submit">
+                            <li class="list-group-item">{o.item}</li>
+                        </button>
                         {/for}
                     </ul>
                 </div>
@@ -111,11 +81,11 @@
         "{#for o in rtutil:listOrders(client.id)}"
         d = new Date("{o.ondate}");
         vpermonth.push(d.getMonth() + 1, '{o.quantity}');
-        console.log(d.getMonth() + 1 + " : " + '{o.quantity}');
         "{/for}"
         buildChart(vpermonth);
 
     })
+
 
     function buildChart(data) {
         var myChart = new Chart(ctx, {
@@ -138,61 +108,6 @@
                         }
                     }]
                 }
-            }
-        });
-    }
-
-    function sendEmail() {
-        let msg = $("#txtmail").val();
-        let mail = '{client.email}';
-        console.log("Sending email to client: " + mail);
-        $.ajax({
-            url: '/readymix/sendMail',
-            data: JSON.stringify({"mailto": mail, "message": msg}),
-            headers: {'Content-Type': 'application/json'},
-            method: 'PUT',
-            onscroll: function (r) {
-                console.log("Message sent succesfully! " + r);
-            },
-            onerror: function (e, s, err) {
-                console.log("Send failed, " + err);
-            }
-        });
-    }
-
-    function sendSMS() {
-        let msg = $("#txtsms").val();
-        let mobile = '{client.mobile}';
-        console.log("Sending SMS to client: " + mobile);
-        $.ajax({
-            url: '/readymix/sendSMS',
-            data: JSON.stringify({"mobile": mobile, "message": msg}),
-            headers: {'Content-Type': 'application/json'},
-            method: 'PUT',
-            onscroll: function (r) {
-                console.log("Message sent succesfully! " + r);
-            },
-            onerror: function (e, s, err) {
-                console.log("Send failed, " + err);
-            }
-        });
-    }
-
-    function saveCall() {
-        let msg = $("#txtcall").val();
-        let mobile = '{client.mobile}';
-        let email = '{client.email}';
-        console.log("Saving conversation : " + mobile);
-        $.ajax({
-            url: '/readymix/saveCall',
-            data: JSON.stringify({"mobile": mobile, "message": msg, 'clientid': email}),
-            headers: {'Content-Type': 'application/json'},
-            method: 'POST',
-            onscroll: function (r) {
-                console.log("Phone call saved succesfully !" + r);
-            },
-            onerror: function (e, s, err) {
-                console.log("Send failed, " + err);
             }
         });
     }

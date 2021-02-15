@@ -151,5 +151,53 @@ function addOption() {
         }
     })
 }
+function sendEmail(mail) {
+    let msg = $("#txtmail").val();
+    console.log("Sending email to client: " + mail);
+    $.ajax({
+        url: '/readymix/sendMail',
+        data: JSON.stringify({"mailto": mail, "message": msg}),
+        headers: {'Content-Type': 'application/json'},
+        method: 'PUT',
+        onscroll: function (r) {
+            console.log("Message sent succesfully! " + r);
+        },
+        onerror: function (e, s, err) {
+            console.log("Send failed, " + err);
+        }
+    });
+}
 
+function sendSMS(mobile) {
+    let msg = $("#txtsms").val();
+    console.log("Sending SMS to client: " + mobile);
+    $.ajax({
+        url: '/readymix/sendSMS',
+        data: JSON.stringify({"mobile": mobile, "message": msg}),
+        headers: {'Content-Type': 'application/json'},
+        method: 'PUT',
+        onscroll: function (r) {
+            console.log("Message sent succesfully! " + r);
+        },
+        onerror: function (e, s, err) {
+            console.log("Send failed, " + err);
+        }
+    });
+}
 
+function saveCall(email,mobile) {
+    let msg = $("#txtcall").val();
+        console.log("Saving conversation : " + mobile);
+    $.ajax({
+        url: '/readymix/saveCall',
+        data: JSON.stringify({"mobile": mobile, "message": msg, 'clientid': email}),
+        headers: {'Content-Type': 'application/json'},
+        method: 'POST',
+        onscroll: function (r) {
+            console.log("Phone call saved succesfully !" + r);
+        },
+        onerror: function (e, s, err) {
+            console.log("Send failed, " + err);
+        }
+    });
+}

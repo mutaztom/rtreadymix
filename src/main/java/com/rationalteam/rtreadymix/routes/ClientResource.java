@@ -2,24 +2,23 @@ package com.rationalteam.rtreadymix.routes;
 
 
 import com.rationalteam.rtreadymix.Client;
+import com.rationalteam.rtreadymix.Order;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
-import io.quarkus.security.Authenticated;
-import io.quarkus.vertx.http.runtime.devmode.Json;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 
-@Path("/redaymix")
+@Path("/readymix")
 public class ClientResource {
     @Inject
     @ResourcePath("rtviewer")
     Template template;
-
+    @Inject
+    AdminResource ares;
 
     @Path("/client")
     @RolesAllowed("admin")
@@ -28,5 +27,13 @@ public class ClientResource {
         client.find(itemid);
         JsonObject jclient = JsonObject.mapFrom(client);
         return template.data("client", jclient);
+    }
+
+    @Path("/clientorder")
+    @POST
+    public TemplateInstance showOrder(@FormParam("orderid") int orderid) {
+        ares.itemid = orderid;
+        ares.command = "view";
+        return ares.manageOrder(orderid);
     }
 }

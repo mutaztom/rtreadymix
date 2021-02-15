@@ -163,22 +163,13 @@
                 </div>
                 <div class="col">
                     <button name="command" value="call" class="btn btn-primary form-control fa fa-phone"
-                            type="button">Call CLient
+                            type="button" data-toggle="collapse" data-target="#comtools" aria-expanded="false" aria-controls="#comtools">Contact Client
                     </button>
-                </div>
-                <div class="col">
-                    <button name="command" value="sms" class="btn btn-primary form-control fa fa-mobile"
-                            type="button">SMS CLient
-                    </button>
-                </div>
-                <div class="col">
-                    <button name="command" value="email" class="btn btn-primary form-control fa fa-envelope"
-                            type="button">Email Client
-                    </button>
+
                 </div>
                 <div class="col">
                     <button name="command" value="schedule" class="col btn btn-primary form-control fa fa-table-tennis"
-                            type="button">Schedule
+                            type="submit" >Schedule
                     </button>
                 </div>
                 <div class="col">
@@ -186,6 +177,9 @@
                             type="button">Reject
                     </button>
                 </div>
+            </div>
+            <div class="col-6 md-col-6 sm-col-12 collapse" id="comtools">
+                {#include rtcom/}
             </div>
         </form>
     </div>
@@ -241,8 +235,10 @@
         console.log(location.href);
         if (window.location.href.endsWith("orderman")) {
             location.assign("/readymix/orders");
-        }else if(window.location.href.endsWith('manageOrder')){
+        } else if (window.location.href.endsWith('manageOrder')) {
             location.assign("/readymix/dashboard");
+        } else if (window.location.href.endsWith('clientorder')) {
+            history.go(-1);
         }
     }
 </script>

@@ -11,6 +11,7 @@ import com.rationalteam.rtreadymix.UtilityExt;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.mailer.reactive.ReactiveMailer;
+import io.quarkus.vertx.web.Param;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RoutingExchange;
 import io.reactivex.Completable;
@@ -35,6 +36,7 @@ import javax.transaction.Transactional;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -180,13 +182,13 @@ public class ReadymixRoutes {
 
     }
 
-    @Route(path = "/readymix/sendSMS", methods = HttpMethod.PUT, produces = "application/json", consumes = "application/json",type = Route.HandlerType.BLOCKING)
-    @RolesAllowed({"admin","user"})
+    @Route(path = "/readymix/sendSMS", methods = HttpMethod.PUT, produces = "application/json", consumes = "application/json", type = Route.HandlerType.BLOCKING)
+    @RolesAllowed({"admin", "user"})
     public Uni<Response> sendSMS(RoutingContext cont) {
         try {
             String mobile = cont.getBodyAsJson().getString("mobile");
             String msg = cont.getBodyAsJson().getString("message");
-            System.out.println("Message"+ msg);
+            System.out.println("Message" + msg);
             return Uni.createFrom().completionStage(Uni.createFrom().item(commHub.sendSMS(mobile, msg)).subscribe().asCompletionStage())
                     .onItem().transform(t -> {
                         System.out.println("SMS sent successfully");
@@ -196,34 +198,32 @@ public class ReadymixRoutes {
                         System.out.println("Could not send sms: " + t.getMessage());
                         return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
                     });
-        }catch (Exception e){
-            return Uni.createFrom().item(Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),e.getMessage()).build());
+        } catch (Exception e) {
+            return Uni.createFrom().item(Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build());
         }
     }
 
-    @Route(path = "/readymix/saveCall", methods = HttpMethod.POST, produces = "application/json")
-    @RolesAllowed({"admin","user"})
-    public CompletionStage<Response> saveCall(RoutingContext con) {
-        String message = con.getBodyAsJson().getString("message");
-        String mobile = con.getBodyAsJson().getString("mobile");
-        String clientid = con.getBodyAsJson().getString("clientid");
-        Action comp = new Action() {
-            @Override
-            public void run() throws Exception {
-                boolean r = MezoDB.doSqlIn("insert into tblcomlog(email,address,message,smstime,byuser)" +
-                        " values('" + clientid + ",'" + mobile + "','" + message + "',currdate(),'admin')"
-                );
-                if (!r)
-                    throw new RuntimeException("Could not save call log");
-            }
-        };
-        return Uni.createFrom().item(comp).subscribeAsCompletionStage().whenComplete((a,t)->{
-            System.out.println("Call saved successfully");
-        }).thenApply(t->{return Response.ok("Call saved successfully").build();
-        }).exceptionally(t -> {
-            System.out.println("Could not save call log: " + t.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
-        });
+    @Route(path = "/readymix/saveCall", methods = HttpMethod.POST, produces = "application/json", type = Route.HandlerType.BLOCKING)
+    @RolesAllowed({"admin", "user"})
+    @Transactional
+    public Uni<Response> saveCall(RoutingContext con) {
+        try {
+            String message = con.getBodyAsJson().getString("message");
+            String mobile = con.getBodyAsJson().getString("mobile");
+            String clientid = con.getBodyAsJson().getString("clientid");
+            String sql = "insert into tblcomlog(email,address,message,smstime,byuser)" +
+                    " values('" + clientid + "','" + mobile + "','" + message + "',current_date(),'admin')";
+            return Uni.createFrom().completionStage(Uni.createFrom().item(MezoDB.doSqlIn(sql))
+                    .subscribeAsCompletionStage()).onItem().transform(t -> {
+                System.out.println("Call saved successfully " + t);
+                return Response.ok("Call saved successfully").build();
+            }).onFailure().recoverWithItem(t -> {
+                System.out.println("Could not save call log: " + t.getMessage());
+                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
+            });
+        } catch (Exception e) {
+            return Uni.createFrom().item(Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build());
+        }
     }
 
 }

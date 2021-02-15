@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<body>
+<div class="tab-pane fade show active" id="nav-contact" role="tabpanel"
+     aria-labelledby="nav-contact-tab">
+    <h2>Send SMS</h2>
+    <label>From SMS Template</label>
+    <select name="template" class="form-control">
+        {#let tmp=rtutil:listTemplate('sms')}
+        {#for t in tmp}
+        <option label="{t}" value="{t}"></option>
+        {/for}
+        {/let}
+    </select>
+    <textarea class="form-control" name="sms" id="txtsms"></textarea>
+    <button class="btn btn-primary form-control fa fa-mobile" onclick="sendSMS('{client.mobile}');" type="button">Send
+    </button>
+    <h2>Send Email</h2>
+    <label>From Template</label>
+    <select name="template" class="form-control">
+        {#let tmp=rtutil:listTemplate('email')}
+        {#for t in tmp}
+        <option label="{t}" value="{t}"></option>
+        {/for}
+        {/let}
+    </select>
+    <textarea class="form-control" name="email" id="txtmail"></textarea>
+    <button class="btn btn-primary form-control fa fa-envelope" onclick="sendEmail('{client.email}');" type="button">
+        Send
+    </button>
+    <h2>Phone Call</h2>
+    <label>Conversation Summery</label>
+    <textarea class="form-control" name="email" id="txtcall"></textarea>
+    <button class="btn btn-primary form-control fa fa-phone" onclick="saveCall('{client.email},{client.mobile}');" type="button">Save
+    </button>
+</div>
+</body>
