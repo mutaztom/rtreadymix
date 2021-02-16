@@ -14,23 +14,35 @@
         {/if}
         <form id="frmorderman" action="orderman" method="post">
             <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><h5>Order Details</h5></div>
-            <div class="form-row">
-                <div class="col-1">
-                    <label>Id</label>
-                    <input readonly name="orderid" value="{order.id}" class="form-control-plaintext"/>
+            <div class="row">
+                <div class="flex-column">
+                    {#if order.status.name eq 'Confirmed'}
+                    <img src="../images/paid.jpg" alt="paid"/>
+                    {#else}
+                    <img src="../images/pending-clock.jpg" alt="unpaid"/>
+                    {/if}
+                    <output class="form-control font-weight-bold" style="font-size: large;">Status: {order.status}</output>
                 </div>
-                <div class="col-2">
-                    <label>On Date</label>
-                    <input readonly value="{order.getStrOndate}" class="form-control">
-                </div>
-                <div class="col-9">
-                    <label>Title</label>
-                    <input readonly value="{order.item}" class="form-control">
+                <div class="flex-column">
+                    <div class="form-row">
+                        <div class="col-1">
+                            <label>Id</label>
+                            <input readonly name="orderid" value="{order.id}" class="form-control-plaintext"/>
+                        </div>
+                        <div class="col-2">
+                            <label>On Date</label>
+                            <input readonly value="{order.getStrOndate}" class="form-control">
+                        </div>
+                        <div class="col-9">
+                            <label>Title</label>
+                            <input readonly value="{order.item}" class="form-control">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="form-row">
                 <div class="col">
-                    <label>Amount</label>
+                    <label>Quantity (Qm)</label>
                     <input id="quantity" readonly value="{order.quantity}" class="form-control font-weight-bold">
                 </div>
 
@@ -163,13 +175,14 @@
                 </div>
                 <div class="col">
                     <button name="command" value="call" class="btn btn-primary form-control fa fa-phone"
-                            type="button" data-toggle="collapse" data-target="#comtools" aria-expanded="false" aria-controls="#comtools">Contact Client
+                            type="button" data-toggle="collapse" data-target="#comtools" aria-expanded="false"
+                            aria-controls="#comtools">Contact Client
                     </button>
 
                 </div>
                 <div class="col">
                     <button name="command" value="schedule" class="col btn btn-primary form-control fa fa-table-tennis"
-                            type="submit" >Schedule
+                            type="submit">Schedule
                     </button>
                 </div>
                 <div class="col">

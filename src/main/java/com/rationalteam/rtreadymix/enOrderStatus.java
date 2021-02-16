@@ -4,7 +4,7 @@ public enum enOrderStatus {
     Created,
     Processing,
     Confirmed,
-    Deliverd,
+    Delivered,
     Rejected,
-    Canceld
+    Canceled
 }

@@ -201,3 +201,31 @@ function saveCall(email,mobile) {
         }
     });
 }
+Date.prototype.addHours = function (h) {
+    this.setTime(this.getTime() + (h * 60 * 60 * 1000));
+    return this;
+}
+function getStatusColor(status) {
+    let stcolor;
+    switch (status) {
+        case 'Processing':
+            stcolor = "#2c76f6";
+            break;
+        case 'Created':
+            stcolor = "#bf1d1d";
+            break;
+        case 'Rejected':
+            stcolor = "#595c5f";
+            break;
+        case 'Delivered':
+            stcolor = null;
+            break;
+        case 'Canceled':
+            stcolor = "#333538";
+            break;
+
+        default:
+            stcolor = null;
+    }
+    return stcolor;
+}
