@@ -70,8 +70,9 @@
                 {#for order in rtlist }
                 <tr>
                     <th scope="row">
-                        <p>{#if order.status eq 'Confirmed'}<img src="../images/visa.png" alt="paid">{/if}{order.id}</p>
+                        {#if order.status eq 'Confirmed'}<img src="../images/visa.png" alt="paid">{/if}
                     </th>
+                    <th scope="row">{order.id}</th>
                     <td>{order.notes}</td>
                     <td>{order.ondate}</td>
                     <td>{order.dateNeeded}</td>
@@ -99,7 +100,8 @@
                                 {#for stat in orderstatus}
                                 <button class="dropdown-item" name="newstatus" type="button"
                                         onclick="updateStatus({order.id},'{stat}');"
-                                        value="{stat}">{stat}</button>
+                                        value="{stat}">{stat}
+                                </button>
                                 {/for}
 
                             </div>
@@ -156,21 +158,21 @@
     }
 
     function updateStatus(itemid, newstatus) {
-            $.ajax({
-                type: "POST",
-                url: "/readymix/updateStatus?itemid=" + itemid + "&newstatus=" + newstatus,
-                data: {},
-                Method: "POST",
-                success: function (data) {
-                    console.log("Status was updated successfully, " + data.result)
-                    $("#ddstatus_"+itemid).text(newstatus);
+        $.ajax({
+            type: "POST",
+            url: "/readymix/updateStatus?itemid=" + itemid + "&newstatus=" + newstatus,
+            data: {},
+            Method: "POST",
+            success: function (data) {
+                console.log("Status was updated successfully, " + data.result)
+                $("#ddstatus_" + itemid).text(newstatus);
 
-                },
-                error: function (data) {
-                    console.log("could not save new status")
-                    alert(data.error);
-                }
-            });
+            },
+            error: function (data) {
+                console.log("could not save new status")
+                alert(data.error);
+            }
+        });
     }
 </script>
 {/}

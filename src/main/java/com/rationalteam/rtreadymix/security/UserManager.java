@@ -1,10 +1,13 @@
 package com.rationalteam.rtreadymix.security;
 
+import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rtreadymix.data.Tblusers;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import javax.transaction.Transactional;
+
+import java.util.List;
 
 import static io.quarkus.elytron.security.common.BcryptUtil.bcryptHash;
 
@@ -22,5 +25,10 @@ public class UserManager {
         user.setPassword(bcryptHash(password));
         user.setRoles(role);
         user.persist();
+    }
+    @Transactional
+    public static List<Tblusers> getUsers(){
+        List<Tblusers> users = MezoDB.open("select * from tblusers", Tblusers.class);
+        return users;
     }
 }

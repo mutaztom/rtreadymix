@@ -21,6 +21,8 @@
                href="#list-profile" role="tab" aria-controls="profile">Currency Settings</a>
             <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-list" data-toggle="list"
                href="#list-settings" role="tab" aria-controls="settings">System Properties (Advanced)</a>
+            <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-users" data-toggle="list"
+               href="#list-settings" role="tab" aria-controls="users">Users Management</a>
         </div>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-12">
@@ -241,6 +243,10 @@
                         onclick="saveProps();">Save
                 </button>
             </div>
+            <div class="tab-pane fade" id="users" role="tabpanel" aria-labelledby="list-settings-users">
+                <h5>Users Manager</h5>
+                <button class="btn btn-secondary fa fa-plus-square" onclick="alert('adding users to be implemented');">Add User</button>
+            </div>
         </div>
     </div>
 </div>
@@ -249,12 +255,10 @@
 {#jscript}
 <script type="text/javascript">
     $(document ).ready(function() {
-        document.location=document.location+" #list-options";
-        console.log("Locading: "+document.location);
+        $('#list-tab a:first-child').tab('show');
     });
 </script>
 <script type="text/javascript" src="../js/settings.js"></script>
-
 {/}
 </body>
 {/}
