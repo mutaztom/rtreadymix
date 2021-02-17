@@ -1,7 +1,7 @@
 var tmpfile;
 var commmedia;
 var actcurid;
-
+var actuserid;
 
 function showTemplate(fname, commtype) {
     tmpfile = fname;
@@ -178,7 +178,7 @@ function createCurrency() {
     $("#act-cursymbol").val("");
     $("#act-curfraction").val("");
     $("#act-curiso").val("");
-    $(".collapse").collapse('show');
+    $("#curcol").collapse('show');
 }
 
 function checkTemplateExist(tfile, comtype) {
@@ -289,3 +289,37 @@ $('#list-tab a').on('click', function (e) {
     e.preventDefault()
     $(this).tab('show')
 });
+
+function adduser() {
+    actuserid = -1;
+    $("#curuid").val("");
+    $("#curuname").val("");
+    $("#cururole").val("");
+    $("#curumobile").val("");
+    $("#curuemail").val("");
+    $("#curupassword").val();
+    $("#curuconpassword").val();
+    $("#usercol").show();
+}
+
+function showuser(userid) {
+    actuserid = userid;
+    $("#curuid").val(actuserid);
+    $("#curuname").val($("#curuname_" + actuserid).val());
+    $("#cururole").val($("#curole_" + actuserid).val());
+    $("#curumobile").val($("#curphone_" + actuserid).val());
+    $("#curuemail").val($("#curemail_" + actuserid).val());
+    $("#curupassword").val("onlytesting");
+    $("#curuconpassword").val();
+    $("#usercol").show();
+}
+
+function onshowpwd(contid) {
+    let shown = document.getElementById(contid).type === 'text';
+    document.getElementById(contid).type = shown ? 'password' : 'text';
+}
+
+function onUserman(dat) {
+    // location.reload();
+    $("#usercol").hide();
+}

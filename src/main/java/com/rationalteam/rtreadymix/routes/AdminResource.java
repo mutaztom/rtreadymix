@@ -1,8 +1,11 @@
 package com.rationalteam.rtreadymix.routes;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
+import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rtreadymix.*;
+import com.rationalteam.rtreadymix.data.Tblusers;
+import com.rationalteam.rtreadymix.security.UserManager;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
@@ -89,7 +92,7 @@ public class AdminResource {
             List<CProduct> plist = stat.getProducts();
             dayslimit = dayslimit == null ? 5 : dayslimit;
             List<Order> newarrivals = stat.getLatestOrders(Optional.of(dayslimit));
-                        TemplateInstance t = adminspace.data("curruser", "Amdmin")
+            TemplateInstance t = adminspace.data("curruser", "Amdmin")
                     .data("title", "Admin Dashboard")
                     .data("dayslimit", dayslimit)
                     .data("prodlist", plist)
@@ -158,7 +161,7 @@ public class AdminResource {
         listTemplates();
         String[] adminmails = Utility.getProperty("adminmail").split(",");
         String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
-
+        List<Tblusers> users = UserManager.getUsers();
         return settingsTemplate.data("title", "System Settings")
                 .data("icon", "settings.png")
                 .data("sms_templates", smstemp)
@@ -167,8 +170,52 @@ public class AdminResource {
                 .data("currlist", rtutil.listCurrency())
                 .data("adminmails", adminmails)
                 .data("adminmobiles", adminmobiles)
-                .data("options", optionMap);
+                .data("options", optionMap)
+                .data("users", users);
 
+    }
+    @FormParam("curuserid")
+    String curuserid;
+    @Path("userman")
+    @POST
+    @RolesAllowed("admin")
+    @Transactional
+        public void userman(@FormParam("username") String username,
+                        @FormParam("userrole") String userrole,
+                        @FormParam("userpassword") String password,
+                        @FormParam("usermobile") String usermobile,
+                        @FormParam("useremail") String email,
+                        @FormParam("urole") String urole
+    ) {
+        ServerMessage smsg = new ServerMessage();
+        try {
+            if (command != null) {
+                if (command.equals("saveuser")) {
+                    Tblusers tuser = new Tblusers();
+                    tuser.setUsername(username);
+                    tuser.setEmail(email);
+                    tuser.setPhone(usermobile);
+                    tuser.setUsertype(urole);
+                    int userid=Integer.parseInt(curuserid);
+                    if ( userid > 0) {
+                        UserManager.updateUser(tuser);
+                    } else {
+                        UserManager.add(tuser);
+                    }
+                    smsg.setMessage("User created/updated successfully For user id:" + userid);
+                } else if (command.startsWith("removeuser")) {
+                    if(command.contains("_")){
+                    String delid=command.split("_")[1];
+                    boolean b = UserManager.delete(Integer.parseInt(delid));
+                    smsg.setMessage(b ? "User deleted successfully" : "There was an error while deleting user.");
+                    smsg.setMessage(smsg.getMessage().concat(" For user id:" + delid));
+                    }
+                }
+            }
+            System.out.println(smsg.getMessage());
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+        }
     }
 
     @Path("/setNotification")
@@ -267,10 +314,10 @@ public class AdminResource {
             } else if (command.equals("deliver")) {
                 t = t.data("error", "Feature not implemented yet");
             } else if (command.equals("schedule")) {
-                Order order=new Order();
+                Order order = new Order();
                 List<Order> orlist = order.listAll();
-                return schedTemp.data("title","ReadyMix Schedule Manager")
-                        .data("orders",orlist);
+                return schedTemp.data("title", "ReadyMix Schedule Manager")
+                        .data("orders", orlist);
             }
             return t;
         } catch (Exception exp) {
