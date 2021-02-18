@@ -2,7 +2,7 @@ var tmpfile;
 var commmedia;
 var actcurid;
 var actuserid;
-
+var changePassword=false;
 function showTemplate(fname, commtype) {
     tmpfile = fname;
     commmedia = commtype;
@@ -292,13 +292,15 @@ $('#list-tab a').on('click', function (e) {
 
 function adduser() {
     actuserid = -1;
-    $("#curuid").val("");
+    $("#curuid").val(actuserid);
     $("#curuname").val("");
     $("#cururole").val("");
     $("#curumobile").val("");
     $("#curuemail").val("");
     $("#curupassword").val();
     $("#curuconpassword").val();
+    document.getElementById('changepwd').style.display = 'none';
+    document.getElementById('pwdgroup').style.display = 'block';
     $("#usercol").show();
 }
 
@@ -309,8 +311,11 @@ function showuser(userid) {
     $("#cururole").val($("#curole_" + actuserid).val());
     $("#curumobile").val($("#curphone_" + actuserid).val());
     $("#curuemail").val($("#curemail_" + actuserid).val());
-    $("#curupassword").val("onlytesting");
-    $("#curuconpassword").val();
+    $("#curupassword").val("");
+    $("#curuconpassword").val("");
+    document.getElementById('changepwd').style.display = 'block';
+    $('#ckchangepwd').prop("checked", false);
+    document.getElementById('pwdgroup').style.display = 'none';
     $("#usercol").show();
 }
 
@@ -319,7 +324,33 @@ function onshowpwd(contid) {
     document.getElementById(contid).type = shown ? 'password' : 'text';
 }
 
-function onUserman(dat) {
-    // location.reload();
+$("#frmuserman").submit(function (event) {
     $("#usercol").hide();
+    //window.location.reload(true);
+    console.log("User manager was called..")
+    //$( "#list-users" ).load(window.location.href + " #list-users" );
+    $('#list-tab a:last-child').tab('show');
+    return false;
+});
+
+function onChangepwd() {
+    let ckd = document.getElementById("ckchangepwd").checked;
+    document.getElementById("pwdgroup").style.display = (ckd ? 'block' : 'none');
+    $("#curupassword").prop('required',ckd);
+    $("#curpassword").prop('required',ckd);
+    changePassword=ckd;
 }
+
+var password = document.getElementById("curupassword"),
+    confirm_password = document.getElementById("curuconpassword");
+
+function validatePassword() {
+    if(changePassword)
+    if (password.value !== confirm_password.value) {
+        confirm_password.setCustomValidity("Passwords Don't Match");
+    } else {
+        confirm_password.setCustomValidity("");
+    }
+}
+password.onchange = validatePassword;
+confirm_password.onkeyup = validatePassword;

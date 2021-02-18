@@ -36,7 +36,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "username", nullable = true, length = 255)
+    @Column(name = "username", nullable = false, length = 255)
     @Username
     public String getUsername() {
         return username;
@@ -47,7 +47,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "password", nullable = true, length = 255)
+    @Column(name = "password", nullable = false, length = 255)
     @Password
     public String getPassword() {
         return password;
@@ -58,7 +58,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "roles", nullable = true, length = 255)
+    @Column(name = "roles", nullable = false, length = 255)
     @Roles
     public String getRoles() {
         return roles;
@@ -69,7 +69,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "email", nullable = true, length = 255)
+    @Column(name = "email", nullable = false, length = 255)
     public String getEmail() {
         return email;
     }
@@ -79,7 +79,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "phone", nullable = true, length = 255)
+    @Column(name = "phone", nullable = false, length = 255)
     public String getPhone() {
         return phone;
     }

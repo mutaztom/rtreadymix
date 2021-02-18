@@ -1,5 +1,6 @@
 package com.rationalteam.rtreadymix.routes;
 
+import com.rationalteam.core.security.enUserType;
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.*;
@@ -174,41 +175,45 @@ public class AdminResource {
                 .data("users", users);
 
     }
-    @FormParam("curuserid")
-    String curuserid;
+
+
     @Path("userman")
     @POST
     @RolesAllowed("admin")
     @Transactional
-        public void userman(@FormParam("username") String username,
+    public void userman(@FormParam("username") String username,
+                        @FormParam("curuserid") String curuserid,
                         @FormParam("userrole") String userrole,
                         @FormParam("userpassword") String password,
                         @FormParam("usermobile") String usermobile,
-                        @FormParam("useremail") String email,
-                        @FormParam("urole") String urole
+                        @FormParam("useremail") String email
     ) {
         ServerMessage smsg = new ServerMessage();
         try {
+            boolean b;
             if (command != null) {
                 if (command.equals("saveuser")) {
+                    int userid = Integer.parseInt(curuserid);
                     Tblusers tuser = new Tblusers();
+                    tuser.setId(userid);
                     tuser.setUsername(username);
                     tuser.setEmail(email);
                     tuser.setPhone(usermobile);
-                    tuser.setUsertype(urole);
-                    int userid=Integer.parseInt(curuserid);
-                    if ( userid > 0) {
-                        UserManager.updateUser(tuser);
+                    tuser.setRoles(userrole);
+                    tuser.setPassword(password);
+                    tuser.setUsertype(userrole);
+                    if (userid > 0) {
+                        b = UserManager.updateUser(tuser);
                     } else {
-                        UserManager.add(tuser);
+                        b = UserManager.add(tuser);
                     }
                     smsg.setMessage("User created/updated successfully For user id:" + userid);
                 } else if (command.startsWith("removeuser")) {
-                    if(command.contains("_")){
-                    String delid=command.split("_")[1];
-                    boolean b = UserManager.delete(Integer.parseInt(delid));
-                    smsg.setMessage(b ? "User deleted successfully" : "There was an error while deleting user.");
-                    smsg.setMessage(smsg.getMessage().concat(" For user id:" + delid));
+                    if (command.contains("_")) {
+                        String delid = command.split("_")[1];
+                        b = UserManager.delete(Integer.parseInt(delid));
+                        smsg.setMessage(b ? "User deleted successfully" : "There was an error while deleting user.");
+                        smsg.setMessage(smsg.getMessage().concat(" For user id:" + delid));
                     }
                 }
             }

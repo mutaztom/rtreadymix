@@ -1,15 +1,11 @@
 package com.rationalteam.rtreadymix.security;
 
-import com.rationalteam.rterp.erpcore.MezoDB;
+import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.data.Tblusers;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import static io.quarkus.elytron.security.common.BcryptUtil.bcryptHash;
 
@@ -31,26 +27,52 @@ public class UserManager {
     }
 
     @Transactional
-    public static void add(Tblusers user) {
-        user.persist();
+    public static boolean add(Tblusers user) {
+        try {
+            user.persist();
+            return true;
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+            return false;
+        }
     }
 
     @Transactional
-    public static void updateUser(Tblusers user) {
-        EntityManager eman = user.getEntityManager();
-        MezoDB.setEman(eman);
-        MezoDB.persistTable(user,true);
+    public static boolean updateUser(Tblusers user) {
+        int c = 0;
+        //if password is set then validate and update
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            c = Tblusers.update("username=?1, email=?2,phone=?3,roles=?4,usertype=?5, password=?6 where id=" + user.getId(),
+                    user.getUsername(), user.getEmail(), user.getPhone(), user.getRoles(), user.getUsertype(), bcryptHash(user.getPassword()));
+        } else {
+            c = Tblusers.update("username=?1, email=?2,phone=?3,roles=?4,usertype=?5  where id=" + user.getId(),
+                    user.getUsername(), user.getEmail(), user.getPhone(), user.getRoles(), user.getUsertype());
+        }
+        return c > 0;
     }
 
     @Transactional
     public static List<Tblusers> getUsers() {
-        List<Tblusers> users = MezoDB.open("select * from tblusers", Tblusers.class);
-        return users;
+        return Tblusers.listAll();
     }
 
     @Transactional
     public static boolean delete(int uid) {
-        boolean r = MezoDB.doSqlIn("delete from tblusers where username!='admin' and id=" + uid);
-        return r;
+        Tblusers user = Tblusers.findById(uid);
+        if (user != null) {
+            user.delete();
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public static boolean changePassword(int uid, String password) {
+        Tblusers user = Tblusers.findById(uid);
+        int c = 0;
+        if (user != null) {
+            c = Tblusers.update("password =?1 where id=" + uid, bcryptHash(password));
+        }
+        return c > 0;
     }
 }
