@@ -9,35 +9,7 @@
             {#if error}
             <div class="alert-danger">{error}</div>
             {/if}
-            <form id="frmtools" method="post" action="" class="form-inline">
-                <div class="form-group">
-                    {#if isstaff}
-                    <button type="submit" name="_method" value="addnew"
-                            class="btn btn-info fa fa-plus-circle form-control"
-                            style="font-weight: bold;font-size: large;width: 100px;height: 70px;padding-bottom: 20px;">
-                    </button>
-                    {/if}
-                    <label class="sr-only" for="txtsearch">Search For</label>
-                    <input id="txtsearch" name="findwhat" value={findwhat} type="text" class="form-control"
-                           placeholder="Type anything">
-                    <button type="submit" value="search" name="_method" class="btn btn-info fa fa-search"
-                            title="Search"></button>
-                    <button type="submit" value="clear" name="_method" class="btn btn-info fa fa-eraser"
-                            title="Clear Search"></button>
-                    {#if isstaff}
-                    <label for="ddclient">Filter Client ({clientid})</label>
-                    <select id="ddclient" name="client" class="form-control">
-                        <option value="-1">None</option>
-                        {#for c in clients }
-                        <option value="{c.id}" selected>{c.item}</option>
-                        {/for}
-                    </select>
-                    <button class="btn btn-info fa fa-filter" title="Apply filter for client" type="submit"
-                            name="_method"
-                            value="filter" formmethod="post"></button>
-                    {/if }
-                </div>
-            </form>
+            {#include filterman/}
         </div>
     </div>
 
@@ -59,7 +31,7 @@
                     <th scope="col">Status</th>
                     {/if }
                     {#if isstaff }
-                    <th scope="col">Admin Tools</th>
+                    <th scope="col">Tools</th>
                     {/if }
                     {#if not isstaff }
                     <th scope="col">Action</th>
@@ -68,7 +40,7 @@
                 </thead>
                 <tbody>
                 {#for order in rtlist }
-                <tr>
+                <tr style="{str:getStyle(order.status)};">
                     <th scope="row">
                         {#if order.status eq 'Confirmed'}<img src="../images/visa.png" alt="paid">{/if}
                     </th>
@@ -80,9 +52,6 @@
                     <td style="color:blueviolet;font-weight: bold;">{order.mobile}</td>
                     <td>{order.grade}</td>
                     <td>{order.member}</td>
-                    {#if title.contains('order') }
-                    <td><span style="color: brown;font-weight: bold;">{order.status}</span></td>
-                    {/if }
                     <form id="frmbrowse" action="orderman" method="post">
                         {#if isstaff }
                         <td>

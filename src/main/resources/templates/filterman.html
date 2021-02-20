@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div class="flex-column mb-3">
+<form id="frmtools" method="post" action="" class="form-inline">
+    <div class="form-group">
+        <input class="form-control mr-sm-2" type="search" placeholder="Search" name="findwhat"
+               aria-label="Search" style="color:#74ba50">
+        <button id="txtsearch" class="btn btn-warning ml-2 my-2 my-sm-0 fa fa-search" type="submit">Search</button>
+        <button type="submit" value="clear" name="_method" class="btn btn-warning ml-2 my-2 my-sm-0 fa fa-eraser"
+                title="Clear Search">Clear</button>
+
+        <label for="ddclient" class="ml-2 mr-2">Filter Client ({clientid})</label>
+        <select id="ddclient" name="client" class="form-control">
+            <option value="-1">None</option>
+            {#for c in clients }
+            <option value="{c.id}" selected>{c.item}</option>
+            {/for}
+        </select>
+        <button class="btn btn-warning ml-2 my-2 my-sm-0 fa fa-filter" title="Apply filter for client" type="submit"
+                name="_method"
+                value="filter" formmethod="post">Filter</button>
+    </div>
+</form>
+</div>
+</body>
+</html>

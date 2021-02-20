@@ -96,12 +96,13 @@
                             <div class="row">
                                 <div class="col">
                                     <input class="form-check-input" type="checkbox" name="adminemails" value="{e.email}"
-                                          {str:contains(rtutil:prop('adminmail'),e.email? 'checked':'')} id="{e.email}" {#if !e.email}disabled{/}>
+                                           {#if str:isNotifyEmail(e.email)}checked{/}
+                                    id="{e.email}" {#if !e.email}disabled{/}>
                                     <label class="form-check-label  form-control" for="{e.email}">{e.email or 'No Email
                                         Set'}</label>
                                 </div>
                                 <div class="col">
-                                    <input class="form-check-input" type="checkbox" name="adminmobiles" id="{e.phone}"
+                                    <input class="form-check-input" type="checkbox" name="adminmobiles" id="{e.phone}" {#if str:isNotifyMobile(e.phone)}checked{/}
                                            value="{e.phone}" placeholder="No Mobile set" {#if !e.phone}disabled{/} >
                                     <label class="form-check-label  form-control" for="{e.phone}">{e.phone or 'No mobile
                                         set'}</label>

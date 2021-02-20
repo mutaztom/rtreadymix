@@ -22,12 +22,14 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Path("readymix")
@@ -294,9 +296,14 @@ class SettingExtenstion {
         return nfor.format(n);
     }
 
-    public static boolean contains(String s, String tar) {
-        System.out.println("does $s contain $t".replace("$s",s).replace("$t",tar).concat(" : ")+ (s.contains(tar)));
-        return s.contains(tar);
+    public static boolean isNotifyEmail(String item) {
+        Object src = System.getProperties().get("adminmail");
+        return src != null && (src.toString().contains(item));
+    }
+
+    public static boolean isNotifyMobile(String item) {
+        Object src = System.getProperties().get("adminmobile");
+        return src != null && (src.toString().contains(item));
     }
 
     public static String getItem(Integer itsid, String tbl) {
@@ -307,6 +314,32 @@ class SettingExtenstion {
         } catch (Exception e) {
             return e.getMessage();
         }
+    }
+    public static String getStyle(String st) {
+        String stcolor="Brown";
+        switch (st) {
+            case "Processing":
+                stcolor = "color:blue;";
+                break;
+                case "Confirmed":
+                stcolor = "color:darkred;font-weight:bold;background-color:#bb9976;";
+                break;
+            case "Created":
+                stcolor = "color:red;font-weight:bold";
+                break;
+            case "Rejected":
+                stcolor = "color:gray;text-decoration: line-through;";
+                break;
+            case "Delivered":
+                stcolor = "color:darkgreen;font-style:italic;background-color:#74ba50";
+                break;
+            case "Canceled":
+                stcolor = "color:orange;text-decoration: line-through";
+                break;
+            default:
+                stcolor = "color:red;";
+        }
+        return stcolor;
     }
 }
 
@@ -401,6 +434,7 @@ class OrderTools {
     public static String getStrDateNeeded(Order order) {
         return order.getDateNeeded().format(DateTimeFormatter.ISO_ORDINAL_DATE);
     }
+
 
 
 }

@@ -206,7 +206,7 @@ Date.prototype.addHours = function (h) {
     return this;
 }
 function getStatusColor(status) {
-    let stcolor;
+    let stcolor='Brown';
     switch (status) {
         case 'Processing':
             stcolor = "#2c76f6";
