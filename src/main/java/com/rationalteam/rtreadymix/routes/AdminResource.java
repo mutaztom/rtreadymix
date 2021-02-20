@@ -11,12 +11,14 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -44,6 +46,7 @@ public class AdminResource {
     @Inject
     @ResourcePath("settings")
     Template settingsTemplate;
+    @Inject
     @ResourcePath("schedule")
     Template schedTemp;
     @Inject
@@ -60,10 +63,6 @@ public class AdminResource {
     //form values for settings
     @FormParam("newcat")
     String newcat;
-    @FormParam("adminmail")
-    String adminmail;
-    @FormParam("adminmobile")
-    String adminmobile;
     Integer dayslimit;
     //properties
     Properties properties;
@@ -160,80 +159,33 @@ public class AdminResource {
         mailtemp = new ArrayList<>();
         smstemp = new ArrayList<>();
         listTemplates();
-        String[] adminmails = Utility.getProperty("adminmail").split(",");
-        String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
         List<Tblusers> users = UserManager.getUsers();
+        String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
         return settingsTemplate.data("title", "System Settings")
                 .data("icon", "settings.png")
                 .data("sms_templates", smstemp)
                 .data("mail_templates", mailtemp)
                 .data("props", properties)
                 .data("currlist", rtutil.listCurrency())
-                .data("adminmails", adminmails)
+                .data("users", users)
                 .data("adminmobiles", adminmobiles)
-                .data("options", optionMap)
-                .data("users", users);
-
-    }
-
-
-    @Path("userman")
-    @POST
-    @RolesAllowed("admin")
-    @Transactional
-    public void userman(@FormParam("username") String username,
-                        @FormParam("curuserid") String curuserid,
-                        @FormParam("userrole") String userrole,
-                        @FormParam("userpassword") String password,
-                        @FormParam("usermobile") String usermobile,
-                        @FormParam("useremail") String email
-    ) {
-        ServerMessage smsg = new ServerMessage();
-        try {
-            boolean b;
-            if (command != null) {
-                if (command.equals("saveuser")) {
-                    int userid = Integer.parseInt(curuserid);
-                    Tblusers tuser = new Tblusers();
-                    tuser.setId(userid);
-                    tuser.setUsername(username);
-                    tuser.setEmail(email);
-                    tuser.setPhone(usermobile);
-                    tuser.setRoles(userrole);
-                    tuser.setPassword(password);
-                    tuser.setUsertype(userrole);
-                    if (userid > 0) {
-                        b = UserManager.updateUser(tuser);
-                    } else {
-                        b = UserManager.add(tuser);
-                    }
-                    smsg.setMessage("User created/updated successfully For user id:" + userid);
-                } else if (command.startsWith("removeuser")) {
-                    if (command.contains("_")) {
-                        String delid = command.split("_")[1];
-                        b = UserManager.delete(Integer.parseInt(delid));
-                        smsg.setMessage(b ? "User deleted successfully" : "There was an error while deleting user.");
-                        smsg.setMessage(smsg.getMessage().concat(" For user id:" + delid));
-                    }
-                }
-            }
-            System.out.println(smsg.getMessage());
-        } catch (Exception exp) {
-            Utility.ShowError(exp);
-        }
+                .data("options", optionMap);
     }
 
     @Path("/setNotification")
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("admin")
-    @Produces(MediaType.TEXT_HTML)
-    public void setNotification(JsonObject body) {
-        body.forEach(k ->
-        {
-            Utility.updateProperty(k.getKey(), k.getValue().toString(), SystemConfig.PROPFILE);
-        });
-        Utility.saveProperties();
+    public void setNotification(@FormParam("emailnotify") boolean notifysms,
+                                @FormParam("smsnotify") boolean notifyemail,
+                                @FormParam("adminemails") List<String> adminemails,
+                                @FormParam("adminmobiles") List<String> adminmobiles) {
+        Utility.updateProperty("notify.email", notifysms ? String.valueOf(notifyemail) : "false", SystemConfig.PROPFILE);
+        Utility.updateProperty("notify.sms", notifyemail ? String.valueOf(notifysms) : "false", SystemConfig.PROPFILE);
+        Utility.updateProperty("adminmobile", adminmobiles.toString().replace("[", "").replace("]", "")
+                .replace(",", ";"), SystemConfig.PROPFILE);
+        Utility.updateProperty("adminmail", adminemails.toString().replace("[", "").replace("]", "")
+                .replace(",", ";"), SystemConfig.PROPFILE);
+        //reload properties
     }
 
     private List<COption> getOptionValues(String tbl) {
@@ -340,6 +292,11 @@ class SettingExtenstion {
     public static String format(Number n) {
         NumberFormat nfor = NumberFormat.getNumberInstance(Locale.forLanguageTag("en"));
         return nfor.format(n);
+    }
+
+    public static boolean contains(String s, String tar) {
+        System.out.println("does $s contain $t".replace("$s",s).replace("$t",tar).concat(" : ")+ (s.contains(tar)));
+        return s.contains(tar);
     }
 
     public static String getItem(Integer itsid, String tbl) {

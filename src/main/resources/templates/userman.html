@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+{#include base}
+{#rtbody}
+<body>
+<form id="frmuserman" action="userman/" method="post" onsubmit="saveUser();">
+    <h5><i class="fa fa-user-shield"> Users Manager</i></h5>
+    <button class="btn btn-secondary fa fa-plus-square" onclick="adduser();" type="button">Add User</button>
+    <div class="col-12 mb-3">
+        <div class="collapse" id="usercol">
+            <div class="input-group mb-3 mt-3">
+                <div class="input-group-prepend"><span class="input-group-text" id="uid">User ID</span>
+                </div>
+                <input type="text" class="form-control font-weight-bold" aria-label="UserID" aria-describedby="uid"
+                       name="curuserid" id="curuid" readonly>
+            </div>
+            <div class="input-group mb-3 mt-3">
+                <div class="input-group-prepend"><span class="input-group-text" id="uname">User Name</span>
+                </div>
+                <input type="text" class="form-control font-weight-bold" aria-label="Username" aria-describedby="uname"
+                       name="username" id="curuname" required>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text" id="utype">User Type</span>
+                </div>
+                <select class="custom-select" required id="cururole" type="text" name="userrole" aria-label="Usertype" aria-describedby="utype">
+                    <option selected>Choose...</option>
+                    <option value="admin">Administrator</option>
+                    <option value="user">User</option>
+                    <option value="guest">Guest</option>
+                </select>
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text" id="uemail">Email</span>
+                </div>
+                <input class="form-control" id="curuemail" required aria-describedby="uemail" type="text" name="useremail" aria-label="Email">
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend"><span class="input-group-text" id="umobile">Mobile</span>
+                </div>
+                <input class="form-control" aria-label="Usermobile" required id="curumobile" type="text" name="usermobile" aria-describedby="umobile">
+            </div>
+            <div class="custom-control custom-checkbox" id="changepwd">
+                <input type="checkbox" class="custom-control-input" onchange="onChangepwd();" id="ckchangepwd">
+                <label class="custom-control-label" for="ckchangepwd">Change Password</label>
+            </div>
+            <div class="form-group" id="pwdgroup">
+                <div class="input-group mb-3" id="gpwd">
+                    <div class="input-group-prepend"><span class="input-group-text" id="upassword">Password</span></div>
+                    <input class="form-control fa-passport" aria-label="UserPassword" type="password" id="curupassword"
+                          onchange="validatePassword();" name="userpassword" aria-describedby="upassword">
+                    <div class="input-group-append"><button class="btn btn-outline-secondary fa fa-eye" type="button" onclick="onshowpwd('curupassword');" id="showpwd"></button></div>
+                </div>
+                <div class="input-group mb-3" id="gconpwd">
+                    <div class="input-group-prepend"><span class="input-group-text" id="conpassword">Confirm Password</span>
+                    </div>
+                    <input class="form-control" aria-label="ConfirmPassword" type="password" id="curuconpassword" name="userconpassword"
+                           onkeyup="validatePassword();" aria-describedby="conpassword">
+                    <div class="input-group-append"><button class="btn btn-outline-secondary fa fa-eye" type="button" onclick="onshowpwd('curuconpassword');" id="showconpwd"></button></div>
+                </div>
+            </div>
+            <button class="btn btn-primary fa fa-save" name="command" type="submit" value="saveuser">Save</button>
+            <button class="btn btn-primary fa fa-stop ml-3" onclick="$('#usercol').hide();" type="button">Close</button>
+        </div>
+    </div>
+    <div class="card-body alert-warning">
+        Email and mobile number will be used to alert users about system events like arrival of new orders,
+        changes in orders and other system events.
+        At least one user as 'Admin' and one user as 'User'
+    </div>
+    {#for user in users}
+    <li class="list-group-item" id="{user.id}">
+        <output>{user.id}</output>
+        <output id="curuname_{user.id}" class="border border-light font-weight-bold">{user.username}</output>
+        <output id="curole_{user.id}" class="border border-light" style="color:brown;">{user.roles}</output>
+        <output id="curemail_{user.id}" class="border border-light">{user.email}</output>
+        <output id="curphone_{user.id}" class="border border-light">{user.phone}</output>
+        <button class="btn btn-primary fa fa-pencil-alt" title="Edit"
+                onclick="showuser({user.id});" type="button"></button>
+        <button class="btn btn-danger fa fa-trash" type="submit" title="Remove" name="command" value="removeuser_{user.id}"></button>
+    </li>
+    {/for}
+</form>
+</body>
+{/}
+{/}
+<script type="text/javascript" src="../js/settings.js"></script>
+</html>

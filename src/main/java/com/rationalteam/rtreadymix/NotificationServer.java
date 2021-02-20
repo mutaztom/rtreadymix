@@ -28,19 +28,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class SubscriptionServer {
+public class NotificationServer {
     SubscribtionLocal subs;
     @Inject
     CommHub commHub;
-    
+
     DateFormat df = new SimpleDateFormat("dd-MM-yyyy");
-    private String ADMINEMAIL = "mutaztom@gmail.com";
-    private static String ADMINMOBILE = "+249912352368";
+    private String DEFAULTEMAIL = "mutaztom@gmail.com";
+    private static String DEFAULTMOBILE = "+249912352368";
     private boolean NotifyEmail;
     private boolean NotifySMS;
+    private String ADMINEMAIL;
+    private String ADMINMOBILE;
 
 
-    public SubscriptionServer() {
+    public NotificationServer() {
         initTemplatePath(enCommMedia.EMAIL);
     }
 
@@ -49,8 +51,8 @@ public class SubscriptionServer {
         Properties p = new Properties();
         p.setProperty("resource.loader.file.path", path.toString());
         Velocity.init(p);
-        ADMINEMAIL = UtilityExt.getProperty("adminmail") != null ? UtilityExt.getProperty("adminmail") : ADMINEMAIL;
-        ADMINMOBILE = UtilityExt.getProperty("adminmobile") != null ? UtilityExt.getProperty("adminmobile") : ADMINMOBILE;
+        ADMINEMAIL = UtilityExt.getProperty("adminmail") != null ? UtilityExt.getProperty("adminmail") : DEFAULTEMAIL;
+        ADMINMOBILE = UtilityExt.getProperty("adminmobile") != null ? UtilityExt.getProperty("adminmobile") : DEFAULTMOBILE;
         NotifyEmail = Boolean.parseBoolean(Utility.getProperty("notify.email"));
         NotifySMS = Boolean.parseBoolean(Utility.getProperty("notify.sms"));
     }
@@ -270,8 +272,13 @@ public class SubscriptionServer {
                 context.put("order", encode);
                 StringWriter mailmsg = new StringWriter();
                 template.merge(context, mailmsg);
-                b = commHub.sendEMail(message.toString(), ADMINEMAIL);
-                System.out.println(mailmsg.toString());
+                if (ADMINEMAIL.contains(";")) {
+                    String[] mailto = ADMINEMAIL.split(";");
+                    for (String value : mailto) {
+                        b = commHub.sendEMail(message.toString(), value);
+                    }
+                } else
+                    b = commHub.sendEMail(message.toString(), ADMINEMAIL);
             }
         } catch (
                 Exception exp) {
@@ -283,10 +290,12 @@ public class SubscriptionServer {
     @ConsumeEvent("rtorderevent")
     public void notifyStaff(ClientOrder order) {
         try {
-            if (NotifyEmail)
+            if (NotifyEmail) {
                 confirmOrder(order, enCommMedia.EMAIL, order.getMobile());
-            if (NotifySMS)
+            }
+            if (NotifySMS) {
                 confirmOrder(order, enCommMedia.SMS, order.getMobile());
+            }
         } catch (Exception exp) {
             Utility.ShowError(exp);
         }

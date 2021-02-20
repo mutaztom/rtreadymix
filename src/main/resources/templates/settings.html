@@ -21,9 +21,6 @@
                href="#list-profile" role="tab" aria-controls="profile">Currency Settings</a>
             <a class="list-group-item list-group-item-action fa fa-mobile" id="list-settings-list" data-toggle="list"
                href="#list-settings" role="tab" aria-controls="settings">System Properties (Advanced)</a>
-            <a class="list-group-item list-group-item-action fa fa-user-shield" id="list-settings-users"
-               data-toggle="list"
-               href="#list-users" role="tab" aria-controls="users">Users Management</a>
         </div>
     </div>
     <div class="col-lg-8 col-md-8 col-sm-12">
@@ -87,59 +84,68 @@
                     <div class="rtnotify" id="rtnotify">
                         <form action="/readymix/setNotification" method="post">
                             <h6 class="font-weight-bold">Admin Emails</h6>
-                            <button type="button" id="addmail" class="btn btn-primary fa fa-plus-circle" name="addwhat"
-                                    value="addmail" onclick="addNotifySettings('adminmail')">Add new
-                            </button>
-                            {#for e in adminmails}
-                            <div class="input-group mb-3 rtconf">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="{e}">@</span>
-                                </div>
-                                <input type="text" class="form-control" placeholder="Email" aria-label="{e}"
-                                       aria-describedby="basic-addon1" value="{e}">
+                            <div class="alert alert-secondary" role="alert">
+                                Alerts and notifications will be sent to the selected destinations for both email and
+                                sms notifications.
+                                In case you chose one notification method you should at least select one destination
+                                email or mobile.
+                                Please note that only mobile number in Sudan are allowed for SMS Service.
                             </div>
-                            {/for}
-                            <h6 class="font-weight-bold">Admin Mobiles</h6>
-                            <button type="button" id="addmobile" class="btn btn-primary fa fa-plus-circle"
-                                    name="addwhat"
-                                    value="addmail" onclick="addNotifySettings('adminmobile')">Add new
-                            </button>
-                            {#for m in adminmobiles}
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text" id="{m}">#</span>
+                            {#for e in users}
+                            <output class="font-weight-bold">{e.username}: {e.roles}</output>
+                            <div class="row">
+                                <div class="col">
+                                    <input class="form-check-input" type="checkbox" name="adminemails" value="{e.email}"
+                                          {str:contains(rtutil:prop('adminmail'),e.email? 'checked':'')} id="{e.email}" {#if !e.email}disabled{/}>
+                                    <label class="form-check-label  form-control" for="{e.email}">{e.email or 'No Email
+                                        Set'}</label>
                                 </div>
-                                <input type="text" class="form-control" placeholder="Username" aria-label="mail"
-                                       aria-describedby="basic-addon1" value="{m}">
+                                <div class="col">
+                                    <input class="form-check-input" type="checkbox" name="adminmobiles" id="{e.phone}"
+                                           value="{e.phone}" placeholder="No Mobile set" {#if !e.phone}disabled{/} >
+                                    <label class="form-check-label  form-control" for="{e.phone}">{e.phone or 'No mobile
+                                        set'}</label>
+                                </div>
                             </div>
                             {/for}
                             <h6 class="font-weight-bold">Notification Methods (at lease one must be active)</h6>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">
-                                        <input id="ckemail" type="checkbox" checked="{rtutil:prop('notify.email')}"
+                                        <input id="ckemail" type="checkbox" name="emailnotify"
+                                               checked="{rtutil:prop('notify.email')}"
                                                aria-label="Checkbox for following text input">
                                     </div>
                                 </div>
-                                <input type="text" class="form-control" value="Notify via Email"
-                                       aria-label="Text input with checkbox" readonly>
+                                <output class="form-control" aria-label="Text input with checkbox">Notify via Email
+                                </output>
                             </div>
                             <div class="input-group mb-3">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">
-                                        <input id="cksms" type="checkbox" checked="{rtutil:prop('notify.sms')}"
+                                        <input id="cksms" type="checkbox" name="smsnotify"
+                                               checked="{rtutil:prop('notify.sms')}"
                                                aria-label="Checkbox for following text input">
                                     </div>
                                 </div>
-                                <input type="text" class="form-control" value="Notify via SMS"
-                                       aria-label="Text input with checkbox" readonly>
+                                <output type="text" class="form-control" aria-label="Text input with checkbox">Notify
+                                    via SMS
+                                </output>
                             </div>
                             <div class="form-group">
-                                <button name="cmdsave" id="cmdsavenotification" onclick="saveNotifyMethod();"
-                                        class="btn btn-primary fa fa-save form-control"
-                                        type="button">
-                                    Save
-                                </button>
+                                <div class="form-row">
+
+                                    <div class="col">
+                                        <button name="cmdsave" id="cmdsavenotification"  onclick="updateNotify();"
+                                                class="btn btn-primary fa fa-save form-control"
+                                                type="submit">
+                                            Save
+                                        </button>
+                                    </div>
+                                    <div class="col">
+                                        <output style="font-size: large;font-weight: bold;color:green;" id="notif-save-result"></output>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -230,6 +236,11 @@
             </div>
             <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
                 <h5>System Properties (Advanced)</h5>
+                <div class="alert-danger alert" role="alert">
+                    This area of system is for advanced users only and you shouldn't tamper with values in here if you
+                    are not quite confident about what you are doing.
+                    Incorrect entries here may cause system to become infunctional.
+                </div>
                 <button class="btn btn-secondary fa fa-plus-square" onclick="addProp();">Add</button>
                 <br>
                 {#for p in props.keys}
@@ -244,97 +255,6 @@
                         onclick="saveProps();">Save
                 </button>
             </div>
-            <div class="tab-pane fade" id="list-users" role="tabpanel" aria-labelledby="list-settings-users">
-               <form id="frmuserman" action="userman/" method="post" >
-                <h5><i class="fa fa-user-shield"> Users Manager</i></h5>
-                <button class="btn btn-secondary fa fa-plus-square" onclick="adduser();" type="button">Add User</button>
-                <div class="col-12 mb-3">
-                    <div class="collapse" id="usercol">
-                        <div class="input-group mb-3 mt-3">
-                            <div class="input-group-prepend"><span class="input-group-text" id="uid">User ID</span>
-                            </div>
-                            <input type="text" class="form-control font-weight-bold" aria-label="UserID" aria-describedby="uid"
-                            name="curuserid" id="curuid" readonly>
-                        </div>
-                        <div class="input-group mb-3 mt-3">
-                            <div class="input-group-prepend"><span class="input-group-text" id="uname">User Name</span>
-                            </div>
-                            <input type="text" class="form-control font-weight-bold" aria-label="Username" aria-describedby="uname"
-                            name="username" id="curuname" required>
-                        </div>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend"><span class="input-group-text" id="utype">User Type</span>
-                            </div>
-                            <select class="custom-select" required id="cururole" type="text" name="userrole" aria-label="Usertype" aria-describedby="utype">
-                                <option selected>Choose...</option>
-                                <option value="admin">Administrator</option>
-                                <option value="user">User</option>
-                                <option value="guest">Guest</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                User rome must be set.
-                            </div>
-                        </div>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend"><span class="input-group-text" id="uemail">Email</span>
-                            </div>
-                            <input class="form-control" id="curuemail" required aria-describedby="uemail" type="text" name="useremail" aria-label="Email">
-                            <div class="invalid-feedback">
-                                Field can't be empty
-                            </div>
-                        </div>
-                        <div class="input-group mb-3">
-                            <div class="input-group-prepend"><span class="input-group-text" id="umobile">Mobile</span>
-                            </div>
-                            <input class="form-control" aria-label="Usermobile" required id="curumobile" type="text" name="usermobile" aria-describedby="umobile">
-                            <div class="invalid-feedback">
-                                Field can't be empty
-                            </div>
-                        </div>
-                        <div class="custom-control custom-checkbox" id="changepwd">
-                            <input type="checkbox" class="custom-control-input" onchange="onChangepwd();" id="ckchangepwd">
-                            <label class="custom-control-label" for="ckchangepwd">Change Password</label>
-                        </div>
-                        <div class="form-group" id="pwdgroup">
-                        <div class="input-group mb-3" id="gpwd">
-                            <div class="input-group-prepend"><span class="input-group-text" id="upassword">Password</span></div>
-                            <input class="form-control fa-passport" aria-label="UserPassword" type="password" id="curupassword" name="userpassword" aria-describedby="upassword">
-                            <div class="input-group-append"><button class="btn btn-outline-secondary fa fa-eye" type="button" onclick="onshowpwd('curupassword');" id="showpwd"></button></div>
-                        </div>
-                        <div class="input-group mb-3" id="gconpwd">
-                            <div class="input-group-prepend"><span class="input-group-text" id="conpassword">Confirm Password</span>
-                            </div>
-                            <input class="form-control" aria-label="ConfirmPassword" type="password" id="curuconpassword" name="userconpassword" aria-describedby="conpassword">
-                            <div class="input-group-append"><button class="btn btn-outline-secondary fa fa-eye" type="button" onclick="onshowpwd('curuconpassword');" id="showconpwd"></button></div>
-                            <div class="invalid-feedback">
-                                Password confirm does not match password.
-                            </div>
-                        </div>
-                        </div>
-                        <button class="btn btn-primary fa fa-save" name="command" type="submit" value="saveuser">Save</button>
-                        <button class="btn btn-primary fa fa-stop ml-3" onclick="$('#usercol').hide();" type="button">Close</button>
-                    </div>
-                </div>
-                   <div class="card-body alert-warning">
-                       Email and mobile number will be used to alert users about system events like arrival of new orders,
-                       changes in orders and other system events.
-                       At least one user as 'Admin' and one user as 'User'
-                   </div>
-                {#for user in users}
-                <li class="list-group-item" id="{user.id}">
-                    <output>{user.id}</output>
-                    <output id="curuname_{user.id}" class="border border-light font-weight-bold">{user.username}</output>
-                    <output id="curole_{user.id}" class="border border-light" style="color:brown;">{user.roles}</output>
-                    <output id="curemail_{user.id}" class="border border-light">{user.email}</output>
-                    <output id="curphone_{user.id}" class="border border-light">{user.phone}</output>
-                    <button class="btn btn-primary fa fa-pencil-alt" title="Edit"
-                            onclick="showuser({user.id});" type="button"></button>
-                    <button class="btn btn-danger fa fa-trash" type="submit" title="Remove" name="command" value="removeuser_{user.id}"></button>
-                </li>
-                {/for}
-               </form>
-            </div>
-
         </div>
     </div>
 </div>

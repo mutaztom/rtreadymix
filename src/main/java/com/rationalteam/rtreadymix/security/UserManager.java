@@ -29,6 +29,8 @@ public class UserManager {
     @Transactional
     public static boolean add(Tblusers user) {
         try {
+            user.setId(null);
+            user.setPassword(bcryptHash(user.getPassword()));
             user.persist();
             return true;
         } catch (Exception exp) {

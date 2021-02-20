@@ -2,7 +2,8 @@ var tmpfile;
 var commmedia;
 var actcurid;
 var actuserid;
-var changePassword=false;
+var changePassword = false;
+
 function showTemplate(fname, commtype) {
     tmpfile = fname;
     commmedia = commtype;
@@ -250,22 +251,10 @@ function saveNotifyMethod() {
     updateNotify(props);
 }
 
-function updateNotify(props) {
-    $.ajax({
-        url: "/readymix/setNotification",
-        data: JSON.stringify(props),
-        type: "post",
-        headers: {"Content-Type": "application/json"},
-        success: function (data) {
-            console.log(data);
-            location.reload();
-            $('#list-notification').load(document.URL + ' #list-notification');
-            $('#list-tab a[href="#list-notification-list"]').tab('show');
-        },
-        error: function (e, st, err) {
-            console.log(err);
-        }
-    });
+function updateNotify() {
+    //    $('#list-notification').load(document.URL + ' #list-notification');
+    $('#list-tab a[href="#list-notification-list"]').tab('show');
+    $('#notif-save-result').val("Data updated succesfully").show().fadeOut( 2000 );
 }
 
 function addProp() {
@@ -324,33 +313,33 @@ function onshowpwd(contid) {
     document.getElementById(contid).type = shown ? 'password' : 'text';
 }
 
-$("#frmuserman").submit(function (event) {
-    $("#usercol").hide();
-    //window.location.reload(true);
-    console.log("User manager was called..")
-    //$( "#list-users" ).load(window.location.href + " #list-users" );
-    $('#list-tab a:last-child').tab('show');
-    return false;
-});
+function saveUser() {
+    console.log("User saved successfully");
+    $('#usercol').hide();
+    setTimeout(function () {
+        window.location.reload();
+        console.log("just reloaded....");
+    }, 400);
+}
 
 function onChangepwd() {
     let ckd = document.getElementById("ckchangepwd").checked;
     document.getElementById("pwdgroup").style.display = (ckd ? 'block' : 'none');
-    $("#curupassword").prop('required',ckd);
-    $("#curpassword").prop('required',ckd);
-    changePassword=ckd;
+    $("#curupassword").prop('required', ckd);
+    $("#curpassword").prop('required', ckd);
+    changePassword = ckd;
 }
 
 var password = document.getElementById("curupassword"),
     confirm_password = document.getElementById("curuconpassword");
 
 function validatePassword() {
-    if(changePassword)
-    if (password.value !== confirm_password.value) {
-        confirm_password.setCustomValidity("Passwords Don't Match");
-    } else {
-        confirm_password.setCustomValidity("");
-    }
+    console.log("will skip pwd validation cause chpwed=" + changePassword);
+    if (changePassword)
+        if (password.value !== confirm_password.value) {
+            confirm_password.setCustomValidity("Passwords Don't Match");
+        } else {
+            confirm_password.setCustomValidity("");
+        }
 }
-password.onchange = validatePassword;
-confirm_password.onkeyup = validatePassword;
+

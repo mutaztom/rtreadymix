@@ -36,7 +36,7 @@ public class Tblusers extends PanacheEntityBase {
     }
 
     @Basic
-    @Column(name = "username", nullable = false, length = 255)
+    @Column(name = "username", nullable = false, length = 255,unique = true)
     @Username
     public String getUsername() {
         return username;

@@ -5,30 +5,13 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblCurrency;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
-import com.rationalteam.rtreadymix.data.Tblorder;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
-import io.quarkus.qute.Engine;
-import io.quarkus.qute.TemplateLocator;
-import io.quarkus.security.Authenticated;
 import io.quarkus.vertx.web.Body;
-import io.quarkus.vertx.web.Route;
-import io.quarkus.vertx.web.RoutingExchange;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.common.template.TemplateEngine;
-import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.Velocity;
-import org.apache.velocity.app.VelocityEngine;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.security.DenyAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -53,7 +36,7 @@ public class RationalServices {
     @Inject
     EntityManager eman;
     @Inject
-    SubscriptionServer server;
+    NotificationServer server;
     @Inject
     EventBus bus;
     @Inject
