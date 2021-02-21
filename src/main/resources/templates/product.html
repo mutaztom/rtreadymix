@@ -16,12 +16,10 @@
             <div class="form-row">
                 <div class="col">
                     <label for="txtid">Id</label>
-                    <input type="text" id="txtid" name="id" class="form-control" value="{service.id}"
-                           placeholder="Read Only auto generated id"
-                           readonly>
+                    <output type="text" id="txtid" name="id" class="form-control">{product.id}</output>
                 </div>
 
-                <div class="input-group mb-3">
+                <div class="input-group mb-3" id="divcat">
                     <label for="ddcat">Category</label>
                     <select id="ddcat" name="ddcategory" class="form-control">
                         {#for cat in prodcat}
@@ -46,7 +44,7 @@
                     <label for="ddunit">Unit</label>
                     <select name="unit" id="ddunit" class="form-control">
                         {#for unit in units}
-                        <option value="{unit.id}" label="{unit.item}" selected="{product.unit}"></option>
+                        <option value="{unit.id}" label="{unit.item}" {product.unitid==unit.id ? 'selected' : ''}></option>
                         {/for}
                     </select>
                 </div>
@@ -55,13 +53,6 @@
                     <input class="form-control" name="unitprice" value="{product.unitPrice}" id="txtunitprice">
                 </div>
             </div>
-            <label for="ddmember"></label>
-            <select name="unit" id="ddmember" class="form-control">
-                {#for m in member}
-                <option value="{m.id}" label="{m.item}"></option>
-                {/for}
-            </select>
-
             <button class="btn btn-primary fa fa-save" name="command" value="cmdsave">Save</button>
             <button class="btn btn-danger fa fa-trash" name="command" value="cmddelete">Delete</button>
             <button class="btn btn-primary fa fa-backward" type="button" name="command" value="cmdexit"
@@ -91,7 +82,7 @@
                 data: {"command": "cmdaddcat", "newcat": catname},
                 success: new function () {
                     console.log("data saved successfully");
-                    $("#ddcat").refresh();
+                    $("#divcat").load(location.href+" #divcat");
                 },
                 error: new function () {
                     alert("could not save new category");
@@ -115,6 +106,10 @@
             }
         });
     }
+    $(document).ready( function() {
+        $('#rtalert').delay(1000).fadeOut();
+    });
+
 </script>
 {/}
 </body>

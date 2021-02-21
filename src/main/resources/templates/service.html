@@ -8,17 +8,15 @@
 {#rtbody}
 {!{#include inputbox/}!}
 {#if result}
-<div class="alert alert-danger">{result}</div>
+<div id="rtalert" class="alert {str:contains(result,'error') ? 'alert-danger' : 'alert-success'}">{result}</div>
 {/if}
 <div class="row">
     <div class="col-lg-6 col-sm-12 col-md-6">
-        <form action="/readymix/saveservice" method="post" id="frmservice">
+        <form action="/readymix/saveservice" method="post" id="frmservice" onsubmit="onSubmit();">
             <div class="form-row">
                 <div class="col">
                     <label for="txtid">Id</label>
-                    <input type="text" id="txtid" name="id" class="form-control" value="{service.id}"
-                           placeholder="Read Only auto generated id"
-                           readonly>
+                    <output type="text" id="txtid" class="form-control">{service.id}</output>
                 </div>
 
                 <div class="input-group mb-3">
@@ -46,7 +44,7 @@
                     <label for="ddunit">Unit</label>
                     <select name="unit" id="ddunit" class="form-control">
                         {#for unit in units}
-                        <option value="{unit.id}" label="{unit.item}" selected="{service.unit}"></option>
+                        <option value="{unit.id}" label="{unit.item}" {service.unitid==unit.id ? 'selected' : ''}></option>
                         {/for}
                     </select>
                 </div>
@@ -67,6 +65,11 @@
         <output>service Index</output>
     </div>
 </div>
+
+{/}
+</body>
+{#include inputbox/}
+{#jscript}
 <script type="text/javascript">
     function onexit() {
         var def = confirm("Are you sure you want to exit.");
@@ -75,22 +78,25 @@
     }
 
     function onAddCat() {
-        var catname = prompt("Please type new category name");
-        if (catname) {
-            $('#newcat').val(catname);
-            $.ajax({
-                type: "POST",
-                url: "/readymix/saveservice",
-                data: {"command": "cmdaddcat", "newcat": catname},
-                success: new function () {
-                    console.log("data saved successfully");
-                    $("#ddcat").refresh();
-                },
-                error: new function () {
-                    alert("could not save new category");
-                }
-            });
-        }
+        OPTIONTABLE='servicecat';
+        createOption('servicecate');
+        // addOption();
+        // var catname = prompt("Please type new category name");
+        // if (catname) {
+        //     $('#newcat').val(catname);
+        //     $.ajax({
+        //         type: "POST",
+        //         url: "/readymix/saveservice",
+        //         data: {"command": "cmdaddcat", "newcat": catname},
+        //         success: new function () {
+        //             console.log("data saved successfully");
+        //             $("#ddcat").refresh();
+        //         },
+        //         error: new function () {
+        //             alert("could not save new category");
+        //         }
+        //     });
+        // }
     }
 
     function showInput() {
@@ -108,8 +114,11 @@
             }
         });
     }
+    $(document).ready( function() {
+        $('#rtalert').delay(1000).fadeOut();
+    });
+
 </script>
 {/}
-</body>
 {/}
 </html>
