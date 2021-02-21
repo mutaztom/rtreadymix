@@ -2,7 +2,8 @@ const LOGGED_COOKIE = "quarkus-credential";
 var OPTIONID;//for use with modification of existing options by clicking edit
 var OPTIONTABLE;//for use with new options invoked by pressing add new
 var MODIFY = false;
-var ERRMSG="";
+var ERRMSG = "";
+
 function onlogout() {
     var conf = confirm('Are you sure you want to check out from the system?');
     if (conf) {
@@ -40,7 +41,7 @@ function closeRtInput() {
 $('#modalinput').on('shown.bs.modal', function () {
     $('#rtnewval').trigger('focus');
     $("#msg").html("");
-    document.getElementById("errmsg").style.display='none';
+    document.getElementById("errmsg").style.display = 'none';
 })
 
 function removeOption(optionid, tblname) {
@@ -95,19 +96,19 @@ function modifyOption() {
             success: function (data) {
                 console.log("Received this message from server ".concat(data));
                 output = (data === 'OK');
-                ERRMSG=data;
+                ERRMSG = data;
             },
             error: function (e, status, err) {
                 console.log("error was encountered.".concat(err));
-                ERRMSG=err;
+                ERRMSG = err;
             }
         }
     ).done(function () {
-        if(output) {
+        if (output) {
             closeRtInput();
             location.reload();
             window.location.href = "#list-options";
-        }else{
+        } else {
             var x = document.getElementById("errmsg");
             x.style.display = "block";
             $("#msg").html("There was error executing this command ".concat(ERRMSG));
@@ -132,11 +133,11 @@ function addOption() {
             success: function (msg) {
                 console.log("Received this message from server ".concat(msg));
                 output = (msg === 'OK');
-                ERRMSG=msg;
+                ERRMSG = msg;
             },
             error: function (e, status, err) {
                 console.log("error was encountered.".concat(err));
-                ERRMSG=err;
+                ERRMSG = err;
             }
         }
     ).done(function () {
@@ -144,13 +145,14 @@ function addOption() {
             closeRtInput();
             location.reload();
             window.location.href = "#list-options";
-        }else{
+        } else {
             var x = document.getElementById("errmsg");
             x.style.display = "block";
             $("#msg").html("There was error executing this command ".concat(ERRMSG));
         }
     })
 }
+
 function sendEmail(mail) {
     let msg = $("#txtmail").val();
     console.log("Sending email to client: " + mail);
@@ -185,9 +187,9 @@ function sendSMS(mobile) {
     });
 }
 
-function saveCall(email,mobile) {
+function saveCall(email, mobile) {
     let msg = $("#txtcall").val();
-        console.log("Saving conversation : " + mobile);
+    console.log("Saving conversation : " + mobile);
     $.ajax({
         url: '/readymix/saveCall',
         data: JSON.stringify({"mobile": mobile, "message": msg, 'clientid': email}),
@@ -201,12 +203,14 @@ function saveCall(email,mobile) {
         }
     });
 }
+
 Date.prototype.addHours = function (h) {
     this.setTime(this.getTime() + (h * 60 * 60 * 1000));
     return this;
 }
+
 function getStatusColor(status) {
-    let stcolor='Brown';
+    let stcolor = 'Brown';
     switch (status) {
         case 'Processing':
             stcolor = "#2c76f6";
@@ -228,4 +232,15 @@ function getStatusColor(status) {
             stcolor = null;
     }
     return stcolor;
+}
+
+function filter() {
+    $("#progress").css({"display":"block"});
+    console.log(location);
+    setTimeout(function () {
+        location.reload();
+        console.log("reloading order page applying filters");
+        $("#progress").css({"display":"none"});
+    }, 2000);
+
 }

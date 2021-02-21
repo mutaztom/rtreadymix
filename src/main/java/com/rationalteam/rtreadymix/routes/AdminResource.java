@@ -1,16 +1,22 @@
 package com.rationalteam.rtreadymix.routes;
 
+import com.rationalteam.core.ISearchable;
 import com.rationalteam.core.security.enUserType;
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.reaymixcommon.ServerMessage;
 import com.rationalteam.rterp.erpcore.*;
+import com.rationalteam.rterp.erpcore.data.TblProduct;
 import com.rationalteam.rtreadymix.*;
+import com.rationalteam.rtreadymix.data.Tblorder;
 import com.rationalteam.rtreadymix.data.Tblusers;
 import com.rationalteam.rtreadymix.security.UserManager;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
+import io.smallrye.mutiny.Multi;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -69,19 +75,61 @@ public class AdminResource {
     //properties
     Properties properties;
 
+    static List<Order> orderList = null;
+    private String searchFor;
 
     @Path("/orders")
     @GET
     @RolesAllowed("admin")
     public TemplateInstance browseOrders() {
-        List<Order> orderList = stat.getOrders();
+        if (orderList == null)
+            orderList = stat.getOrders();
+        System.out.println("called browse orders returned size=" + orderList.size());
         List<ClientOrder> col = orderList.stream().map(Order::toClientOrder).collect(Collectors.toList());
         enOrderStatus[] values = enOrderStatus.values();
         return orders.data("isstaff", true)
                 .data("title", "Browse Orders")
                 .data("rtlist", col)
                 .data("clientid", "Admin")
+                .data("filteraction", "filterorder")
+                .data("findwhat", searchFor)
                 .data("clients", cman.getCLients()).data("orderstatus", values);
+    }
+
+    @Path("/filterorder")
+    @POST
+    @RolesAllowed("admin")
+    public void filter(@FormParam("findwhat") String findwhat,
+                       @FormParam("client") String client) {
+        String sql = "";
+        if (command.equals("search") && findwhat != null && !findwhat.isBlank()) {
+            searchFor = findwhat;
+            if (findwhat.matches("(C|c)\\d*")) {
+                sql = "type in (select id from TblProduct where item like '%" + findwhat + "%')";
+            } else if (findwhat.matches("(Raft|Footing|Wall|Colum|Slab)")) {
+                sql = "member in (select id from tblmember where item like '%" + findwhat + "%')";
+            } else {
+                sql = "item like '%" + findwhat + "%' or notes like '%" + findwhat + "%'";
+            }
+            System.out.println(sql);
+            PanacheQuery<Tblorder> olist = Tblorder.find(sql);
+            orderList.clear();
+            olist.stream().forEach(o -> {
+                Order order = new Order();
+                order.setData(o);
+                orderList.add(order);
+            });
+        } else if (command.equals("clear")) {
+            searchFor = null;
+            orderList = stat.getOrders();
+        } else if (command.equals("filterbyclient")) {
+            Order order = new Order();
+            Map<String, Object> map = new HashMap<>();
+            map.put("clientid", client);
+            orderList = order.filter(map);
+            System.out.println("filter called:" + map + " size:" + orderList.size());
+        }
+
     }
 
 
@@ -315,13 +363,14 @@ class SettingExtenstion {
             return e.getMessage();
         }
     }
+
     public static String getStyle(String st) {
-        String stcolor="Brown";
+        String stcolor = "Brown";
         switch (st) {
             case "Processing":
                 stcolor = "color:blue;";
                 break;
-                case "Confirmed":
+            case "Confirmed":
                 stcolor = "color:darkred;font-weight:bold;background-color:#bb9976;";
                 break;
             case "Created":
@@ -434,7 +483,6 @@ class OrderTools {
     public static String getStrDateNeeded(Order order) {
         return order.getDateNeeded().format(DateTimeFormatter.ISO_ORDINAL_DATE);
     }
-
 
 
 }

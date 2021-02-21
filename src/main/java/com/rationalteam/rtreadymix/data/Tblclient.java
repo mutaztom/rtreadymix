@@ -1,14 +1,15 @@
 package com.rationalteam.rtreadymix.data;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 import javax.persistence.*;
 import java.sql.Date;
 import java.util.Objects;
 
 @Entity
-@Table(catalog = "rtmix")
-public class Tblclient {
+@Table(catalog = "rtmix",name = "tblclient")
+public class Tblclient extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Integer id;

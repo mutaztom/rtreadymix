@@ -7,6 +7,7 @@ import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
 
+import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -43,6 +44,7 @@ public class RtbrowseResource {
     String rtype = "";
     String icon;
     Map<String, String> iconmap = new HashMap<>();
+    private String searchFor;
 
     public RtbrowseResource() {
         iconmap.put("supplier", "businessman.png");
@@ -66,7 +68,25 @@ public class RtbrowseResource {
         popColumns(type);
         TemplateInstance t = popdata(type);
         appendCommon(t);
-        return t.data("title", title).data("columns", columns).data("type", type);
+        return t.data("title", title)
+                .data("columns", columns)
+                .data("type", type)
+                .data("findwhat", searchFor)
+                .data("filteraction", "filter");
+    }
+
+    @Path("/filter")
+    @POST
+    @RolesAllowed("admin")
+    public void filter(@FormParam("command") String command,
+                       @FormParam("findwhat") String findwhat) {
+        if (command == null)
+            return;
+        if (command.equals("search") && findwhat != null && !findwhat.isBlank()) {
+            searchFor = findwhat;
+        } else if (command.equals("clear")) {
+            searchFor = null;
+        }
     }
 
     private TemplateInstance popdata(String type) {
@@ -74,10 +94,18 @@ public class RtbrowseResource {
         List<Map<String, Object>> rtlist;
         try {
             List<Map<String, Object>> jar = new ArrayList<>();
+            Map<String, Object> filterMap = new HashMap<>();
+            if (searchFor != null) filterMap.put("item", searchFor);
             switch (type) {
                 case "client":
                     Client client = new Client();
-                    List<Client> clist = client.listAll();
+                    if (searchFor != null) {
+                        filterMap.clear();
+                        if (searchFor.matches("[+]?[\\d]*")) filterMap.put("mobile", searchFor);
+                        else if (searchFor.matches("\\w*[@]\\w*")) filterMap.put("email", searchFor);
+                        else filterMap.put("item", searchFor);
+                    }
+                    List<Client> clist = searchFor == null ? client.listAll() : client.filter(filterMap);
                     rtlist = new ArrayList<>();
                     clist.forEach(c -> {
                         Map<String, Object> map = new HashMap<>();
@@ -92,13 +120,13 @@ public class RtbrowseResource {
                 case "service":
                     CService service = new CService();
                     rtlist = new ArrayList<>();
-                    generateListMap(rtlist, service.listAll());
+                    generateListMap(rtlist, searchFor == null ? service.listAll() : service.filter(filterMap));
                     t = t.data("rtlist", rtlist);
                     break;
                 case "product":
                     CProduct product = new CProduct();
                     rtlist = new ArrayList<>();
-                    generateListMap(rtlist, product.listAll());
+                    generateListMap(rtlist, searchFor == null ? product.listAll() : product.filter(filterMap));
                     t = t.data("rtlist", rtlist);
                     break;
                 case "news":
@@ -112,7 +140,7 @@ public class RtbrowseResource {
                 case "supplier":
                     Supplier supplier = new Supplier();
                     rtlist = new ArrayList<>();
-                    generateListMap(rtlist, supplier.listAll());
+                    generateListMap(rtlist, searchFor == null ? supplier.listAll() : supplier.filter(filterMap));
                     t = t.data("rtlist", rtlist);
                     break;
                 default:

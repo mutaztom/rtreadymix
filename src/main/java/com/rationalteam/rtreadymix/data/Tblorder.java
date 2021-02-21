@@ -1,14 +1,15 @@
 package com.rationalteam.rtreadymix.data;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+
 import javax.persistence.*;
 import java.sql.Date;
-import java.sql.Time;
 import java.util.Objects;
 
 @Entity
 @Table(name="Tblorder")
 @NamedQueries({@NamedQuery(name="Tblorder.findByClientid",query="select t from Tblorder t where t.clientid=:clientid")})
-public class Tblorder {
+public class Tblorder extends PanacheEntityBase {
     @Id
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
