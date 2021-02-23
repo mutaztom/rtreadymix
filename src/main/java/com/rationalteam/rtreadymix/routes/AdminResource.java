@@ -148,10 +148,14 @@ public class AdminResource {
                     .data("prodlist", plist)
                     .data("newarrivals", newarrivals)
                     .data("orderstat", stat.getOrdersByStatus())
+                    .data("sales", stat.getSales())
+                    .data("volumes", stat.getVolumes())
+                    .data("permember", stat.getPerMember())
                     .data("clientstat", stat.getClientsByStatus());
-            if (command == "vieworder") {
-                return orderTemplate.data("order", plist.get(itemid));
-            }
+            if (command != null)
+                if (command.equals("vieworder")) {
+                    return orderTemplate.data("order", plist.get(itemid));
+                }
             return t;
         } catch (Exception exp) {
             Utility.ShowError(exp);
@@ -342,6 +346,14 @@ class SettingExtenstion {
     public static String format(Number n) {
         NumberFormat nfor = NumberFormat.getNumberInstance(Locale.forLanguageTag("en"));
         return nfor.format(n);
+    }
+
+    public static String getProduct(int findid) {
+        return MezoDB.getItem(findid, "TblProduct");
+    }
+
+    public static String getSupplier(int findid) {
+        return MezoDB.getItem(findid, "tblsupplier");
     }
 
     public static boolean isNotifyEmail(String item) {

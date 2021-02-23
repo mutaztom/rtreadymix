@@ -4,15 +4,15 @@
 {#rtbody}
 <body>
 
-    <div class="row justify-content-center">
-        <div id="tbar" class="col-12 col-md-12 col-sm-12">
-            {#include filterman/}
-        </div>
+<div class="row justify-content-center">
+    <div id="tbar" class="col-12 col-md-12 col-sm-12">
+        {#include filterman/}
     </div>
+</div>
 
-    <div class="row justify-content-center">
-        <div class="col-12 col-md-12 col-sm-12">
-            <form id="frmbrowse" action="/readymix/rtbaction" method="post">
+<div class="row justify-content-center">
+    <div class="col-12 col-md-12 col-sm-12">
+        <form id="frmbrowse" action="/readymix/rtbaction" method="post">
             <div class="table-responsive">
                 <table class="table table-hover table-responsive-sm">
                     <thead class="thead-dark">
@@ -22,7 +22,7 @@
                         {/for}
                         {#if isstaff }
                         <th scope="col">Admin Tools</th>
-                        {/if }
+                        {/if}
                         {#if not isstaff }
                         <th scope="col">Action</th>
                         {/if}
@@ -32,41 +32,27 @@
                     {#if rtlist}
                     {#for item in rtlist }
                     <tr>
+                        <input id="itemid" type="hidden" name="itemid" value="{item.id}">
                         {#for k in columns}
                         <td>{item.get(k)}</td>
                         {/for}
-
-
-                            {#if !isstaff }
-                            <td>
-                                <input id="itemid" type="hidden" name="itemid" value="{item.id }">
-                                {#if rtype != client}
-                                <button type="submit" title="View" name="_method" value="view"
-                                        class="btn btn-primary fa fa-eye"></button>
-                                {/if}
-                                <button type="submit" title="Edit" name="_method" value="edit"
-                                        class="btn btn-primary fa fa-pencil-alt"></button>
-                                <button id="cmddelete" type="button" name="_method"
-                                        onclick="deleteItem({item.id })"
-                                        value="delete" class="btn btn-danger fa fa-trash"
-                                        title="Delete this item"></button>
-                            </td>
-                            {#else}
-                            <td>
-                                <input id="itemid" type="hidden" name="itemid" value="{item.id }">
-                                <button type="submit" class="btn btn-primary fa fa-folder-open"
-                                        title="View" name="_method" value="view"></button>
-                            </td>
-                            {/if }
+                        <td>
+                            <button type="submit" title="Edit" name="_method" value="edit_{item.id}"
+                                    class="btn btn-primary fa fa-pencil-alt"></button>
+                            <button id="cmddelete" type="button" name="_method"
+                                    onclick="deleteItem({item.id });"
+                                    value="delete" class="btn btn-danger fa fa-trash"
+                                    title="Delete this item"></button>
+                        </td>
                     </tr>
                     {/for }
                     {/if }
                     </tbody>
                 </table>
             </div>
-            </form>
-        </div>
+        </form>
     </div>
+</div>
 
 
 <script type="text/javascript">

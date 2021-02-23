@@ -11,7 +11,6 @@ import com.rationalteam.rtreadymix.data.Tblorder;
 import com.rationalteam.rtreadymix.purchase.Supplier;
 import io.quarkus.qute.TemplateData;
 
-import javax.lang.model.element.NestingKind;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -73,7 +72,6 @@ public class OrderStat {
         Map<String, Integer> stat = new HashMap<>();
         List open = MezoDB.Open("select count(id),status from tblorder group by status");
         if (open != null)
-
             for (Object o :
                     open) {
                 Object[] rec = (Object[]) o;
@@ -110,5 +108,49 @@ public class OrderStat {
             Utility.ShowError(e);
         }
         return orderlist;
+    }
+
+    @Transactional
+    public Map<Integer, Double> getVolumes() {
+        String sql = "select month(ondate),sum(quantity) from tblorder where year(ondate)=year(current_date())" +
+                " and status not in ('Canceled','Rejected','Created') group by ondate";
+        List open = MezoDB.Open(sql);
+        Map<Integer, Double> sales = new HashMap<>();
+        for (Object row :
+                open) {
+            Object[] rec = (Object[]) row;
+            sales.put(Integer.parseInt(rec[0].toString()),
+                        Double.parseDouble(rec[1].toString()));
+        }
+        return sales;
+    }
+    @Transactional
+    public Map<Integer, Double> getSales() {
+        String sql = "select month(ondate),sum(unitprice*quantity) from tblorder where year(ondate)=year(current_date())" +
+                " and status not in ('Canceled','Rejected','Created') group by ondate";
+        List open = MezoDB.Open(sql);
+        Map<Integer, Double> sales = new HashMap<>();
+        for (Object row :
+                open) {
+            Object[] rec = (Object[]) row;
+            sales.put(Integer.parseInt(rec[0].toString()),
+                        Double.parseDouble(rec[1].toString()));
+        }
+        return sales;
+    }
+    @Transactional
+    public Map<Integer, Double> getPerMember() {
+        String sql = "select type,count(id) from tblorder where year(ondate)=year(current_date())" +
+                " and status not in ('Canceled','Rejected','Created') group by type";
+        List open = MezoDB.Open(sql);
+
+        Map<Integer, Double> sales = new HashMap<>();
+        for (Object row :
+                open) {
+            Object[] rec = (Object[]) row;
+            sales.put(Integer.parseInt(rec[0].toString()),
+                        Double.parseDouble(rec[1].toString()));
+        }
+        return sales;
     }
 }

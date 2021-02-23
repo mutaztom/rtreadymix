@@ -10,7 +10,10 @@ import io.quarkus.qute.api.ResourcePath;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.client.ClientResponseContext;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -23,21 +26,12 @@ public class RtbrowseResource {
     @ResourcePath("rtviewer")
     Template browseTemplate;
     @Inject
-    ClientManager cman;
-    @Inject
-    SupplierResource srec;
-    @Inject
     @ResourcePath("client")
     Template ctemp;
-    @Inject
-    ServiceResource servtemp;
-    @Inject
-    ProductResource productTemp;
 
     @FormParam("_method")
     String command;
-    @FormParam("itemid")
-    Integer itemid;
+
 
     String title;
     List<String> columns = new ArrayList<>();
@@ -183,57 +177,25 @@ public class RtbrowseResource {
 
     }
 
-
     @Path("rtbaction")
     @Produces(MediaType.APPLICATION_JSON)
     @POST
-    public TemplateInstance handleView() {
+    public Response handleView() {
         TemplateInstance t = browseTemplate.instance();
         if (command != null && !command.isBlank()) {
-            title = command;
-            switch (command) {
+            StringTokenizer tkn = new StringTokenizer(command, "_");
+            String cmd = tkn.countTokens() > 0 ? tkn.nextToken() : "";
+            Integer itemid = tkn.hasMoreTokens() ? Integer.parseInt(tkn.nextToken()) : -1;
+            switch (cmd) {
                 case "view":
-                    if (rtype.equals("client")) {
-                        Client c = new Client();
-                        c.find(itemid);
-                        t = t.data("title", title + " itemid: " + itemid).data("client", c);
-                    } else if (rtype.equals("supplier")) {
-                        Supplier supplier = new Supplier();
-                        supplier.find(itemid);
-                        t = t.data("title", title).data("client", supplier);
-                    } else if (rtype.equals("service")) {
-                        CService s = new CService();
-                        s.find(itemid);
-                        t = t.data("title", title).data("client", s);
-                    } else if (rtype.equals("product")) {
-                        CProduct p = new CProduct();
-                        p.find(itemid);
-                        t = t.data("title", title).data("client", p);
-                    }
-                    break;
                 case "edit":
-                    if (rtype.equals("supplier")) {
-                        t = srec.viewSupplier(itemid);
-                    } else if (rtype.equals("client")) {
-                        Client client = new Client();
-                        client.find(itemid);
-                        return ctemp.data("client", client)
-                                .data("title", "Client Profile")
-                                .data("cities", new String[]{"Khartoum", "Shandi", "PortSudan"});
-                    } else if (rtype.equals("service")) {
-                        t = servtemp.viewService(itemid);
-                    } else if (rtype.equals("product")) {
-                        t = productTemp.viewproduct(itemid);
-                    }
-                    break;
+                    return Response.seeOther(UriBuilder.fromPath("/readymix/" + rtype).queryParam("itemid", itemid).build()).build();
                 default:
                     title = "nothing to show";
-                    t = t.data(title + " itemid: " + itemid);
                     break;
             }
-
         }
-        return t;
+        return Response.notModified().build();
     }
 
     private void popColumns(String type) {

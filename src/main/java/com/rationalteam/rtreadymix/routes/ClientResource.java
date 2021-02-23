@@ -15,18 +15,19 @@ import javax.ws.rs.*;
 @Path("/readymix")
 public class ClientResource {
     @Inject
-    @ResourcePath("rtviewer")
+    @ResourcePath("client")
     Template template;
     @Inject
     AdminResource ares;
 
     @Path("/client")
+    @GET
     @RolesAllowed("admin")
     public TemplateInstance showClient(@QueryParam("itemid") Integer itemid) {
         Client client = new Client();
         client.find(itemid);
-        JsonObject jclient = JsonObject.mapFrom(client);
-        return template.data("client", jclient);
+//        JsonObject jclient = JsonObject.mapFrom(client);
+        return template.data("client", client);
     }
 
     @Path("/clientorder")

@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 {#include base}
-<body>
 {#rtbody}
-<div class="row justify-content-center">
+<div class="row justify-content-center dashboard">
     <div class="custom-control custom-checkbox">
         <input type="checkbox" class="custom-control-input" id="ckautorefresh" onchange="onAutoRef();">
         <label class="custom-control-label" for="ckautorefresh">Auto Refresh</label>
@@ -23,21 +20,21 @@
                     </button>
 
                 </div>
-                    <form action="/readymix/manageOrder" method="post">
-                        {#if newarrivals}
-                        {#for nord in newarrivals}
-                        <div class="clearfix" title="{nord.asRecord}">
-                            <button class="btn btn-link" type="submit" name="orderid" value="{nord.id}">
-                                <span style="font-size: small;">{nord.id}| {nord.item} |{nord.dateNeeded.format('dd-MM-yyyy')}</span>
-                            </button>
-                        </div>
-                        {/for}
-                        {#else}
-                        <p><span style="color:red;font-weight: bold;" class="fa fa-exclamation">No new orders for the last {dayslimit} days.</span>
-                        </p>
-                        {/if}
-                        <a href="/readymix/orders" class="btn btn-primary">See more..</a>
-                    </form>
+                <form action="/readymix/manageOrder" method="post">
+                    {#if newarrivals}
+                    {#for nord in newarrivals}
+                    <div class="clearfix" title="{nord.asRecord}">
+                        <button class="btn btn-link" type="submit" name="orderid" value="{nord.id}">
+                            <span style="font-size: small;">{nord.id}| {nord.item} |{nord.dateNeeded.format('dd-MM-yyyy')}</span>
+                        </button>
+                    </div>
+                    {/for}
+                    {#else}
+                    <p><span style="color:red;font-weight: bold;" class="fa fa-exclamation">No new orders for the last {dayslimit} days.</span>
+                    </p>
+                    {/if}
+                    <a href="/readymix/orders" class="btn btn-primary">See more..</a>
+                </form>
             </div>
         </div>
         <div class="card shadow p-1 mb-3 bg-white rounded" style="width:350px;">
@@ -92,43 +89,49 @@
                 </form>
             </div>
         </div>
-        <div class="card-columns">
-            <div class="col-12">
-                <div class="card shadow p-1 mb-3 bg-white rounded">
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <div class="card-deck">
+                {#if orderstat}
+                {#for key in orderstat.keySet}
+                <div class="col ordstat {key} ml-2 mb-2 float-left" style="max-width: 10rem;">
+                    <div class="card-header font-weight-bold">{key}</div>
                     <div class="card-body">
-                        <h5 class="card-title bg-dark text-white">Orders</h5>
-                        {#if orderstat}
-                        {#for key in orderstat.keySet }
-                        <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
-                                value="{key}-{clnt}">
-                            {key} <span class="badge badge-light" style="color:red">{orderstat.get(key)}</span>
-                        </button>
-                        {/for}
-                        {/if}
-                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                        <h4 class="card-title" style="font-weight:bolder;font-size: xx-large;">{orderstat.get(key)}</h4>
+                        <p class="card-text"></p>
                     </div>
                 </div>
-                <div class="card shadow p-1 mb-3 bg-white rounded">
-                    <div class="card-body">
-                        <h5 class="card-title bg-dark text-white">Client Registration</h5>
-                        {#if orderstat}
-                        {#for key in clientstat.keySet }
-                        <button type="submit" class="btn btn-outline-primary btn-lg btn-block" name="extrafilter"
-                                value="{key}-{clnt}">
-                            {key} <span class="badge badge-light"
-                                        style="color:red">Before {clientstat.get(key)} days</span>
-                        </button>
-                        {/for}
-                        {/if}
-                        <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
-                    </div>
-                </div>
+                {/for}
+                {/if}
             </div>
+            <div class="card-deck">
+                {#if clientstat}
+                {#for key in clientstat.keySet }
+                <div class="col text-white bg-info ml-2 mb-2 float-left" style="max-width: 10rem;">
+                    <div class="card-header dboardtitle">Client Registration</div>
+                    <div class="card-body">
+                        <h2 class="card-title" style="font-weight: bolder;">{key}</h2>
+                        <p class="card-text">Before {clientstat.get(key)} days.</p>
+                    </div>
+                </div>
+                {/for}
+                {/if}
+            </div>
+        </div>
+        <div class="col-6">
+            <p class="small">General Performance</p>
+            <canvas id="volChart" width="400" height="200"></canvas>
+            <canvas id="salesChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <canvas id="permember" width="400" height="200"></canvas>
         </div>
     </div>
 </div>
-
-
+{#jscript}
 <script type="text/javascript">
     function setPrice(pid) {
         document.getElementById("p_" + pid).style.display = 'block';
@@ -260,8 +263,78 @@
             setupRefresh();
     }
 
+    var ctxvol = document.getElementById('volChart').getContext('2d');
+    var ctxsales = document.getElementById('salesChart').getContext('2d');
+    var ctxmember = document.getElementById('permember').getContext('2d');
+    let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    let vpermonth = [];
+    let spermonth = [];
+    let permember = [];
+    $(document).ready(function () {
+        "{#for k in volumes.keySet}"
+        var point = [{k}, {volumes.get(k)}];
+        vpermonth.push({volumes.get(k)});
+        "{/for}"
+        "{#for k in sales.keySet}"
+        spermonth.push({sales.get(k)});
+        "{/for}"
+        "{#for k in permember.keySet}"
+        permember.push({permember.get(k)});
+        "{/for}"
+        buildChart(vpermonth, ctxvol, 'rgba(54, 162, 235, 0.2)', "Soled Volumes");
+        buildChart(spermonth, ctxsales, 'rgb(184,132,2,100)', 'Sales Value');
+        buildMemberChart(permember, ctxmember, 'rgb(184,8,2,100)', 'Sales Per Member');
+    });
+
+    function buildChart(data, cnvs, col, title) {
+        var myChart = new Chart(cnvs, {
+            type: 'bar',
+            data: {
+                labels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                datasets: [{
+                    label: title,
+                    backgroundColor: col,
+                    borderColor: 'rgba(68, 22, 50, 0.9)',
+                    borderWidth: 1,
+                    data: data
+                },]
+            },
+            options: {
+                animate: true,
+                showLine: true,
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            suggestedMin: 10,
+                            suggestedMax: 300
+                        }
+                    }]
+                }
+            }
+        });
+    }
+
+    function buildMemberChart(data, cnvs, col, title) {
+        var m = new Chart(cnvs, {
+            data: {
+                labels: ['Raft', 'Column', 'Slap', "Flat"],
+                datasets: [{
+                    label: ['Raft', 'Column', 'Slap', "Flat"],
+                    backgroundColor: [col,'rgba(54, 162, 235, 0.2)',
+                        'rgba(7, 66, 100, 0.8)'],
+                    data: data
+                },]
+            },
+            type: 'polarArea',
+            options: {
+                animate: true,
+                showLine: true,
+                scales: {
+                }
+            }
+        });
+    }
 </script>
 {/}
-</body>
 {/}
-</html>

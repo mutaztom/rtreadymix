@@ -157,7 +157,6 @@ public class ReadymixRoutes {
                     .onFailure().recoverWithItem(t -> new ServerMessage("failed to save"));
         } else
             return Uni.createFrom().item(new ServerMessage("body didn't contain all required params " + rex.getBodyAsString()));
-
     }
 
     @Inject

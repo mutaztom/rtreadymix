@@ -7,66 +7,112 @@
 {/}
 {#rtbody}
 {#if result}
-<div class="alert alert-danger">{result}</div>
+<div class="alert alert-danger" id="rtalert">{result}</div>
 {/if}
 <div class="row">
-    <div class="col-lg-6 col-sm-12 col-md-6">
-        <form action="/readymix/savesupplier" method="post">
-            <input id="totalContacts" name="totalContacts" value="1" hidden>
-            <label for="txtid" value="{supplier.id}">Id</label>
-            <input type="text" id="txtid" name="id" class="form-control" placeholder="Read Only auto generated id"
-                   readonly>
-            <label for="txtitem">Name</label>
-            <input type="text" id="txtitem" class="form-control" name="item" placeholder="Supplier Name" value="{supplier.item}">
-            <label for="txtaritem">Arabic Name</label>
-            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="Supplier Name in Arabic"
-                   value="{supplier.aritem}">
-            <label>Country</label>
-            <select name="country" class="form-control">
-                <option value="1" label="Sudan"></option>
-            </select>
-            <label for="ddcity">City</label>
-            <select name="country" id="ddcity" class="form-control">
-                {#for city in cities}
-                <option value="{city.id}" label="{city}"></option>
-                {/for}
-            </select>
-            <label for="txtaddress">Address</label>
-            <textarea class="form-control" aria-label="Address of supplier" id="txtaddress"></textarea>
+    <form id="frmsupplier" action="/readymix/savesupplier" method="post">
+        <div class="row ml-5 mr-5">
             <div class="col">
-            <label for="txtcontacts__id">Contacts</label>
-                <button class="btn btn-primary fa fa-address-book" type="button"
-                       onClick="addContact();" id="addContact" name="cmdcontact">Add Contact</button>
-            </div>
-            <div class="contacts">
-            <div class="form-row">
+                <input id="totalContacts" name="totalContacts" value="1" hidden>
+                <label for="txtid">Id</label>
+                <output id="txtid" class="form-control">{supplier.id}</output>
+                <label for="txtitem">Name</label>
+                <input type="text" id="txtitem" class="form-control font-weight-bold" name="item"
+                       placeholder="Supplier Name"
+                       value="{supplier.item}">
+                <label for="txtaritem">Arabic Name</label>
+                <input type="text" id="txtaritem" class="form-control font-weight-bold" name="aritem"
+                       placeholder="Supplier Name in Arabic"
+                       value="{supplier.aritem}">
+                <label>Country</label>
+                <select name="country" class="form-control">
+                    <option value="1" label="Sudan"></option>
+                </select>
+                <label for="ddcity">City</label>
+                <select name="country" id="ddcity" class="form-control">
+                    {#for city in cities}
+                    <option value="{city.id}" label="{city}"></option>
+                    {/for}
+                </select>
+                <label for="txtaddress">Address</label>
+                <textarea class="form-control" aria-label="Address of supplier" id="txtaddress"></textarea>
                 <div class="col">
-                    <input placeholder="Name" id="txtcontacts__id" name="name" type="text" class="form-control"></input>
+                    <label for="txtcontacts__id">Contacts</label>
+                    <button class="btn btn-primary fa fa-address-book" type="button"
+                            onClick="addContact();" id="addContact" name="cmdcontact">Add Contact
+                    </button>
                 </div>
-                <div class="col">
-                    <input placeholder="Email" name="email" id="email__id" type="text" class="form-control"></div>
-                <div class="col"><input placeholder="Mobile" name="mobile" id="mobile__id" type="text" class="form-control"></div>
+                <div class="contacts">
+                    <div id="contactrecord" class="form-row">
+                        <div class="col">
+                            <input placeholder="Name" id="txtcontacts__id" name="name" type="text"
+                                   class="form-control"/>
+                        </div>
+                        <div class="col">
+                            <input placeholder="Email" name="email" id="email__id" type="text" class="form-control">
+                        </div>
+                        <div class="col"><input placeholder="Mobile" name="mobile" id="mobile__id" type="text"
+                                                class="form-control"></div>
+                    </div>
+                </div>
+                <button class="btn btn-primary fa fa-dollar-sign" name="command"
+                        onClick="alert('Feature not implemented yet,satay tuned');" value="cmdpricelist">Manage Prices
+                </button>
+                <button class="btn btn-primary fa fa-save" name="command" value="cmdsave">Save</button>
+                <button class="btn btn-danger fa fa-trash" name="command" value="cmddelete">Delete</button>
+                <button class="btn btn-primary fa fa-backward" type="button" name="command" value="cmdexit"
+                        onClick="onexit();">Close
+                </button>
             </div>
+            <div class="col">
+                <h4>Price List Management</h4><br>
+                {#if pricelist}
+                <div class="table table-hover table-responsive-sm">
+                    <table>
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">item</th>
+                            <th scope="col">Unit Price</th>
+                            <th scope="col" title="Commistion rate">Comm</th>
+                            <th scope="col" title="Commistion rate">Type</th>
+                            <th scope="col" title="Minimum order">Min. Q</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {#for p in pricelist}
+                        <tr>
+                            <td class="font-weight-bold">{p.itemid}:{str:getProduct(p.itemid)}</td>
+                            <td><input class="form-control" value="{p.price}" name="price_{p.id}"></td>
+                            <td><input class="form-control" value="{p.commission}" name="commission_{p.id}"></td>
+                            <td><input id="cbper" class="form-check-input" {p.ispecent? 'checked':''} value="{p.ispercent}" type="checkbox"
+                                       name="isper_{p.id}"> <label for="cbper" class="form-check-label">%</label>
+                            </td>
+                            <td><input class="form-control" value="{p.minorder}" name="minord_{p.id}"></td>
+                        </tr>
+                        {/for}
+                        </tbody>
+                    </table>
+                </div>
+                {#else}
+                <button title="Create Price List" class="btn btn-primary fa fa-list-alt" type="submit"
+                        name="command" value="createplist">Create PriceList
+                </button>
+                {/if}
+                <output>Supplier Index</output>
             </div>
-            <label class="form-control">Prices</label>
-            <button class="btn btn-primary fa fa-dollar-sign" name="command" onClick="alert('Feature not emplemented yet,setay tuned');" value="cmdpricelist">Manage Prices</button>
-            <button class="btn btn-primary fa fa-save" name="command" value="cmdsave">Save</button>
-            <button class="btn btn-danger fa fa-trash" name="command" value="cmddelete">Delete</button>
-            <button class="btn btn-primary fa fa-backward" type="button" name="command" value="cmdexit"
-                    onClick="onexit();">Close</button>
-        </form>
-    </div>
-    <div class="col-lg-6 col-md-6 col-sm-12">
-        <output>Supplier data not found</output>
-        <output>Supplier Index</output>
-    </div>
+        </div>
+    </form>
 </div>
+{/}
+</body>
+{#jscript}
 <script type="text/javascript">
     function onexit() {
-        var def=confirm("Are you sure you want to exit.");
-        if(def)
+        var def = confirm("Are you sure you want to exit.");
+        if (def)
             location.assign("/readymix/rtbrowse?type=supplier");
     }
+
     function addContact() {
         var cont = $('#contacts').clone()
         var index = $('#totalContacts').val()
@@ -78,8 +124,11 @@
         cont.slideDown();
         cont.reload();
     }
+
+    $(document).ready(function () {
+        $('#rtalert').delay(1000).fadeOut();
+    });
 </script>
 {/}
-</body>
 {/}
 </html>

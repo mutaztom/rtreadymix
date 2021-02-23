@@ -78,25 +78,22 @@
     }
 
     function onAddCat() {
-        OPTIONTABLE='servicecat';
-        createOption('servicecate');
-        // addOption();
-        // var catname = prompt("Please type new category name");
-        // if (catname) {
-        //     $('#newcat').val(catname);
-        //     $.ajax({
-        //         type: "POST",
-        //         url: "/readymix/saveservice",
-        //         data: {"command": "cmdaddcat", "newcat": catname},
-        //         success: new function () {
-        //             console.log("data saved successfully");
-        //             $("#ddcat").refresh();
-        //         },
-        //         error: new function () {
-        //             alert("could not save new category");
-        //         }
-        //     });
-        // }
+        var catname = prompt("Please type new category name");
+        if (catname) {
+            $('#newcat').val(catname);
+            $.ajax({
+                type: "POST",
+                url: "/readymix/saveservice",
+                data: {"command": "cmdaddcat", "newcat": catname},
+                success: new function () {
+                    console.log("data saved successfully");
+                    $("#ddcat").load(location.href +" #ddcat");
+                },
+                error: new function () {
+                    alert("could not save new category");
+                }
+            });
+        }
     }
 
     function showInput() {

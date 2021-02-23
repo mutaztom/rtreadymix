@@ -5,7 +5,7 @@
 }
 
 .login::before {
-    margin:auto;
+    margin: auto;
     top: 0;
     left: 0;
     bottom: 0;
@@ -15,6 +15,7 @@
     content: "";
     z-index: -1;
 }
+
 .vertical-center {
     margin: 0;
     position: absolute;
@@ -22,8 +23,38 @@
     -ms-transform: translateY(-50%);
     transform: translateY(-50%);
 }
-.rtcenter{
+
+.rtcenter {
     display: block;
     margin-left: auto;
     margin-right: auto;
+}
+
+.ordstat .mb-3 .ml-3 .float-left{
+    color: whitesmoke;
+
+}
+
+.Created {
+    background-color: cornflowerblue;
+}
+
+.Processing {
+    background-color: #8ecae6;
+}
+
+.Confirmed {
+    background-color: #d62828;
+}
+
+.Canceled {
+    background-color: gray;
+}
+
+.Rejected {
+    background-color: #43aa8b;
+}
+
+.Delivered {
+    background-color: #fb8500;
 }
