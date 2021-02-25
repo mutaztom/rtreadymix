@@ -129,6 +129,9 @@
         <div class="col">
             <canvas id="permember" width="400" height="200"></canvas>
         </div>
+        <div class="col">
+            <canvas id="pergrade" width="400" height="200"></canvas>
+        </div>
     </div>
 </div>
 {#jscript}
@@ -266,10 +269,12 @@
     var ctxvol = document.getElementById('volChart').getContext('2d');
     var ctxsales = document.getElementById('salesChart').getContext('2d');
     var ctxmember = document.getElementById('permember').getContext('2d');
+    var ctxgrade = document.getElementById('pergrade').getContext('2d');
     let months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     let vpermonth = [];
     let spermonth = [];
     let permember = [];
+    let pergrade = [];
     $(document).ready(function () {
         "{#for k in volumes.keySet}"
         var point = [{k}, {volumes.get(k)}];
@@ -281,9 +286,13 @@
         "{#for k in permember.keySet}"
         permember.push({permember.get(k)});
         "{/for}"
+        "{#for k in pergrade.keySet}"
+        pergrade.push({pergrade.get(k)});
+        "{/for}"
         buildChart(vpermonth, ctxvol, 'rgba(54, 162, 235, 0.2)', "Soled Volumes");
         buildChart(spermonth, ctxsales, 'rgb(184,132,2,100)', 'Sales Value');
         buildMemberChart(permember, ctxmember, 'rgb(184,8,2,100)', 'Sales Per Member');
+        buildGradeChart(pergrade, ctxgrade, 'rgb(77,85,2,100)', 'Sales Per Grade');
     });
 
     function buildChart(data, cnvs, col, title) {
@@ -320,13 +329,33 @@
             data: {
                 labels: ['Raft', 'Column', 'Slap', "Flat"],
                 datasets: [{
-                    label: ['Raft', 'Column', 'Slap', "Flat"],
+                    label: title,
                     backgroundColor: [col,'rgba(54, 162, 235, 0.2)',
                         'rgba(7, 66, 100, 0.8)'],
                     data: data
                 },]
             },
-            type: 'polarArea',
+            type: 'doughnut',
+            options: {
+                animate: true,
+                showLine: true,
+                scales: {
+                }
+            }
+        });
+    }
+    function buildGradeChart(data, cnvs, col, title) {
+        var m = new Chart(cnvs, {
+            data: {
+                labels: ['C10','C20',"C25","C30","C35","C40","C45","C50"],
+                datasets: [{
+                    label: title,
+                    backgroundColor: [col,'rgba(7, 9, 235, 0.2)',
+                        'rgba(100, 88, 100, 0.8)'],
+                    data: data
+                },]
+            },
+            type: 'doughnut',
             options: {
                 animate: true,
                 showLine: true,

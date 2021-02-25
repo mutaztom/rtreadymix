@@ -151,6 +151,7 @@ public class AdminResource {
                     .data("sales", stat.getSales())
                     .data("volumes", stat.getVolumes())
                     .data("permember", stat.getPerMember())
+                    .data("pergrade", stat.getPerGrade())
                     .data("clientstat", stat.getClientsByStatus());
             if (command != null)
                 if (command.equals("vieworder")) {

@@ -152,5 +152,19 @@ public class OrderStat {
                         Double.parseDouble(rec[1].toString()));
         }
         return sales;
+    }@Transactional
+    public Map<String, Double> getPerGrade() {
+        String sql = "select t.item,count(tblorder.id) from tblorder inner join tblproduct t on tblorder.itemid = t.id where year(ondate)=year(current_date())\n" +
+                "and status not in ('Canceled','Rejected','Created') group by type;";
+        List open = MezoDB.Open(sql);
+
+        Map<String, Double> sales = new HashMap<>();
+        for (Object row :
+                open) {
+            Object[] rec = (Object[]) row;
+            sales.put(rec[0].toString(),
+                        Double.parseDouble(rec[1].toString()));
+        }
+        return sales;
     }
 }
