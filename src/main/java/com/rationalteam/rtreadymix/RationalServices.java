@@ -5,11 +5,15 @@ import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblCurrency;
 import com.rationalteam.rtreadymix.data.Tblclient;
 import com.rationalteam.rtreadymix.data.Tblnews;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
+import io.quarkus.panache.common.Parameters;
 import io.quarkus.vertx.web.Body;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.jboss.resteasy.util.StringContextReplacement;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
@@ -23,6 +27,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -43,6 +49,7 @@ public class RationalServices {
     CommHub commHub;
     @Inject
     Mailer remail;
+
     @PostConstruct
     public void init() {
         System.out.println(">>>> INITIALIZING DATASOURCE....");
@@ -54,17 +61,18 @@ public class RationalServices {
 
 
     @GET
-    @Path("/getclients")
+    @Path("/getProfile/{clientid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Tblclient> getClients() {
-        List<Tblclient> list = new ArrayList<>();
+    public Response getProfile(@PathParam("clientid") String clientid) {
         try {
-            list = cman.getCLients();
-            return list;
+            Tblclient client = Tblclient.find("email=?1", clientid).firstResult();
+            client.setPassword("**********");
+            return Response.ok(client).build();
         } catch (Exception exp) {
             System.out.println(exp.getMessage());
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
         }
-        return list;
+
     }
 
     @POST
@@ -304,7 +312,7 @@ public class RationalServices {
         try {
             MezoDB.setEman(eman);
             List show_tables = MezoDB.Open("show tables");
-            List<String> list;
+            JsonArray jar = new JsonArray();
             if (!rtype.startsWith("tbl") && !show_tables.contains(rtype)) {
                 rtype = "tbl" + rtype;
                 if (!show_tables.contains(rtype))
@@ -312,8 +320,13 @@ public class RationalServices {
             }
             COption option = new COption(rtype);
             List<OptionLocal> oplist = option.listOptions();
-            list = oplist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
-            return Response.ok(list).build();
+            for (OptionLocal o :
+                    oplist) {
+                JsonObject job = new JsonObject();
+                job.put("item", o.getItem()).put("aritem", o.getAritem());
+                jar.add(job);
+            }
+            return Response.ok(jar).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
         }
@@ -360,6 +373,40 @@ public class RationalServices {
                 return Response.ok("Order Not Found").build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("/updateProfile/{clientid}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Response updateProfile(@Body JsonObject profile, @PathParam("clientid") String clientid) {
+        try {
+            Tblclient c = new Tblclient();
+            ServerMessage smsg = new ServerMessage();
+            System.out.println(profile.toString());
+            boolean result = false;
+            Client clnt = Client.findByEmail(clientid);
+            if (clnt != null) {
+                clnt.setItem(profile.getString("item"));
+                clnt.setMobile(profile.getString("mobile"));
+                String gndr = profile.getString("gender");
+                if (gndr != null && gndr.isBlank())
+                    clnt.setGender(enGender.valueOf(gndr));
+                clnt.setEmail(profile.getString("email"));
+                clnt.setOccupation(profile.getInteger("occupation"));
+                if (clnt.checkEntries()) {
+                    result = clnt.save();
+                }
+                smsg.setMessage("OK");
+                smsg.setDetails("CLient profile updated succesfully");
+                return Response.ok(smsg).build();
+            } else
+                return Response.notModified("Could not verify client id").build();
+        } catch (Exception ex) {
+            Utility.ShowError(ex);
+            return Response.notModified(ex.getMessage()).build();
         }
     }
 
@@ -538,7 +585,8 @@ public class RationalServices {
     @Produces(MediaType.TEXT_PLAIN)
     @Consumes(MediaType.TEXT_PLAIN)
     @RolesAllowed("admin")
-    public Response saveTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia, String body) {
+    public Response saveTemplate(@PathParam("fpath") String fpath, @PathParam("commmedia") String cmedia, String
+            body) {
         try {
             enCommMedia cm = com.rationalteam.rtreadymix.enCommMedia.valueOf(cmedia.toUpperCase());
             String subfolder = cm.name().toLowerCase();

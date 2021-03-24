@@ -350,6 +350,8 @@ public class Order extends CRtDataObject {
             cord.setOndate(ondate.format(DateTimeFormatter.ISO_LOCAL_DATE));
             cord.setLocation(location);
             cord.setNotes(notes);
+            cord.setUnitprice(unitprice);
+            cord.setUsdprice(usdprice);
             cord.setQuantity(quantity);
             cord.setGrade(MezoDB.getItem(type, " Tblgrade "));
             cord.setMember(MezoDB.getItem(member, " tblmember "));

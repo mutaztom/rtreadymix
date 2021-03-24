@@ -19,12 +19,18 @@ public class Tblclient extends PanacheEntityBase {
     String password;
     Integer customerid;
     Integer accountid;
+    @Column(name = "email",unique = true)
     String email;
+    @Column(name = "mobile",unique = true)
     String mobile;
     String usertype;
     String pincode;
     Boolean verified;
     Date since;
+    String gender;
+    Integer occupation;
+    String photo;
+    String company;
 
     public Integer getId() {
         return id;
@@ -148,5 +154,37 @@ public class Tblclient extends PanacheEntityBase {
 
     public void setVerified(Boolean verified) {
         this.verified = verified;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public Integer getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(Integer occupation) {
+        this.occupation = occupation;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 }

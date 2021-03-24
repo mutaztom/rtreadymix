@@ -32,9 +32,18 @@ public class Client extends CRtDataObject {
     private Integer accountid;
     private Integer customerid;
     private String pincode;
+    private enGender gender;
+    private Integer occupation;
+    private String company;
+    private String photo;
     private boolean verfied;
     @Browsable(isDate = true)
     private LocalDate since;
+
+    public Client() {
+        since = LocalDate.now();
+        gender = enGender.Male;
+    }
 
     @Override
     protected void initSearch() {
@@ -61,6 +70,10 @@ public class Client extends CRtDataObject {
         data.setPincode(pincode);
         data.setVerified(verfied);
         data.setSince(Date.valueOf(since));
+        data.setOccupation(occupation);
+        if (gender != null)
+            data.setGender(gender.name());
+        data.setCompany(company);
         return data;
     }
 
@@ -80,18 +93,26 @@ public class Client extends CRtDataObject {
         verfied = data.getVerified() != null ? data.getVerified() : false;
         if (data.getSince() != null)
             since = data.getSince().toLocalDate();
+        company = data.getCompany();
+        if (data.getGender() != null)
+            gender = enGender.valueOf(data.getGender());
+        occupation = data.getOccupation();
     }
 
     public void fromMobileUser(MobileUser muser) {
-        id = null;
-        item = muser.getItem();
-        email = muser.getEmail();
-        mobile = muser.getMobile();
-        username = muser.getUsername();
-        customerid = -1;
-        accountid = -1;
-        password = muser.getPassword();
-        address = muser.getAddress();
+        try {
+            id = null;
+            item = muser.getItem();
+            email = muser.getEmail();
+            mobile = muser.getMobile();
+            username = muser.getUsername();
+            customerid = -1;
+            accountid = -1;
+            password = muser.getPassword();
+            address = muser.getAddress();
+        } catch (Exception exception) {
+            Utility.ShowError(exception);
+        }
     }
 
     @Override
@@ -176,7 +197,7 @@ public class Client extends CRtDataObject {
         if (mobile == null || mobile.isEmpty())
             return false;
         String mob = mobile;
-        int used = MezoDB.getInteger("select count(mobile) from Tblclient where mobile='" + mob + "'");
+        int used = MezoDB.getInteger("select count(mobile) from Tblclient where mobile='" + mob + "'" + (id!=null ? " and id !=" + id : ""));
         return used > 0;
     }
 
@@ -184,7 +205,9 @@ public class Client extends CRtDataObject {
         if (email == null || email.isEmpty())
             return false;
         String mob = email;
-        int used = MezoDB.getInteger("select count(email) from Tblclient where email='" + mob + "'");
+        System.out.println("chcking againset id="+id);
+        int used = MezoDB.getInteger("select count(email) from Tblclient where email='" + mob + "' "
+                + (id!=null ? " and id !=" + id : ""));
         return used > 0;
     }
 
@@ -192,7 +215,7 @@ public class Client extends CRtDataObject {
         if (username == null || username.isEmpty())
             return false;
         String mob = username;
-        int used = MezoDB.getInteger("select count(username) from Tblclient where username='" + mob + "'");
+        int used = MezoDB.getInteger("select count(username) from Tblclient where username='" + mob + "'" + (id!=null ? " and id !=" + id : ""));
         return used > 0;
     }
 
@@ -261,8 +284,43 @@ public class Client extends CRtDataObject {
         map.put("Address", address);
         map.put("Accountid", this.accountid);
         map.put("Customerid", customerid);
+        map.put("Gender", gender);
+        map.put("Company", company);
+        map.put("Occupation", occupation != null ? MezoDB.getItem(occupation, "tbljob") : "None");
         map.put("Since", since != null ? since.format(DateTimeFormatter.ISO_LOCAL_DATE) : "None");
         map.put("Verified", verfied);
         return map;
+    }
+
+    public enGender getGender() {
+        return gender;
+    }
+
+    public void setGender(enGender gender) {
+        this.gender = gender;
+    }
+
+    public Integer getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(Integer occupation) {
+        this.occupation = occupation;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 }

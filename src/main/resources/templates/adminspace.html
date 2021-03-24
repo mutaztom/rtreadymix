@@ -327,7 +327,7 @@
     function buildMemberChart(data, cnvs, col, title) {
         var m = new Chart(cnvs, {
             data: {
-                labels: ['Raft', 'Column', 'Slap', "Flat"],
+                labels:'{permember.keySet}',
                 datasets: [{
                     label: title,
                     backgroundColor: [col,'rgba(54, 162, 235, 0.2)',
