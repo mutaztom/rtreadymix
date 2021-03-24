@@ -67,7 +67,12 @@ public class RationalServices {
         try {
             Tblclient client = Tblclient.find("email=?1", clientid).firstResult();
             client.setPassword("**********");
-            return Response.ok(client).build();
+            JsonObject jclient = JsonObject.mapFrom(client);
+            String job = "None";
+            if (client.getOccupation() > 0)
+                job = MezoDB.getItem(client.getOccupation(), "tbljob");
+            jclient.put("occupation", job);
+            return Response.ok(jclient).build();
         } catch (Exception exp) {
             System.out.println(exp.getMessage());
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
@@ -320,6 +325,9 @@ public class RationalServices {
             }
             COption option = new COption(rtype);
             List<OptionLocal> oplist = option.listOptions();
+            JsonObject emptyOption = new JsonObject();
+            emptyOption.put("id", -1).put("item", "None");
+            jar.add(emptyOption);
             for (OptionLocal o :
                     oplist) {
                 JsonObject job = new JsonObject();
@@ -395,7 +403,10 @@ public class RationalServices {
                 if (gndr != null && gndr.isBlank())
                     clnt.setGender(enGender.valueOf(gndr));
                 clnt.setEmail(profile.getString("email"));
-                clnt.setOccupation(profile.getInteger("occupation"));
+                String job = profile.getString("occupation");
+                Long jobid = MezoDB.getItemID("tbljob", "item", job.stripLeading().stripTrailing());
+                System.out.println("found job id : "+job+" :  "+jobid);
+                clnt.setOccupation(jobid.intValue());
                 if (clnt.checkEntries()) {
                     result = clnt.save();
                 }

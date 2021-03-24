@@ -205,7 +205,6 @@ public class Client extends CRtDataObject {
         if (email == null || email.isEmpty())
             return false;
         String mob = email;
-        System.out.println("chcking againset id="+id);
         int used = MezoDB.getInteger("select count(email) from Tblclient where email='" + mob + "' "
                 + (id!=null ? " and id !=" + id : ""));
         return used > 0;
@@ -286,7 +285,7 @@ public class Client extends CRtDataObject {
         map.put("Customerid", customerid);
         map.put("Gender", gender);
         map.put("Company", company);
-        map.put("Occupation", occupation != null ? MezoDB.getItem(occupation, "tbljob") : "None");
+        map.put("Occupation", occupation != null ? MezoDB.getItem(occupation, " tbljob") : "None");
         map.put("Since", since != null ? since.format(DateTimeFormatter.ISO_LOCAL_DATE) : "None");
         map.put("Verified", verfied);
         return map;
