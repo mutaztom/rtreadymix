@@ -9,12 +9,7 @@ import com.rationalteam.core.enShortPeriodRange;
 import com.rationalteam.rterp.erpcore.*;
 import com.rationalteam.rterp.erpcore.data.TblOption;
 import com.rationalteam.utility.CReadNumber;
-
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIViewRoot;
-import javax.faces.context.FacesContext;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -83,38 +78,6 @@ public class Rtutil implements Serializable {
         return names;
     }
 
-    public List<String> fromLocaleEnum(String cname) {
-        List<String> names = new ArrayList<>();
-        try {
-            Class c = Class.forName(cname);
-            Object[] r = c.getEnumConstants();
-            if (r != null) {
-                Method mthd = c.getDeclaredMethod("name", Locale.class);
-                for (Object o : r) {
-                    Object locname = mthd.invoke(o, FacesContext.getCurrentInstance().getELContext().getLocale());
-                    if (locname != null) {
-                        names.add(locname.toString());
-                    } else {
-                        names.add(o.toString());
-                    }
-                }
-            }
-        } catch (ClassNotFoundException | NoSuchMethodException | SecurityException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException ex) {
-            Utility.ShowError(ex);
-        }
-        return names;
-    }
-
-    public String menuclass(String v) {
-        FacesContext c = FacesContext.getCurrentInstance();
-        String vid = c.getViewRoot().getViewId();
-        String mc = "";
-        if (v.equals(vid)) {
-            mc = "active";
-        }
-        return mc;
-    }
 
     public List<CCurrency> listCurrency() {
         List<CCurrency> lst = (new CCurrency()).listAll();
@@ -133,10 +96,10 @@ public class Rtutil implements Serializable {
         }
     }
 
-    public List<OptionLocal> fromOptions(String tbl, Locale loc) {
+    public List<COption> fromOptions(String tbl, Locale loc) {
         try {
             COption option = new COption(tbl);
-            List<OptionLocal> lst = option.listAllOptions(tbl, loc);
+            List<COption> lst = option.listAllOptions(tbl, loc);
             return lst;
         } catch (Exception e) {
             Utility.ShowError(e);
@@ -166,36 +129,10 @@ public class Rtutil implements Serializable {
         }
     }
 
-    public List<IRtDataObject> fromRTObject(String rtob) {
-        try {
-            IRtDataObject target = Utility.lookUp(rtob);
-            List<IRtDataObject> lst = target.listAllItems();
-            return lst;
-        } catch (Exception e) {
-            Utility.ShowError(e);
-            return new ArrayList<>();
-        }
-    }
-
-    public <T> List<? extends IRtDataObject> filterRTObject(String rtob, Map<String, Object> filter) {
-        try {
-            IRtDataObject target = Utility.lookUp(rtob);
-            List<CRtDataObject> lst = new ArrayList<>();
-            if (filter == null || filter.isEmpty())
-                lst = target.listAllItems();
-            else
-                lst = target.filter(filter);
-            return lst;
-        } catch (Exception e) {
-            Utility.ShowError(e);
-            return new ArrayList<>();
-        }
-    }
-
-    public List<OptionLocal> listCities() {
+       public List<COption> listCities() {
         try {
             COption option = new COption("tbiclity");
-            List<OptionLocal> lst = option.listAllOptions("tblcity");
+            List<COption> lst = option.listAllOptions("tblcity");
             return lst;
         } catch (Exception e) {
             Utility.ShowError(e);
@@ -215,13 +152,13 @@ public class Rtutil implements Serializable {
         return -1;
     }
 
-    public OptionLocal getDefOption(String tbl) {
+    public COption getDefOption(String tbl) {
         try {
             Object r = MezoDB.getValue("select id from " + tbl
                     + " where id=(select defoption from tblsystemoption where tblname='" + tbl + "')");
             if (r != null) {
                 Integer id = Integer.valueOf(r.toString());
-                OptionLocal op = new COption(tbl);
+                COption op = new COption(tbl);
                 op.find(id);
                 return op;
             }
@@ -572,7 +509,7 @@ public class Rtutil implements Serializable {
         return "!NotSet!";
     }
 
-    public String readNumber(Double no, CurrencyLocal c) {
+    public String readNumber(Double no, CCurrency c) {
 
         String numread = CReadNumber.readNumber(no, c.getItem(), c.getFraction());
         return numread;
@@ -591,12 +528,6 @@ public class Rtutil implements Serializable {
         return day.getDisplayName(java.time.format.TextStyle.FULL, Locale.forLanguageTag(locale));
     }
 
-    public void create(String stype) {
-        selected = Utility.lookUp(stype);
-        if (selected != null)
-            selected = selected.create();
-    }
-
 
     public List<COption> fromTable(String tbl) {
         List open = MezoDB.Open("select id,item from " + tbl);
@@ -613,50 +544,6 @@ public class Rtutil implements Serializable {
             }
         }
         return result;
-    }
-
-    public List<String> completeTable(String q) {
-        List filter = new ArrayList<>();
-        try {
-            FacesContext fc = FacesContext.getCurrentInstance();
-            FacesContext.getCurrentInstance().getViewRoot();
-            UIComponent c = UIViewRoot.getCurrentComponent(fc);
-            Map<String, Object> map = new HashMap<>();
-            map.put("item", q);
-            if (c != null) {
-                String tbl = c.getAttributes().get("rtclass").toString();
-                if (tbl != null) {
-                    filter = MezoDB.Open("select item from " + tbl + " where item like '%" + q + "%'");
-                    return filter;
-                }
-            }
-        } catch (Exception e) {
-            Utility.ShowError(e);
-        }
-        return filter;
-    }
-
-    public List<OptionLocal> completeOption(String q) {
-        List filter = new ArrayList<>();
-        try {
-            if (q == null)
-                return filter;
-            FacesContext fc = FacesContext.getCurrentInstance();
-            FacesContext.getCurrentInstance().getViewRoot();
-            UIComponent c = UIViewRoot.getCurrentComponent(fc);
-            Map<String, Object> map = new HashMap<>();
-            map.put("item", q);
-            if (c != null) {
-                String tbl = c.getAttributes().get("tbloption").toString();
-                OptionLocal o = Utility.lookUp(COption.class);
-                o = o.create(tbl);
-                filter = o.filterObject(map);
-                return filter;
-            }
-        } catch (Exception e) {
-            Utility.ShowError(e);
-        }
-        return filter;
     }
 
 }

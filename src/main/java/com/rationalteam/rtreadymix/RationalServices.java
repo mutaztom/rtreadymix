@@ -162,9 +162,9 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getSates() {
         MezoDB.setEman(eman);
-        OptionLocal st = new COption("tblstate");
-        List<OptionLocal> olist = st.listOptions();
-        List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+        COption st = new COption("tblstate");
+        List<COption> olist = st.listOptions();
+        List<String> list = olist.stream().map(COption::getItem).collect(Collectors.toList());
         return Response.ok(list).build();
     }
 
@@ -173,9 +173,9 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCities() {
         MezoDB.setEman(eman);
-        OptionLocal st = new COption("tblcity");
-        List<OptionLocal> olist = st.listOptions();
-        List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+        COption st = new COption("tblcity");
+        List<COption> olist = st.listOptions();
+        List<String> list = olist.stream().map(COption::getItem).collect(Collectors.toList());
         return Response.ok(list).build();
     }
 
@@ -184,9 +184,9 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCountries() {
         MezoDB.setEman(eman);
-        OptionLocal st = new COption("tblcountry");
-        List<OptionLocal> olist = st.listOptions();
-        List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+        COption st = new COption("tblcountry");
+        List<COption> olist = st.listOptions();
+        List<String> list = olist.stream().map(COption::getItem).collect(Collectors.toList());
         return Response.ok(list).build();
     }
 
@@ -196,9 +196,9 @@ public class RationalServices {
     @Transactional
     public Response getProvencies() {
         MezoDB.setEman(eman);
-        OptionLocal st = new COption("tblprovince");
-        List<OptionLocal> olist = st.listOptions();
-        List<String> list = olist.stream().map(OptionLocal::getItem).collect(Collectors.toList());
+        COption st = new COption("tblprovince");
+        List<COption> olist = st.listOptions();
+        List<String> list = olist.stream().map(COption::getItem).collect(Collectors.toList());
         return Response.ok(list).build();
     }
 
@@ -210,7 +210,7 @@ public class RationalServices {
         try {
             MezoDB.setEman(eman);
             DataManager.setEntityManager(eman);
-            ProductLocal p = new CProduct();
+            CProduct p = new CProduct();
             List<CProduct> olist = p.listAll();
             List<String> list = olist.stream().map(CProduct::getItem).collect(Collectors.toList());
             return Response.ok(list).build();
@@ -227,7 +227,7 @@ public class RationalServices {
         try {
             MezoDB.setEman(eman);
             DataManager.setEntityManager(eman);
-            ProductLocal p = new CProduct();
+            CProduct p = new CProduct();
             List<CProduct> olist = p.listAll();
             Map<String, Double> pricelist = olist.stream().collect(Collectors.toMap(
                     CProduct::getItem, CProduct::getUnitPrice));
@@ -244,7 +244,7 @@ public class RationalServices {
     public Response getServices() {
         try {
             MezoDB.setEman(eman);
-            ServiceLocal p = new CService();
+            CService p = new CService();
             List<CService> olist = p.listAll();
             List<ClientService> serlist = new ArrayList<>();
             olist.forEach(s -> {
@@ -324,11 +324,11 @@ public class RationalServices {
                     return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Table not found in databases: " + rtype).build();
             }
             COption option = new COption(rtype);
-            List<OptionLocal> oplist = option.listOptions();
+            List<COption> oplist = option.listOptions();
             JsonObject emptyOption = new JsonObject();
             emptyOption.put("id", -1).put("item", "None");
             jar.add(emptyOption);
-            for (OptionLocal o :
+            for (COption o :
                     oplist) {
                 JsonObject job = new JsonObject();
                 job.put("item", o.getItem()).put("aritem", o.getAritem());

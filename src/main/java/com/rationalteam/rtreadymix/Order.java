@@ -61,13 +61,13 @@ public class Order extends CRtDataObject {
         setDbTable(Tblorder.class.getSimpleName());
     }
 
-    @Override
+
     protected void initSearch() {
         super.initSearch();
         searchOptions.forEach(o -> o.setOptionTable("tbloptions"));
     }
 
-    @Override
+
     public Object getData() {
         data = new Tblorder();
         try {
@@ -96,7 +96,7 @@ public class Order extends CRtDataObject {
         return data;
     }
 
-    @Override
+
     public void setData(Object o) {
         try {
             data = (Tblorder) o;
@@ -128,7 +128,7 @@ public class Order extends CRtDataObject {
         }
     }
 
-    @Override
+
     public <T> Class<T> getDataType() {
         return (Class<T>) Tblorder.class;
     }
@@ -253,7 +253,7 @@ public class Order extends CRtDataObject {
         this.province = province;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Order)) return false;
@@ -274,7 +274,7 @@ public class Order extends CRtDataObject {
                 Objects.equals(data, order.data);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(super.hashCode(), clientid, location, country, state, city, quantity, type, notes, itemid, ondate, dateNeeded, status, data);
     }
@@ -363,7 +363,7 @@ public class Order extends CRtDataObject {
         return cord;
     }
 
-    @Override
+
     public Map<String, Object> getAsRecord() {
         Map<String, Object> map = new HashMap<>();
         try {

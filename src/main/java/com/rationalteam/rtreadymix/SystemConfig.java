@@ -22,10 +22,10 @@ public class SystemConfig {
     private static CCurrency compcur;
 
     @Transactional
-    public static CurrencyLocal getDefaultCurrency() {
+    public static CCurrency getDefaultCurrency() {
         if (defaultCurrency == null || defaultCurrency.isEmpty()) {
             Integer defid = MezoDB.getInteger("select id from " + TblCurrency.class.getSimpleName() + " where ismain=true");
-            defaultCurrency = Utility.lookUp(CCurrency.class);
+            defaultCurrency = new CCurrency();
             defaultCurrency.find(defid);
         }
         return defaultCurrency;
@@ -46,7 +46,7 @@ public class SystemConfig {
     public static double getRate() {
         double rate = 1;
         try {
-            ExchangeLocal e = new CExchange();
+            CExchange e = new CExchange();
             rate = e.getRate(getCompCurrency());
         } catch (Exception exception) {
             Utility.ShowError(exception);

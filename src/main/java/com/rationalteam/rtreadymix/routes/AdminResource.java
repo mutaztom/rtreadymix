@@ -186,45 +186,50 @@ public class AdminResource {
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance settings() {
         Map<String, List<COption>> optionMap = new HashMap<>();
-        List optables = MezoDB.Open("select tblname from tblsystemoption");
-        for (Object rec :
-                optables) {
-            String tbl = rec.toString();
-            List<COption> optionlist = getOptionValues(tbl);
-            if (tbl.startsWith("tbl"))
-                tbl = tbl.replace("tbl", "");
-            optionMap.put(tbl, optionlist);
-        }
-        //load properties
-        properties = new Properties();
-        File f = new File(SystemConfig.PROPFILE);
-        InputStream fs = null;
         try {
-            fs = new FileInputStream(f);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (fs != null) {
+            List optables = MezoDB.Open("select tblname from tblsystemoption");
+            for (Object rec :
+                    optables) {
+                String tbl = rec.toString();
+                List<COption> optionlist = getOptionValues(tbl);
+                if (tbl.startsWith("tbl"))
+                    tbl = tbl.replace("tbl", "");
+                optionMap.put(tbl, optionlist);
+            }
+            //load properties
+            properties = new Properties();
+            File f = new File(SystemConfig.PROPFILE);
+            InputStream fs = null;
             try {
-                properties.load(fs);
-            } catch (IOException e) {
+                fs = new FileInputStream(f);
+            } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            if (fs != null) {
+                try {
+                    properties.load(fs);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            mailtemp = new ArrayList<>();
+            smstemp = new ArrayList<>();
+            listTemplates();
+            List<Tblusers> users = UserManager.getUsers();
+            String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
+            return settingsTemplate.data("title", "System Settings")
+                    .data("icon", "settings.png")
+                    .data("sms_templates", smstemp)
+                    .data("title", "System Settings")
+                    .data("mail_templates", mailtemp)
+                    .data("props", properties)
+                    .data("currlist", rtutil.listCurrency())
+                    .data("users", users)
+                    .data("adminmobiles", adminmobiles)
+                    .data("options", optionMap);
+        }catch (Exception exp){
+            return settingsTemplate.data("error","Could not load settings: "+exp.getMessage());
         }
-        mailtemp = new ArrayList<>();
-        smstemp = new ArrayList<>();
-        listTemplates();
-        List<Tblusers> users = UserManager.getUsers();
-        String[] adminmobiles = Utility.getProperty("adminmobile").split(",");
-        return settingsTemplate.data("title", "System Settings")
-                .data("icon", "settings.png")
-                .data("sms_templates", smstemp)
-                .data("mail_templates", mailtemp)
-                .data("props", properties)
-                .data("currlist", rtutil.listCurrency())
-                .data("users", users)
-                .data("adminmobiles", adminmobiles)
-                .data("options", optionMap);
     }
 
     @Path("/setNotification")

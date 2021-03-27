@@ -42,7 +42,7 @@ public class Tblnews {
         this.details = details;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -52,7 +52,7 @@ public class Tblnews {
                 Objects.equals(details, tblnews.details);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(id, item, details);
     }

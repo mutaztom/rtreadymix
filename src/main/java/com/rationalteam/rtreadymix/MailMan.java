@@ -3,18 +3,20 @@ package com.rationalteam.rtreadymix;
 import com.rationalteam.core.communication.EmailValidator;
 import com.rationalteam.core.communication.enMailProtocol;
 import com.rationalteam.rterp.erpcore.Utility;
-import com.sun.mail.pop3.POP3Message;
+
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.activation.FileDataSource;
-import javax.mail.*;
-import javax.mail.internet.*;
+
 import javax.xml.bind.ValidationException;
 import java.beans.PropertyChangeSupport;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
 
 public class MailMan {
     protected static String SMTP_HOST_NAME;
@@ -100,67 +102,67 @@ public class MailMan {
         SMTP_SENDER = Utility.getProperty("mailSender");
     }
 
-    public boolean postMail() throws MessagingException {
-        try {
-            boolean debug = false;
-            Properties props = new Properties();
-            props.put("mail.smtp.host", getSMTP_HOST_NAME());
-            props.put("mail.smtp.auth", "true");
-            if (SMTP_AUTH_PORT != null && !SMTP_AUTH_PORT.isEmpty()) {
-                props.put("mail.smtp.port", SMTP_AUTH_PORT);
-            }
-
-            Authenticator auth = new SMTPAuthenticator();
-            Session session = Session.getInstance(props, auth);
-            session.setDebug(debug);
-            Message msg = new MimeMessage(session);
-            InternetAddress addressFrom = new InternetAddress(this.getEmailFromAddress());
-            msg.setFrom(addressFrom);
-            InternetAddress[] addressTo = new InternetAddress[this.recipients.size()];
-            int i = 0;
-            EmailValidator eval = new EmailValidator();
-            for (String k : recipients.keySet()) {
-                if (eval.validate(recipients.get(k))) {
-                    addressTo[i] = new InternetAddress((String) recipients.get(k));
-                    ++i;
-                }
-            }
-
-            msg.setRecipients(Message.RecipientType.TO, addressTo);
-            String word = "";
-            msg.setSubject(this.subject);
-            msg.setContent(this.message, "text/plain");
-            BodyPart messageBodyPart = new MimeBodyPart();
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPart);
-            if (this.attachments != null) {
-                this.addAtachments(this.attachments, multipart);
-            }
-
-            msg.setContent(multipart);
-            messageBodyPart.setText(this.message);
-            Transport.send(msg);
-            this.sendReport.append("Send command executed.");
-            return true;
-        } catch (Exception exp) {
-            Utility.ShowError(exp);
-            throw new RuntimeException(exp);
-        }
-    }
-
-    protected void addAtachments(List<String> attachments, Multipart multipart) throws MessagingException, AddressException {
-        for (String at : attachments) {
-            String displayname = at;
-            Path p = Paths.get(at);
-            displayname = p.getFileName().toString();
-            MimeBodyPart attachmentBodyPart = new MimeBodyPart();
-            DataSource source = new FileDataSource(at);
-            attachmentBodyPart.setDataHandler(new DataHandler(source));
-            attachmentBodyPart.setFileName(displayname);
-            multipart.addBodyPart(attachmentBodyPart);
-        }
-
-    }
+//    public boolean postMail() throws MessagingException {
+//        try {
+//            boolean debug = false;
+//            Properties props = new Properties();
+//            props.put("mail.smtp.host", getSMTP_HOST_NAME());
+//            props.put("mail.smtp.auth", "true");
+//            if (SMTP_AUTH_PORT != null && !SMTP_AUTH_PORT.isEmpty()) {
+//                props.put("mail.smtp.port", SMTP_AUTH_PORT);
+//            }
+//
+//            Authenticator auth = new SMTPAuthenticator();
+//            Session session = Session.getInstance(props, auth);
+//            session.setDebug(debug);
+//            Message msg = new MimeMessage(session);
+//            InternetAddress addressFrom = new InternetAddress(this.getEmailFromAddress());
+//            msg.setFrom(addressFrom);
+//            InternetAddress[] addressTo = new InternetAddress[this.recipients.size()];
+//            int i = 0;
+//            EmailValidator eval = new EmailValidator();
+//            for (String k : recipients.keySet()) {
+//                if (eval.validate(recipients.get(k))) {
+//                    addressTo[i] = new InternetAddress((String) recipients.get(k));
+//                    ++i;
+//                }
+//            }
+//
+//            msg.setRecipients(Message.RecipientType.TO, addressTo);
+//            String word = "";
+//            msg.setSubject(this.subject);
+//            msg.setContent(this.message, "text/plain");
+//            BodyPart messageBodyPart = new MimeBodyPart();
+//            Multipart multipart = new MimeMultipart();
+//            multipart.addBodyPart(messageBodyPart);
+//            if (this.attachments != null) {
+//                this.addAtachments(this.attachments, multipart);
+//            }
+//
+//            msg.setContent(multipart);
+//            messageBodyPart.setText(this.message);
+//            Transport.send(msg);
+//            this.sendReport.append("Send command executed.");
+//            return true;
+//        } catch (Exception exp) {
+//            Utility.ShowError(exp);
+//            throw new RuntimeException(exp);
+//        }
+//    }
+//
+//    protected void addAtachments(List<String> attachments, Multipart multipart) throws MessagingException, AddressException {
+//        for (String at : attachments) {
+//            String displayname = at;
+//            Path p = Paths.get(at);
+//            displayname = p.getFileName().toString();
+//            MimeBodyPart attachmentBodyPart = new MimeBodyPart();
+//            DataSource source = new FileDataSource(at);
+//            attachmentBodyPart.setDataHandler(new DataHandler(source));
+//            attachmentBodyPart.setFileName(displayname);
+//            multipart.addBodyPart(attachmentBodyPart);
+//        }
+//
+//    }
 
     public void addAttachment(String atmnt) {
         attachments.add(atmnt);
@@ -242,38 +244,38 @@ public class MailMan {
         return this.sendReport.toString();
     }
 
-    public boolean checkMail() throws MessagingException {
-        Properties prop = new Properties();
-        prop.put("mail.store.protocol", "com.sun.mail.pop3");
-        prop.put("mail.pop3.host", SMTP_HOST_NAME);
-        prop.put("mail.pop3.auth", "true");
-        prop.put("mail.pop3.port", PORT);
-        prop.put("mail.pop3.starttls.enable", "true");
-        SMTPAuthenticator auth = new SMTPAuthenticator(SMTP_AUTH_USER, SMTP_AUTH_PWD);
-        Session session = Session.getInstance(prop, auth);
-        Store store = session.getStore("pop3");
-        store.connect(SMTP_HOST_NAME, PORT, SMTP_AUTH_USER, SMTP_AUTH_PWD);
-        Folder inbox = store.getFolder("Inbox");
-        Message msg = new POP3Message(inbox, 0);
-        msg.saveChanges();
-        Transport transport = session.getTransport("pop3");
-        transport.connect(SMTP_HOST_NAME, PORT, SMTP_AUTH_USER, SMTP_AUTH_PWD);
-        Address m = new InternetAddress("mutaztom@gmail.com");
-        Address[] rec = new Address[]{m};
-        msg.setFrom(new InternetAddress("mutaz@rational-team.com"));
-        msg.setRecipients(Message.RecipientType.TO, rec);
-        msg.setSubject(this.subject);
-        msg.setContent(this.message, "text/plain");
-        BodyPart messageBodyPart = new MimeBodyPart();
-        Multipart multipart = new MimeMultipart();
-        multipart.addBodyPart(messageBodyPart);
-        this.addAtachments(this.attachments, multipart);
-        msg.setContent(multipart);
-        messageBodyPart.setText(this.message);
-        transport.sendMessage(msg, rec);
-        transport.close();
-        return false;
-    }
+//    public boolean checkMail() throws MessagingException {
+//        Properties prop = new Properties();
+//        prop.put("mail.store.protocol", "com.sun.mail.pop3");
+//        prop.put("mail.pop3.host", SMTP_HOST_NAME);
+//        prop.put("mail.pop3.auth", "true");
+//        prop.put("mail.pop3.port", PORT);
+//        prop.put("mail.pop3.starttls.enable", "true");
+//        SMTPAuthenticator auth = new SMTPAuthenticator(SMTP_AUTH_USER, SMTP_AUTH_PWD);
+//        Session session = Session.getInstance(prop, auth);
+//        Store store = session.getStore("pop3");
+//        store.connect(SMTP_HOST_NAME, PORT, SMTP_AUTH_USER, SMTP_AUTH_PWD);
+//        Folder inbox = store.getFolder("Inbox");
+//        Message msg = new POP3Message(inbox, 0);
+//        msg.saveChanges();
+//        Transport transport = session.getTransport("pop3");
+//        transport.connect(SMTP_HOST_NAME, PORT, SMTP_AUTH_USER, SMTP_AUTH_PWD);
+//        Address m = new InternetAddress("mutaztom@gmail.com");
+//        Address[] rec = new Address[]{m};
+//        msg.setFrom(new InternetAddress("mutaz@rational-team.com"));
+//        msg.setRecipients(Message.RecipientType.TO, rec);
+//        msg.setSubject(this.subject);
+//        msg.setContent(this.message, "text/plain");
+//        BodyPart messageBodyPart = new MimeBodyPart();
+//        Multipart multipart = new MimeMultipart();
+//        multipart.addBodyPart(messageBodyPart);
+//        this.addAtachments(this.attachments, multipart);
+//        msg.setContent(multipart);
+//        messageBodyPart.setText(this.message);
+//        transport.sendMessage(msg, rec);
+//        transport.close();
+//        return false;
+//    }
 
     public void addCC(String ccmail) {
         recipients.putIfAbsent(ccmail, ccmail);
@@ -291,26 +293,26 @@ public class MailMan {
         recipients.putIfAbsent(bcname, bcmail);
     }
 
-    private class SMTPAuthenticator extends Authenticator {
-        String username;
-        String password;
-
-        public SMTPAuthenticator() {
-            this.username = SMTP_AUTH_USER;
-            this.password = SMTP_AUTH_PWD;
-        }
-
-        public SMTPAuthenticator(String un, String pwd) {
-            this.username = SMTP_AUTH_USER;
-            this.password = SMTP_AUTH_PWD;
-            this.username = un;
-            this.password = pwd;
-        }
-
-        public PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication(this.username, this.password);
-        }
-
-
-    }
+//    private class SMTPAuthenticator extends Authenticator {
+//        String username;
+//        String password;
+//
+//        public SMTPAuthenticator() {
+//            this.username = SMTP_AUTH_USER;
+//            this.password = SMTP_AUTH_PWD;
+//        }
+//
+//        public SMTPAuthenticator(String un, String pwd) {
+//            this.username = SMTP_AUTH_USER;
+//            this.password = SMTP_AUTH_PWD;
+//            this.username = un;
+//            this.password = pwd;
+//        }
+//
+//        public PasswordAuthentication getPasswordAuthentication() {
+//            return new PasswordAuthentication(this.username, this.password);
+//        }
+//
+//
+//    }
 }

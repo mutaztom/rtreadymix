@@ -64,7 +64,7 @@ public class Tblsuppliertype {
         this.aritem = s;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -73,7 +73,7 @@ public class Tblsuppliertype {
                 Objects.equals(item, that.item);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(id, item);
     }

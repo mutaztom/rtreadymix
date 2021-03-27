@@ -3,20 +3,16 @@ package com.rationalteam.rtreadymix;
 import com.rationalteam.reaymixcommon.ClientOrder;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
-import com.rationalteam.rterp.sales.Subscribtion;
-import com.rationalteam.rterp.sales.SubscribtionLocal;
+import com.rationalteam.rterp.sales.Subscription;
 import io.quarkus.vertx.ConsumeEvent;
-import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
-import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +25,7 @@ import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class NotificationServer {
-    SubscribtionLocal subs;
+    Subscription subs;
     @Inject
     CommHub commHub;
 
@@ -57,12 +53,12 @@ public class NotificationServer {
         NotifySMS = Boolean.parseBoolean(Utility.getProperty("notify.sms"));
     }
 
-    public List<SubscribtionLocal> getDue() {
+    public List<Subscription> getDue() {
         try {
             Map<Integer, Object> map = new HashMap<>();
             Date date = new Date();
             String sql = "select * from tblsubscribtion where datediff(enddate,current_date) between 1 and notifybefore and mobile is not null and mobile <>''";
-            subs = Utility.lookUp(Subscribtion.class);
+            subs = new Subscription();
             List expired = subs.listNative(sql, map);
             return expired;
         } catch (Exception exp) {
@@ -71,12 +67,12 @@ public class NotificationServer {
         }
     }
 
-    public List<SubscribtionLocal> getNew() {
+    public List<Subscription> getNew() {
         try {
             Map<Integer, Object> map = new HashMap<>();
             Date date = new Date();
             String sql = "select * from tblsubscribtion where datediff(ondate,current_date) between 1 and 3 and mobile is not null and mobile <>''";
-            subs = Utility.lookUp(Subscribtion.class);
+            subs = new Subscription();
             List expired = subs.listNative(sql, map);
             return expired;
         } catch (Exception exp) {
@@ -89,14 +85,14 @@ public class NotificationServer {
         if (media == null)
             throw new RuntimeException("Media parameter must be specified sms or email");
         if (media.equals(enCommMedia.SMS)) {
-            List<SubscribtionLocal> due = getDue();
+            List<Subscription> due = getDue();
 //            //filter those with mobile number associated to it
-            List<SubscribtionLocal> hasmobile = due.stream().filter(f -> f.getMobile() != null).collect(Collectors.toList());
+            List<Subscription> hasmobile = due.stream().filter(f -> f.getMobile() != null).collect(Collectors.toList());
             //build sms content, and due to the difference in content of the sms it is difficult to send as bulk
             VelocityContext context = new VelocityContext();
             initTemplatePath(media);
             Template template = Velocity.getTemplate("subsnotify.txt");
-            for (SubscribtionLocal s :
+            for (Subscription s :
                     due) {
                 context.put("service", s.getItem());
                 context.put("days", s.getDaysToExpire());
@@ -116,9 +112,9 @@ public class NotificationServer {
             initTemplatePath(media);
             VelocityContext context = new VelocityContext();
             Template template = Velocity.getTemplate("subsnotify.txt");
-            List<SubscribtionLocal> hasemail = getDue().stream().filter(f -> f.getEmail() != null).collect(Collectors.toList());
+            List<Subscription> hasemail = getDue().stream().filter(f -> f.getEmail() != null).collect(Collectors.toList());
             int c = 0;
-            for (SubscribtionLocal s :
+            for (Subscription s :
                     hasemail) {
                 context.put("customer", MezoDB.getItem(s.getCustomer(), "tblcustomer"));
                 context.put("days", s.getDaysToExpire());
@@ -141,15 +137,15 @@ public class NotificationServer {
             throw new RuntimeException("Media parameter must be specified sms or email");
 
         if (media.equals(enCommMedia.SMS)) {
-            List<SubscribtionLocal> due = getNew();
+            List<Subscription> due = getNew();
 //            //filter those with mobile number associated to it
-            List<SubscribtionLocal> hasmobile = due.stream().filter(f -> f.getMobile() != null).collect(Collectors.toList());
+            List<Subscription> hasmobile = due.stream().filter(f -> f.getMobile() != null).collect(Collectors.toList());
             //build sms content, and due to the difference in content of the sms it is difficult to send as bulk
             VelocityContext context = new VelocityContext();
             initTemplatePath(media);
 
             Template template = Velocity.getTemplate("subswelcome.txt");
-            for (SubscribtionLocal s :
+            for (Subscription s :
                     due) {
                 context.put("service", s.getItem());
                 context.put("days", s.getDaysToExpire());
@@ -171,9 +167,9 @@ public class NotificationServer {
             initTemplatePath(media);
             VelocityContext context = new VelocityContext();
             Template template = Velocity.getTemplate("subswelcome.txt");
-            List<SubscribtionLocal> hasemail = getDue().stream().filter(f -> f.getEmail() != null).collect(Collectors.toList());
+            List<Subscription> hasemail = getDue().stream().filter(f -> f.getEmail() != null).collect(Collectors.toList());
             int c = 0;
-            for (SubscribtionLocal s :
+            for (Subscription s :
                     hasemail) {
                 context.put("customer", MezoDB.getItem(s.getCustomer(), "tblcustomer"));
                 context.put("days", s.getDaysToExpire());
@@ -193,7 +189,7 @@ public class NotificationServer {
 
     }
 
-    public boolean sendWelcome(SubscribtionLocal s, enCommMedia media) {
+    public boolean sendWelcome(Subscription s, enCommMedia media) {
         boolean b = false;
         try {
             VelocityContext context = new VelocityContext();
@@ -235,11 +231,11 @@ public class NotificationServer {
         return b;
     }
 
-    public SubscribtionLocal getSub() {
+    public Subscription getSub() {
         return subs;
     }
 
-    public void setSub(SubscribtionLocal sub) {
+    public void setSub(Subscription sub) {
         this.subs = sub;
     }
 

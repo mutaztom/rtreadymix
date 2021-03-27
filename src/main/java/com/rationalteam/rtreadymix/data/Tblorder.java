@@ -178,7 +178,7 @@ public class Tblorder extends PanacheEntityBase {
         this.rate = rate;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Tblorder)) return false;
@@ -198,7 +198,7 @@ public class Tblorder extends PanacheEntityBase {
                 itemid.equals(tblorder.itemid);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(id, item, country, state, city, province, location, quantity, type, ondate, dateNeeded, clientid, itemid);
     }

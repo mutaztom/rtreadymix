@@ -40,12 +40,12 @@ public class SupplierMap extends CRtDataObject {
         mappedToMain = false;
     }
 
-    @Override
+
     public <T> Class<T> getDataType() {
         return (Class<T>) TblSupplierMap.class;
     }
 
-    @Override
+
     public void setData(Object d) {
         data = (TblSupplierMap) d;
         this.maincat = data.getMaincat();
@@ -56,7 +56,7 @@ public class SupplierMap extends CRtDataObject {
         mappedToMain = data.getMappedToMain();
     }
 
-    @Override
+
     public TblSupplierMap getData() {
         data = new TblSupplierMap();
         data.setMaincat(this.getMaincat());
@@ -92,7 +92,7 @@ public class SupplierMap extends CRtDataObject {
         this.suppid = suppid;
     }
 
-    @Override
+
     public String toString() {
         String itemname = "<Not Set>";
         if (mappedToMain) {
@@ -100,14 +100,14 @@ public class SupplierMap extends CRtDataObject {
             cat.find(this.maincat);
             itemname = cat.getItem();
         } else {
-            ProductLocal p= Utility.lookUp(CProduct.class);
+            CProduct p= new CProduct();
             p.find(itemid);
             itemname = p.getItem();
         }
         return itemname;
     }
 
-    @Override
+
     public int hashCode() {
         int hash = 5;
         hash = 53 * hash + Objects.hashCode(this.suppid);
@@ -116,7 +116,7 @@ public class SupplierMap extends CRtDataObject {
         return hash;
     }
 
-    @Override
+
     public boolean equals(Object comp) {
         if (comp instanceof SupplierMap ) {
             SupplierMap s = (SupplierMap) comp;
@@ -157,7 +157,7 @@ public class SupplierMap extends CRtDataObject {
         return !mappedToMain;
     }
 
-    @Override
+
     public boolean checkEntries() throws ValidationException {
         if (suppid <= 0) {
             throw new ValidationException("Supplier must be saved first, then mapped.");

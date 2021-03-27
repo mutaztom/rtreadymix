@@ -24,7 +24,6 @@ public class Startup {
     EntityManager eman;
 
     public void loadConfig(@Observes StartupEvent ev) {
-        MezoDB.REUSE_EMAN = true;
         DataManager.USINGHIBERNATE = false;
         Utility.PropFile = CONFIGPATH + "/rtprop.properties";
     }

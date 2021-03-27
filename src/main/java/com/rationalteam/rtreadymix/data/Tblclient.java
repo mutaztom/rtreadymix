@@ -1,6 +1,5 @@
 package com.rationalteam.rtreadymix.data;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 import javax.persistence.*;
@@ -19,9 +18,7 @@ public class Tblclient extends PanacheEntityBase {
     String password;
     Integer customerid;
     Integer accountid;
-    @Column(name = "email",unique = true)
     String email;
-    @Column(name = "mobile",unique = true)
     String mobile;
     String usertype;
     String pincode;
@@ -103,7 +100,7 @@ public class Tblclient extends PanacheEntityBase {
         this.since = since;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Tblclient)) return false;
@@ -119,7 +116,7 @@ public class Tblclient extends PanacheEntityBase {
                 Objects.equals(usertype, that.usertype);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(id, username, item, password, customerid, accountid, email, mobile, usertype);
     }

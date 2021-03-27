@@ -97,7 +97,7 @@ public class Tblcomlog {
         this.email = email;
     }
 
-    @Override
+
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -112,7 +112,7 @@ public class Tblcomlog {
                 Objects.equals(email, tblcomlog.email);
     }
 
-    @Override
+
     public int hashCode() {
         return Objects.hash(id, address, status, smstime, byuser, title, message, email);
     }

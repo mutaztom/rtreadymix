@@ -10,16 +10,12 @@ import com.rationalteam.rtreadymix.SystemConfig;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.ejb.Local;
-import javax.ejb.Stateful;
 import javax.persistence.NonUniqueResultException;
 import javax.validation.ValidationException;
 import java.lang.reflect.Field;
 import java.util.*;
 
-@Stateful
-@Local(SupplierLocal.class)
-public class Supplier extends Person implements SupplierLocal {
+public class Supplier extends Person{
 
     private String address;
     private String website;
@@ -36,16 +32,16 @@ public class Supplier extends Person implements SupplierLocal {
 
     @SpecialFilterable(dataField = "item", dataTable = "tblsuppliertype")
     private Integer type;
-    private List<ContactLocal> m_contacts = new ArrayList<>();
+    private List<CContact> m_contacts = new ArrayList<>();
     private List<SupplierMap> supplierMap;
     private Integer paymentMethod;
     TblSupplier data;
     protected Integer currencyid;
     protected Boolean mapped;
-    @EJB
-    private CurrencyLocal currency;
-    @EJB
-    ContactLocal contact;
+
+    private CCurrency currency;
+
+    CContact contact;
     private List<CBankInfo> bankAccounts;
 //Getters
 
@@ -53,42 +49,39 @@ public class Supplier extends Person implements SupplierLocal {
         return item;
     }
 
-    @Override
     public String getWebSite() {
         return website;
     }
 
-    @Override
+
     public String getAddress() {
         return address;
     }
 
-    @Override
     public boolean ISServiceProvider() {
         return serviceProvider;
     }
 
-    @Override
     public boolean ISProductProvider() {
         return productProvider;
     }
 
-    @Override
+
     public boolean isActive() {
         return active;
     }
 
-    @Override
+
     public Integer getType() {
         return type;
     }
 
-    @Override
+
     public void setType(Integer t) {
         type = t;
     }
 
-    @Override
+
     public String getSupplierType() {
         if (type != null && type > 0) {
             COption o = new COption("tblsuppliertype");
@@ -100,71 +93,71 @@ public class Supplier extends Person implements SupplierLocal {
         return "Not Set";
     }
 
-    @Override
-    public List<ContactLocal> getSupplierContacts() {
-        List<ContactLocal> contlist = contact.find(this.getId(), "Supplier");
+
+    public List<CContact> getSupplierContacts() {
+        List<CContact> contlist = contact.find(this.getId(), "Supplier");
         if (contlist == null || contlist.isEmpty())
             contlist = Collections.EMPTY_LIST;
         return contlist;
     }
 //Setters
 
-    @Override
+
     public void setLongName(String name) {
         this.item = name;
     }
 
-    @Override
+
     public void setWebSite(String webSite) {
         this.website = webSite;
     }
 
-    @Override
+
     public void setAsServiceProvider(boolean value) {
         this.serviceProvider = value;
     }
 
-    @Override
+
     public void setServiceProvider(boolean value) {
         this.serviceProvider = value;
     }
 
-    @Override
+
     public void setAsProductsProvider(boolean value) {
         this.productProvider = value;
     }
 
-    @Override
+
     public void setProductsProvider(boolean value) {
         this.productProvider = value;
     }
 
-    @Override
+
     public void setActive(boolean value) {
         this.active = value;
     }
 
-    @Override
+
     public void setSupplierContacts(List contacts) {
         this.m_contacts = contacts;
     }
 
-    @Override
+
     public boolean isServiceProvider() {
         return serviceProvider;
     }
 
-    @Override
+
     public boolean isProductProvider() {
         return productProvider;
     }
 
-    @Override
+
     public void setProductProvider(boolean productProvider) {
         this.productProvider = productProvider;
     }
 
-    @Override
+
     public List<SupplierMap> getSupplierMap() {
         supplierMap = new ArrayList<>();
         List<CRtDataObject> d = listAll(SupplierMap.class, "TblSupplierMap.findBySuppid", "suppid", id);
@@ -175,7 +168,7 @@ public class Supplier extends Person implements SupplierLocal {
         return supplierMap;
     }
 
-    @Override
+
     public void setSupplierMap(List<SupplierMap> supplierMap) {
         this.supplierMap = supplierMap;
     }
@@ -196,14 +189,14 @@ public class Supplier extends Person implements SupplierLocal {
     }
 
 
-    @Override
+
     public void find(int findid) {
         super.find(findid);
         setSupplierMap(SupplierMap.load(findid));
         contacts = contact.find(findid, "Supplier");
     }
 
-    @Override
+
     public boolean ValidateEnteries() {
         // This will check that the enteries for the supplier is true
         //check the email
@@ -212,17 +205,17 @@ public class Supplier extends Person implements SupplierLocal {
         return valid;
     }
 
-    @Override
+
     public String toString() {
         return this.getLongName();
     }
 
-    @Override
+
     public boolean hasContacts() {
         return this.getSupplierContacts().size() > 0;
     }
 
-    @Override
+
     public boolean save() {
         boolean r = super.save();
         for (SupplierMap sm : supplierMap) {
@@ -232,10 +225,10 @@ public class Supplier extends Person implements SupplierLocal {
     }
 
 
-    @Override
+
     public boolean delete() {
         boolean r = super.delete();
-        for (ContactLocal c : contacts) {
+        for (CContact c : contacts) {
             r = r && c.delete();
         }
         contacts.clear();
@@ -247,7 +240,7 @@ public class Supplier extends Person implements SupplierLocal {
     }
 
 
-    @Override
+
     public void setData(Object d) {
         data = (TblSupplier) d;
         this.setId(data.getId());
@@ -279,7 +272,7 @@ public class Supplier extends Person implements SupplierLocal {
         this.location = data.getLocation();
     }
 
-    @Override
+
     public TblSupplier getData() {
         data = new TblSupplier();
         data.setId(this.getId());
@@ -313,18 +306,18 @@ public class Supplier extends Person implements SupplierLocal {
     /**
      * @return the currency
      */
-    @Override
-    public CurrencyLocal getCurrency() {
+
+    public CCurrency getCurrency() {
         currency.find(currencyid);
         return currency;
     }
 
-    @Override
+
     public Integer getCurrencyid() {
         return currencyid;
     }
 
-    @Override
+
     public void setCurrencyid(Integer currencyid) {
         this.currencyid = currencyid;
     }
@@ -332,12 +325,12 @@ public class Supplier extends Person implements SupplierLocal {
     /**
      * @param currency the currency to set
      */
-    @Override
-    public void setCurrency(CurrencyLocal currency) {
+
+    public void setCurrency(CCurrency currency) {
         this.currency = currency;
     }
 
-    @Override
+
     public boolean isSupplyerOf(Integer itemid, boolean service, boolean iscat) {
         Map<Integer, Object> param = new HashMap<>();
         param.put(1, id);//suppid
@@ -354,7 +347,7 @@ public class Supplier extends Person implements SupplierLocal {
         }
     }
 
-    @Override
+
     public boolean isSupplyerOf(Integer itemid, boolean service) {
         Map<Integer, Object> param = new HashMap<>();
         param.put(1, id);//suppid
@@ -374,17 +367,17 @@ public class Supplier extends Person implements SupplierLocal {
         }
     }
 
-    @Override
+
     public void setPaymentMethod(Integer pm) {
         this.paymentMethod = pm;
     }
 
-    @Override
+
     public Integer getPaymentMethod() {
         return paymentMethod;
     }
 
-    @Override
+
     public List<CBankInfo> getBankAccounts() {
         bankAccounts = new ArrayList<>();
         CBankInfo info = new CBankInfo();
@@ -396,17 +389,17 @@ public class Supplier extends Person implements SupplierLocal {
         return bankAccounts;
     }
 
-    @Override
+
     public void setBankAccounts(List<CBankInfo> bankAccounts) {
         this.bankAccounts = bankAccounts;
     }
 
-    @Override
+
     public void addBankAccount(CBankInfo b) {
         bankAccounts.add(b);
     }
 
-    @Override
+
     protected void initSearch() {
         searchOptions = new ArrayList<>();
         addSearchOption("id", "id");
@@ -423,12 +416,12 @@ public class Supplier extends Person implements SupplierLocal {
         addSearchOption(scont);
     }
 
-    @Override
+
     public List filter(String fld, Object val) {
         return super.filter(fld, val); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
+
     public void addMap(SupplierMap m) {
         if (supplierMap.contains(m)) {
             Utility.ShowError("This Mapped material already exisits!");
@@ -438,7 +431,7 @@ public class Supplier extends Person implements SupplierLocal {
         supplierMap.add(m);
     }
 
-    @Override
+
     public void removeMap(SupplierMap m) {
         supplierMap.remove(m);
     }
@@ -447,7 +440,7 @@ public class Supplier extends Person implements SupplierLocal {
      * This save method lacks the cabablity to mix mapping mode, it can either
      * map in Category Level or Item Level Only.
      */
-    @Override
+
     public boolean saveMap(Boolean update) throws DongleException, ValidationException {
         Boolean r = false;
         if (update) {
@@ -465,7 +458,7 @@ public class Supplier extends Person implements SupplierLocal {
         return r;
     }
 
-    @Override
+
     public Boolean isMapped() {
         Integer m = MezoDB.getInteger("select count(id) from tblsuppliermap where suppid=" + id);
         mapped = (m > 0);
@@ -473,7 +466,7 @@ public class Supplier extends Person implements SupplierLocal {
 
     }
 
-    @Override
+
     public List<CProduct> getMappedItems() {
         List<CProduct> mappedItems = new ArrayList<>();
         for (SupplierMap map : supplierMap) {
@@ -486,7 +479,7 @@ public class Supplier extends Person implements SupplierLocal {
         return mappedItems;
     }
 
-    @Override
+
     public List<ProductCategory> getMappedCategories() {
         List<ProductCategory> mappedCat = new ArrayList<>();
         for (SupplierMap map : supplierMap) {
@@ -499,7 +492,7 @@ public class Supplier extends Person implements SupplierLocal {
         return mappedCat;
     }
 
-    @Override
+
     public List<ProductCategory> getUnmappedCategories() {
         List<ProductCategory> unMappedCat = new ArrayList<>();
         try {
@@ -520,7 +513,7 @@ public class Supplier extends Person implements SupplierLocal {
      * @return list of unmapped items. It will also check if main cat of the
      * item is not included in previous map.
      */
-    @Override
+
     public List<CProduct> getUnmappedItems() {
         List<CProduct> unMappedItems = new ArrayList<>();
         try {
@@ -538,7 +531,7 @@ public class Supplier extends Person implements SupplierLocal {
         return unMappedItems;
     }
 
-    @Override
+
     public int hashCode() {
         int hash = 7;
         hash = 23 * hash + Objects.hashCode(this.id);
@@ -546,7 +539,7 @@ public class Supplier extends Person implements SupplierLocal {
         return hash;
     }
 
-    @Override
+
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -554,7 +547,7 @@ public class Supplier extends Person implements SupplierLocal {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final SupplierLocal other = (SupplierLocal) obj;
+        final Supplier other = (Supplier) obj;
         if (other.getId() == id && other.getItem().equals(item)) {
             return true;
         } else {
@@ -562,8 +555,8 @@ public class Supplier extends Person implements SupplierLocal {
         }
     }
 
-    @Override
-    public ContactLocal getContact() {
+
+    public CContact getContact() {
         contact.setAddress(address);
         contact.setEmail(email);
         contact.setPhone(phone);
@@ -577,21 +570,21 @@ public class Supplier extends Person implements SupplierLocal {
         return contact;
     }
 
-    @Override
-    public void AddContact(ContactLocal cont) {
+
+    public void AddContact(CContact cont) {
         cont.setOwnerid(id);
         contacts.add(cont);
     }
 
-    @Override
-    public void deleteContact(ContactLocal cont) {
+
+    public void deleteContact(CContact cont) {
         contacts.remove(cont);
         cont.delete();
     }
 
-    @Override
-    public ContactLocal getContact(int cid) {
-        for (ContactLocal cont : contacts) {
+
+    public CContact getContact(int cid) {
+        for (CContact cont : contacts) {
             if (cont.getId().equals(cid)) {
                 return cont;
             }
@@ -599,7 +592,7 @@ public class Supplier extends Person implements SupplierLocal {
         return null;
     }
 
-    @Override
+
     public boolean checkEntries() throws ValidationException {
         if (item == null || item.isEmpty()) {
             throw new ValidationException("Suplier name must be set first.");
@@ -622,7 +615,7 @@ public class Supplier extends Person implements SupplierLocal {
         return true;
     }
 
-    @Override
+
     public boolean exists() {
         if (item != null && !item.isEmpty()) {
             return getIdFromItem(item) > 0;
@@ -630,62 +623,62 @@ public class Supplier extends Person implements SupplierLocal {
         return false;
     }
 
-    @Override
+
     public ArrayList<Document> getDocuments() {
         return null;
     }
 
-    @Override
+
     public <T> Class<T> getDataType() {
         return (Class<T>) TblSupplier.class;
     }
 
-    @Override
+
     public String getAritem() {
         return aritem;
     }
 
-    @Override
+
     public void setAritem(String aritem) {
         this.aritem = aritem;
     }
 
-    @Override
+
     public String getRegno() {
         return regno;
     }
 
-    @Override
+
     public void setRegno(String regno) {
         this.regno = regno;
     }
 
-    @Override
+
     public String getAraddress() {
         return araddress;
     }
 
-    @Override
+
     public void setAraddress(String araddress) {
         this.araddress = araddress;
     }
 
-    @Override
+
     public String getLocation() {
         return location;
     }
 
-    @Override
+
     public void setLocation(String location) {
         this.location = location;
     }
 
-    @Override
+
     public void setAddress(String address) {
         this.address = address;
     }
 
-    @Override
+
     public Map<String, Object> getAsRecord() {
         Map<String, Object> map = new HashMap<>();
         List<Field> fields = getBrowsableFields();

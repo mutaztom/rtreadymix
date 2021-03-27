@@ -15,7 +15,7 @@ import org.apache.velocity.app.Velocity;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.mail.MessagingException;
+
 import java.io.File;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -190,36 +190,36 @@ public class CommHub {
         }
 
 
-        public void buildQuotation() {
-            VelocityContext context = new VelocityContext();
-            context.put("customer", item);
-            context.put("title", engine.getSubject());
-            template.merge(context, swriter);
-            engine.setMessage(swriter.toString());
-            engine.setEmailFromAddress(Utility.getProperty("mailSender"));
-            //if cc or bc is required
-            engine.addBC("Mutaz", "mutaz@rationalteam.net");
-            try {
-                boolean r = engine.postMail();
-                if (r) {
-                    Tblcomlog lfile = new Tblcomlog();
-                    lfile.setMessage(message);
-                    lfile.setByuser("rtmixadmin");
-                    lfile.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
-                    lfile.setEmail(mailto);
-                    log(lfile);
-                    System.out.println("Email sent succesfully");
-                    //delete attached file when finished
-                    for (String af : engine.getAttachments()) {
-                        File f = new File(af);
-//                        if (f.exists())
-//                            f.delete();
-                    }
-                }
-            } catch (MessagingException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        public void buildQuotation() {
+//            VelocityContext context = new VelocityContext();
+//            context.put("customer", item);
+//            context.put("title", engine.getSubject());
+//            template.merge(context, swriter);
+//            engine.setMessage(swriter.toString());
+//            engine.setEmailFromAddress(Utility.getProperty("mailSender"));
+//            //if cc or bc is required
+//            engine.addBC("Mutaz", "mutaz@rationalteam.net");
+//            try {
+//                boolean r = engine.postMail();
+//                if (r) {
+//                    Tblcomlog lfile = new Tblcomlog();
+//                    lfile.setMessage(message);
+//                    lfile.setByuser("rtmixadmin");
+//                    lfile.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
+//                    lfile.setEmail(mailto);
+//                    log(lfile);
+//                    System.out.println("Email sent succesfully");
+//                    //delete attached file when finished
+//                    for (String af : engine.getAttachments()) {
+//                        File f = new File(af);
+////                        if (f.exists())
+////                            f.delete();
+//                    }
+//                }
+//            } catch (Exception e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
 
         public void build() {
 

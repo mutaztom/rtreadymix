@@ -32,7 +32,7 @@ public class SupplierIndexConfig extends CRtDataObject {
             find(lastId);
     }
 
-    @Override
+
     public <T> Class<T> getDataType() {
         return (Class<T>) TblSupplierIndexConfig.class;
     }
@@ -77,7 +77,7 @@ public class SupplierIndexConfig extends CRtDataObject {
         this.qualityIndex = qualityIndex;
     }
 
-    @Override
+
     public Object getData() {
         data = new TblSupplierIndexConfig();
         data.setId(id);
@@ -91,7 +91,7 @@ public class SupplierIndexConfig extends CRtDataObject {
         return data;
     }
 
-    @Override
+
     public void setData(Object _data) {
         data = (TblSupplierIndexConfig) _data;
         id = data.getId();

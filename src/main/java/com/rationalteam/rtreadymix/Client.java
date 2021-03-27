@@ -45,14 +45,14 @@ public class Client extends CRtDataObject {
         gender = enGender.Male;
     }
 
-    @Override
+
     protected void initSearch() {
         CSearchOption o = new CSearchOption("id", "id");
         o.setOptionTable("tblclients");
         addSearchOption(o);
     }
 
-    @Override
+
     public Object getData() {
         data = new Tblclient();
         data.setId(id);
@@ -77,7 +77,7 @@ public class Client extends CRtDataObject {
         return data;
     }
 
-    @Override
+
     public void setData(Object o) {
         data = (Tblclient) o;
         id = data.getId();
@@ -115,7 +115,7 @@ public class Client extends CRtDataObject {
         }
     }
 
-    @Override
+
     public <T> Class<T> getDataType() {
         return (Class<T>) Tblclient.class;
     }
@@ -243,7 +243,7 @@ public class Client extends CRtDataObject {
         return null;
     }
 
-    @Override
+
     public boolean checkEntries() throws ValidationException {
         if (isEmailUsed())
             throw new ValidationException("Email is already registered in our database.");
@@ -270,7 +270,7 @@ public class Client extends CRtDataObject {
         this.since = since;
     }
 
-    @Override
+
     public Map<String, Object> getAsRecord() {
         Map<String, Object> map = new HashMap<>();
         map.put("Id", id);
