@@ -6,6 +6,10 @@
 
 <div class="row justify-content-center">
     <div id="tbar" class="col-12 col-md-12 col-sm-12">
+        <button form="frmbrowse" class="btn btn-primary fa fa-plus-square" name="_method" value="addNew" type="submit"
+                {#if type =='client }disabled{/if} title="Create new item" style="margin-bottom: 5px;" formaction="/readymix/rtbaction"
+        formmethod="post">Add
+        New</button>
         {#include filterman/}
     </div>
 </div>
@@ -32,16 +36,14 @@
                     {#if rtlist}
                     {#for item in rtlist }
                     <tr>
-                        <input id="itemid" type="hidden" name="itemid" value="{item.id}">
                         {#for k in columns}
                         <td>{item.get(k)}</td>
                         {/for}
                         <td>
                             <button type="submit" title="Edit" name="_method" value="edit_{item.id}"
                                     class="btn btn-primary fa fa-pencil-alt"></button>
-                            <button id="cmddelete" type="button" name="_method"
-                                    onclick="deleteItem({item.id });"
-                                    value="delete" class="btn btn-danger fa fa-trash"
+                            <button id="cmddelete" type="button" onclick="deleteItem({item.id})" name="_method"
+                                    value="delete_{item.id}" class="btn btn-danger fa fa-trash"
                                     title="Delete this item"></button>
                         </td>
                     </tr>
@@ -57,11 +59,23 @@
 
 <script type="text/javascript">
     function deleteItem(itemid) {
-        alert("Client deletion is not allowed at this stage!");
-        // var conf = confirm("Are you sure you want to delete this item?");
-        // if (conf) {
-        //
-        // }
+        var conf = confirm("Are you sure you want to delete this item?");
+        if (conf) {
+            var form = $("#frmbrowse");
+            $.ajax({
+                url: "delete/",
+                data: JSON.stringify({ itemid: itemid }),
+                headers: {'Content-Type': 'application/json'},
+                method: 'POST',
+                onsuccess: new function (dat) {
+                    console.log(dat);
+                    location.reload();
+                },
+                onerror: new function (d, s, err) {
+                    console.log("Error deleting item " + itemid + " " + err);
+                }
+            });
+        }
     }
 </script>
 </body>
