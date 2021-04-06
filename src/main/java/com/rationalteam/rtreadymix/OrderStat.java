@@ -140,8 +140,8 @@ public class OrderStat {
     }
     @Transactional
     public Map<Integer, Double> getPerMember() {
-        String sql = "select type,count(id) from tblorder where year(ondate)=year(current_date())" +
-                " and status not in ('Canceled','Rejected','Created') group by type";
+        String sql = "select itemid,count(id) from tblorder where year(ondate)=year(current_date())" +
+                " and status not in ('Canceled','Rejected','Created') group by itemid";
         List open = MezoDB.Open(sql);
 
         Map<Integer, Double> sales = new HashMap<>();
@@ -155,7 +155,7 @@ public class OrderStat {
     }@Transactional
     public Map<String, Double> getPerGrade() {
         String sql = "select t.item,count(tblorder.id) from tblorder inner join tblproduct t on tblorder.itemid = t.id where year(ondate)=year(current_date())\n" +
-                "and status not in ('Canceled','Rejected','Created') group by type;";
+                "and status not in ('Canceled','Rejected','Created') group by itemid,t.item";
         List open = MezoDB.Open(sql);
 
         Map<String, Double> sales = new HashMap<>();

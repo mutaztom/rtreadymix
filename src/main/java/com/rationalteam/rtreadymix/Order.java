@@ -27,7 +27,6 @@ public class Order extends CRtDataObject {
     Integer city;
     @Browsable
     Double quantity;
-    Integer type;
     @Browsable
     String notes;
     Integer itemid;
@@ -87,7 +86,6 @@ public class Order extends CRtDataObject {
             data.setCity(city);
             data.setItem(item);
             data.setMember(member);
-            data.setType(type);
             data.setLocation(location);
             data.setRate(rate);
         } catch (Exception e) {
@@ -108,7 +106,6 @@ public class Order extends CRtDataObject {
             state = data.getState();
             city = data.getCity();
             quantity = data.getQuantity();
-            type = data.getType();
             itemid = data.getItemid();
             unitprice = data.getUnitprice();
             usdprice = data.getUsdprice();
@@ -119,7 +116,6 @@ public class Order extends CRtDataObject {
             if (Objects.nonNull(data.getDateNeeded()))
                 dateNeeded = LocalDateTime.of(data.getDateNeeded().toLocalDate(), LocalDateTime.now().toLocalTime());
             notes = data.getNotes();
-            type = data.getType();
             member = data.getMember();
             location = data.getLocation();
             rate = data.getRate() > 0 ? data.getRate() : rate;
@@ -171,14 +167,6 @@ public class Order extends CRtDataObject {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
-    }
-
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
     }
 
     public String getNotes() {
@@ -265,7 +253,6 @@ public class Order extends CRtDataObject {
                 Objects.equals(state, order.state) &&
                 Objects.equals(city, order.city) &&
                 Objects.equals(quantity, order.quantity) &&
-                Objects.equals(type, order.type) &&
                 Objects.equals(notes, order.notes) &&
                 Objects.equals(itemid, order.itemid) &&
                 Objects.equals(ondate, order.ondate) &&
@@ -276,7 +263,7 @@ public class Order extends CRtDataObject {
 
 
     public int hashCode() {
-        return Objects.hash(super.hashCode(), clientid, location, country, state, city, quantity, type, notes, itemid, ondate, dateNeeded, status, data);
+        return Objects.hash(super.hashCode(), clientid, location, country, state, city, quantity, notes, itemid, ondate, dateNeeded, status, data);
     }
 
     public Integer getMember() {
@@ -295,7 +282,7 @@ public class Order extends CRtDataObject {
             clientid = Long.valueOf(MezoDB.getItemID(Tblclient.class.getSimpleName(), "email", cord.getClientid())).intValue();
             city = Long.valueOf(MezoDB.getItemID(TblCity.class.getSimpleName(), "item", cord.getCity())).intValue();
             country = Long.valueOf(MezoDB.getItemID(TblCountry.class.getSimpleName(), "item", cord.getCountry())).intValue();
-            type = Long.valueOf(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getGrade())).intValue();
+            itemid = Long.valueOf(MezoDB.getItemID(TblProduct.class.getSimpleName(), "item", cord.getGrade())).intValue();
             state = Long.valueOf(MezoDB.getItemID("tblprovince", "item", cord.getState())).intValue();
             dateNeeded = UtilityExt.toLocalDateTime(cord.getDateNeeded());
             if (cord.getOndate() == null)
@@ -318,7 +305,7 @@ public class Order extends CRtDataObject {
 
     @Transactional
     public Client getClient() {
-        Client c=new Client();
+        Client c = new Client();
         if (clientid != null)
             if (clientid > 0) {
                 c.find(clientid);
@@ -353,7 +340,7 @@ public class Order extends CRtDataObject {
             cord.setUnitprice(unitprice);
             cord.setUsdprice(usdprice);
             cord.setQuantity(quantity);
-            cord.setGrade(MezoDB.getItem(type, " Tblgrade "));
+            cord.setGrade(MezoDB.getItem(itemid, " Tblgrade "));
             cord.setMember(MezoDB.getItem(member, " tblmember "));
             cord.setState(MezoDB.getItem(state, " Tblprovince "));
             cord.setStatus(status.name());
@@ -411,5 +398,27 @@ public class Order extends CRtDataObject {
         return equiv;
     }
 
+    public static boolean isComplete(ClientOrder ord) {
+        boolean r = false;
+        try {
+            r = ord.getItemid() != null ||
+                    (ord.getMember() == null) ||
+                    ord.getQuantity() == null ||
+                    ord.getQuantity() <= 0 ||
+                    (ord.getClientid() == null);
+            r = !r;
+            if (Utility.IsNumber(ord.getItemid())) {
+                r = r && (Integer.parseInt(ord.getItemid()) > 0);
+            }
+            if (Utility.IsNumber(ord.getGrade()))
+                r = r && (Integer.parseInt(ord.getGrade()) > 0);
+            if (Utility.IsNumber(ord.getMember()))
+                r = r && (Integer.parseInt(ord.getMember()) > 0);
+            return r;
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+            return false;
+        }
+    }
 
 }

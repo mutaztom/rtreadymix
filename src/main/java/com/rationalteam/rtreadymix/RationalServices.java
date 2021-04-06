@@ -274,9 +274,15 @@ public class RationalServices {
             if (order == null) {
                 return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Order cannot be null!").build();
             }
-            MezoDB.setEman(eman);
             System.out.println(">> RECEIVED THIS ORDER .......");
             System.out.println(JsonObject.mapFrom(order));
+            if (!Order.isComplete(order))
+            {
+                System.out.println("incomplete order, please fill all fields.");
+                return Response.serverError().entity(new ServerMessage("incomplete order, please fill all fields.")).build();
+            }
+            MezoDB.setEman(eman);
+
             DataManager.setEntityManager(eman);
             if (!cman.isAuthentic(order.getClientid()))
                 return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to place orders in this server.").build();
@@ -292,6 +298,7 @@ public class RationalServices {
                 inorder.find(order.getId());
                 System.out.println("Modifying");
             }
+
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
@@ -405,7 +412,7 @@ public class RationalServices {
                 clnt.setEmail(profile.getString("email"));
                 String job = profile.getString("occupation");
                 Long jobid = MezoDB.getItemID("tbljob", "item", job.stripLeading().stripTrailing());
-                System.out.println("found job id : "+job+" :  "+jobid);
+                System.out.println("found job id : " + job + " :  " + jobid);
                 clnt.setOccupation(jobid.intValue());
                 if (clnt.checkEntries()) {
                     result = clnt.save();

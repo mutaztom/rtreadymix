@@ -21,7 +21,6 @@ public class Tblorder extends PanacheEntityBase {
     private Integer province;
     private String location;
     private Double quantity;
-    private Integer type;
     private Date ondate;
     private Date dateNeeded;
     private Integer clientid;
@@ -98,15 +97,7 @@ public class Tblorder extends PanacheEntityBase {
         this.quantity = quantity;
     }
 
-    public Integer getType() {
-        return type;
-    }
-
-    public void setType(Integer type) {
-        this.type = type;
-    }
-
-    public Date getOndate() {
+   public Date getOndate() {
         return ondate;
     }
 
@@ -191,7 +182,6 @@ public class Tblorder extends PanacheEntityBase {
                 Objects.equals(province, tblorder.province) &&
                 Objects.equals(location, tblorder.location) &&
                 Objects.equals(quantity, tblorder.quantity) &&
-                Objects.equals(type, tblorder.type) &&
                 Objects.equals(ondate, tblorder.ondate) &&
                 Objects.equals(dateNeeded, tblorder.dateNeeded) &&
                 clientid.equals(tblorder.clientid) &&
@@ -200,7 +190,7 @@ public class Tblorder extends PanacheEntityBase {
 
 
     public int hashCode() {
-        return Objects.hash(id, item, country, state, city, province, location, quantity, type, ondate, dateNeeded, clientid, itemid);
+        return Objects.hash(id, item, country, state, city, province, location, quantity, ondate, dateNeeded, clientid, itemid);
     }
 
     public Integer getMember() {

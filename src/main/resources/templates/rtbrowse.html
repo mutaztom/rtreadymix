@@ -7,9 +7,8 @@
 <div class="row justify-content-center">
     <div id="tbar" class="col-12 col-md-12 col-sm-12">
         <button form="frmbrowse" class="btn btn-primary fa fa-plus-square" name="_method" value="addNew" type="submit"
-                {#if type =='client }disabled{/if} title="Create new item" style="margin-bottom: 5px;" formaction="/readymix/rtbaction"
-        formmethod="post">Add
-        New</button>
+                {#if type == 'client' }disabled{/if} title="Create new item" style="margin-bottom: 5px;" formaction="/readymix/rtbaction"
+        formmethod="post">Add New</button>
         {#include filterman/}
     </div>
 </div>

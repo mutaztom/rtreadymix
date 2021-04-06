@@ -276,19 +276,27 @@
     let permember = [];
     let pergrade = [];
     $(document).ready(function () {
+        {#if not volumes.isEmpty}
         "{#for k in volumes.keySet}"
         var point = [{k}, {volumes.get(k)}];
         vpermonth.push({volumes.get(k)});
         "{/for}"
+        {/if}
+            {#if not sales.isEmpty}
         "{#for k in sales.keySet}"
         spermonth.push({sales.get(k)});
         "{/for}"
+            {/if}
+        {#if not permember.isEmpty}
         "{#for k in permember.keySet}"
         permember.push({permember.get(k)});
         "{/for}"
+        {/if}
+        {#if not pergrade.isEmpty}
         "{#for k in pergrade.keySet}"
         pergrade.push({pergrade.get(k)});
         "{/for}"
+        {/if}
         buildChart(vpermonth, ctxvol, 'rgba(54, 162, 235, 0.2)', "Soled Volumes");
         buildChart(spermonth, ctxsales, 'rgb(184,132,2,100)', 'Sales Value');
         buildMemberChart(permember, ctxmember, 'rgb(184,8,2,100)', 'Sales Per Member');
