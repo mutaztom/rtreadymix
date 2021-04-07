@@ -90,6 +90,10 @@ public class RationalServices {
         output.setMessage("Nothing was processed");
         try {
             boolean r;
+			if(muser.getItem()==null || muser.getItem().isBlank())
+			{
+				return new ServerMessage("User Name cannot be blank.");
+			}
             System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
             c.fromMobileUser(muser);
@@ -253,6 +257,7 @@ public class RationalServices {
                 cs.setItem(s.getItem());
                 cs.setUnit(s.getUnit());
                 cs.setDescribtion(s.getDescription());
+				cs.setCode(s.getCode());
                 cs.setUnitprice(s.getUnitPrice());
                 serlist.add(cs);
             });
@@ -408,7 +413,8 @@ public class RationalServices {
                 String gndr = profile.getString("gender");
                 if (gndr != null && gndr.isBlank())
                     clnt.setGender(enGender.valueOf(gndr));
-                if (profile.getString("dislike") != null)
+                if (profile.getString("dislike") != null
+                        && !profile.getString("dislike").isEmpty())
                     clnt.setDislike(profile.getString("dislike"));
                 clnt.setEmail(profile.getString("email"));
                 String job = profile.getString("occupation");
@@ -434,7 +440,6 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     @Transactional
     public Response getNotifications() {
-        MezoDB.setEman(eman);
         List<News> notes = new ArrayList<>();
         List<Tblnews> news = MezoDB.open("select * from tblnews order by id desc  limit 5 ", Tblnews.class);
         if (news != null)
@@ -444,7 +449,6 @@ public class RationalServices {
             }
         return Response.ok(notes).build();
     }
-
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/verifyPin/{pincode}/{clientid}")
@@ -722,5 +726,21 @@ public class RationalServices {
             System.out.println("Error Sending Mail: " + exp);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
         }
+    }
+	@GET
+    @Path("/getclientnotes/{clientid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getClientNotes(@PathParam("clientid") String clntemail) {
+        List<News> notes = new ArrayList<>();
+		Integer clientid=cman.getClientid(clntemail);
+        List<Tblnews> news = MezoDB.open("select * from tblnews where clientid="+clientid+" order by id desc  limit 5", Tblnews.class);
+        if (news != null)
+            for (Tblnews n :
+                    news) {
+						News nws=new News(n.getItem(), n.getDetails());
+						nws.setClientid(n.getClientid());
+                notes.add(nws);
+            }
+        return Response.ok(notes).build();
     }
 }

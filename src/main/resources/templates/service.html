@@ -18,7 +18,6 @@
                     <label for="txtid">Id</label>
                     <output type="text" id="txtid" class="form-control">{service.id}</output>
                 </div>
-
                 <div class="input-group mb-3">
                     <label for="ddcat">Category</label>
                     <select id="ddcat" name="ddcategory" class="form-control">
@@ -31,6 +30,10 @@
                                 id="cmdaddcat"></button>
                     </div>
                 </div>
+            </div>
+            <div class="col">
+                <label>Code</label>
+                <input class="form-control" type="text" name="code" value="{service.code}">
             </div>
             <label for="txtitem">Name</label>
             <input type="text" id="txtitem" class="form-control" name="item" placeholder="service Name"
@@ -87,7 +90,7 @@
                 data: {"command": "cmdaddcat", "newcat": catname},
                 success: new function () {
                     console.log("data saved successfully");
-                    $("#ddcat").load(location.href +" #ddcat");
+                    $("#ddcat").load(location.href + " #ddcat");
                 },
                 error: new function () {
                     alert("could not save new category");
@@ -111,7 +114,8 @@
             }
         });
     }
-    $(document).ready( function() {
+
+    $(document).ready(function () {
         $('#rtalert').delay(1000).fadeOut();
     });
 

@@ -5,12 +5,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Objects;
+import java.sql.Time;
 
 @Entity
 public class Tblnews {
     private Integer id;
     private String item;
     private String details;
+	private Integer clientid;
+	private Time ontime;
 
     @Id
     @Column(name = "id", nullable = false)
@@ -56,4 +59,8 @@ public class Tblnews {
     public int hashCode() {
         return Objects.hash(id, item, details);
     }
+	public Integer getClientid(){return clientid;}
+	public void setClientid(Integer cid){clientid=cid;}
+	public Time getOntime(){return ontime;}
+	public void setOntime(Time t){ontime=t;}
 }

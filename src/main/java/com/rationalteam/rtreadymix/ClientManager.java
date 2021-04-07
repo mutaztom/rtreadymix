@@ -117,6 +117,8 @@ public class ClientManager implements Serializable {
             UtilityExt.ShowError(e);
         }
         return orderlist;
-
     }
+	public Integer getClientid(String email){
+		return MezoDB.getInteger("select id from tblclient where email='"+email+"'");
+	}
 }
