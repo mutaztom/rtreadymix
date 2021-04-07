@@ -18,6 +18,8 @@
     <div class="col-lg-6 col-sm-12 col-md-6">
         <ul class="list-group">
             {#if client}
+            <li class="list-group-item list-group-item-secondary text-danger">Client Dislike : <span
+                    style="font-weight: bold">{client.dislike}</span></li>
             {#let rec=client.getAsRecord()}
             {#for key in rec.keys()}
             <li class="list-group-item list-group-item-secondary">{key} : <span

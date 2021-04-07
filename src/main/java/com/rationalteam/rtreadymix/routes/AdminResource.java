@@ -33,6 +33,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -227,8 +229,8 @@ public class AdminResource {
                     .data("users", users)
                     .data("adminmobiles", adminmobiles)
                     .data("options", optionMap);
-        }catch (Exception exp){
-            return settingsTemplate.data("error","Could not load settings: "+exp.getMessage());
+        } catch (Exception exp) {
+            return settingsTemplate.data("error", "Could not load settings: " + exp.getMessage());
         }
     }
 
@@ -382,6 +384,17 @@ class SettingExtenstion {
         }
     }
 
+    public static boolean isNew(String dt) {
+        try {
+            LocalDate ldate = LocalDate.parse(dt);
+            Period period = Period.between(ldate, LocalDate.now());
+            return (period.getYears() == 0 && period.getMonths() == 0 && period.getDays() <= 3);
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+            return false;
+        }
+    }
+
     public static String getStyle(String st) {
         String stcolor = "Brown";
         switch (st) {
@@ -495,11 +508,11 @@ class OrderTools {
     }
 
     public static String getStrOndate(Order order) {
-        return order.getOndate().format(DateTimeFormatter.ISO_ORDINAL_DATE);
+        return order.getOndate().format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
     public static String getStrDateNeeded(Order order) {
-        return order.getDateNeeded().format(DateTimeFormatter.ISO_ORDINAL_DATE);
+        return order.getDateNeeded().format(DateTimeFormatter.ISO_LOCAL_DATE);
     }
 
 

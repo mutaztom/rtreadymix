@@ -20,6 +20,7 @@
                 <table class="table table-hover table-responsive-sm">
                     <thead class="thead-dark">
                     <tr>
+                        <th scope="col">#</th>
                         {#for col in columns}
                         <th scope="col">{col}</th>
                         {/for}
@@ -36,6 +37,7 @@
                     {#for item in rtlist }
                     <tr>
                         {#for k in columns}
+                        {#if k eq 'id'}<td>{#if str:isNew(item.since)}<img src="../images/new.png" alt="" width="30">{/if}</td>{/if}
                         <td>{item.get(k)}</td>
                         {/for}
                         <td>

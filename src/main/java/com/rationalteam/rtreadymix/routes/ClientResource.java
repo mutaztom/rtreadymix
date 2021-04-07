@@ -27,7 +27,7 @@ public class ClientResource {
         Client client = new Client();
         client.find(itemid);
 //        JsonObject jclient = JsonObject.mapFrom(client);
-        return template.data("client", client);
+        return template.data("client", client).data("title","Client Manager");
     }
 
     @Path("/clientorder")

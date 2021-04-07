@@ -251,7 +251,7 @@ public class NotificationServer {
             message.append(modifying ? "Order modified on " : "New order was placed").append(" ON ").append(LocalDateTime.now().format(DateTimeFormatter.ISO_ORDINAL_DATE));
             message.append("\n").append("from: ").append(s.getClientid()).append("\n")
                     .append(jorder.toString())
-                    .append(" onmap: ").append("https://www.google.com/maps/@")
+                    .append(" onmap: ").append("https://www.google.com/maps/@").append(s.getLocation())
                     .append("Mobile: ").append(mobile);
             if (media == enCommMedia.SMS) {
                 System.out.println(">>>>>>>>>>>>>>>>>>>>");

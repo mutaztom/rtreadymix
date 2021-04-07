@@ -276,8 +276,7 @@ public class RationalServices {
             }
             System.out.println(">> RECEIVED THIS ORDER .......");
             System.out.println(JsonObject.mapFrom(order));
-            if (!Order.isComplete(order))
-            {
+            if (!Order.isComplete(order)) {
                 System.out.println("incomplete order, please fill all fields.");
                 return Response.serverError().entity(new ServerMessage("incomplete order, please fill all fields.")).build();
             }
@@ -409,6 +408,8 @@ public class RationalServices {
                 String gndr = profile.getString("gender");
                 if (gndr != null && gndr.isBlank())
                     clnt.setGender(enGender.valueOf(gndr));
+                if (profile.getString("dislike") != null)
+                    clnt.setDislike(profile.getString("dislike"));
                 clnt.setEmail(profile.getString("email"));
                 String job = profile.getString("occupation");
                 Long jobid = MezoDB.getItemID("tbljob", "item", job.stripLeading().stripTrailing());

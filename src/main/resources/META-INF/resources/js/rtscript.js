@@ -156,16 +156,19 @@ function addOption() {
 function sendEmail(mail) {
     let msg = $("#txtmail").val();
     console.log("Sending email to client: " + mail);
+    $("#servermessage").text("Sending email to client: " + mail);
     $.ajax({
         url: '/readymix/sendMail',
         data: JSON.stringify({"mailto": mail, "message": msg}),
         headers: {'Content-Type': 'application/json'},
         method: 'PUT',
-        onscroll: function (r) {
+        success: new function (r) {
             console.log("Message sent succesfully! " + r);
+            $("#servermessage").text(r);
         },
-        onerror: function (e, s, err) {
+        error: new function (e, s, err) {
             console.log("Send failed, " + err);
+            $("#servermessage").text(err);
         }
     });
 }
@@ -173,16 +176,19 @@ function sendEmail(mail) {
 function sendSMS(mobile) {
     let msg = $("#txtsms").val();
     console.log("Sending SMS to client: " + mobile);
+    $("#servermessage").text("Sending SMS to client: " + mobile);
     $.ajax({
         url: '/readymix/sendSMS',
         data: JSON.stringify({"mobile": mobile, "message": msg}),
         headers: {'Content-Type': 'application/json'},
         method: 'PUT',
-        onscroll: function (r) {
-            console.log("Message sent succesfully! " + r);
+        success: new function (result,status) {
+            console.log("Message sent succesfully! "+status +" "+ result);
+            $("#servermessage").text(result);
         },
-        onerror: function (e, s, err) {
+        error: new function (e, s, err) {
             console.log("Send failed, " + err);
+            $("#servermessage").text(err);
         }
     });
 }
@@ -190,16 +196,19 @@ function sendSMS(mobile) {
 function saveCall(email, mobile) {
     let msg = $("#txtcall").val();
     console.log("Saving conversation : " + mobile);
+    $("#servermessage").text("Saving conversation : " + mobile);
     $.ajax({
         url: '/readymix/saveCall',
         data: JSON.stringify({"mobile": mobile, "message": msg, 'clientid': email}),
         headers: {'Content-Type': 'application/json'},
         method: 'POST',
-        onscroll: function (r) {
+        success:new function (r,st) {
             console.log("Phone call saved succesfully !" + r);
+            $("#servermessage").text(r);
         },
-        onerror: function (e, s, err) {
+        error: new function (e, s, err) {
             console.log("Send failed, " + err);
+            $("#servermessage").text(err);
         }
     });
 }

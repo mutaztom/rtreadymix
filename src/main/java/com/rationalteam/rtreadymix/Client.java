@@ -39,6 +39,7 @@ public class Client extends CRtDataObject {
     private boolean verfied;
     @Browsable(isDate = true)
     private LocalDate since;
+    private String dislike;
 
     public Client() {
         since = LocalDate.now();
@@ -74,6 +75,7 @@ public class Client extends CRtDataObject {
         if (gender != null)
             data.setGender(gender.name());
         data.setCompany(company);
+        data.setDislike(dislike);
         return data;
     }
 
@@ -97,6 +99,7 @@ public class Client extends CRtDataObject {
         if (data.getGender() != null)
             gender = enGender.valueOf(data.getGender());
         occupation = data.getOccupation();
+        dislike=data.getDislike();
     }
 
     public void fromMobileUser(MobileUser muser) {
@@ -321,5 +324,13 @@ public class Client extends CRtDataObject {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public String getDislike() {
+        return dislike;
+    }
+
+    public void setDislike(String dislike) {
+        this.dislike = dislike;
     }
 }

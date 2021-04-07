@@ -13,6 +13,7 @@ import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
 import io.quarkus.vertx.web.Body;
 import io.vertx.core.json.JsonObject;
+import org.hibernate.loader.collection.OneToManyJoinWalker;
 
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
@@ -23,6 +24,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.*;
 
 @Path("readymix")
@@ -108,6 +112,7 @@ public class RtbrowseResource {
                     }
                     List<Client> clist = searchFor == null ? client.listAll() : client.filter(filterMap);
                     rtlist = new ArrayList<>();
+                    Collections.reverse(clist);
                     clist.forEach(c -> {
                         Map<String, Object> map = new HashMap<>();
                         c.getAsRecord().forEach((k, v) -> {
@@ -115,6 +120,7 @@ public class RtbrowseResource {
                                 map.put(k.toLowerCase(), v);
                         });
                         rtlist.add(map);
+//
                     });
                     t = t.data("rtlist", rtlist);
                     break;

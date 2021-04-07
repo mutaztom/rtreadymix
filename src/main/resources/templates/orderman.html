@@ -15,13 +15,14 @@
         <form id="frmorderman" action="orderman" method="post">
             <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded"><h5>Order Details</h5></div>
             <div class="row">
-                <div class="flex-column">
+                <div class="flex-column" style="margin-left:10px;margin-right: 10px;">
                     {#if order.status.name eq 'Confirmed'}
                     <img src="../images/paid.jpg" alt="paid"/>
                     {#else}
                     <img src="../images/pending-clock.jpg" alt="unpaid"/>
                     {/if}
-                    <output class="form-control font-weight-bold" style="font-size: large;">Status: {order.status}</output>
+                    <output class="form-control font-weight-bold" style="font-size: large;">Status: {order.status}
+                    </output>
                 </div>
                 <div class="flex-column">
                     <div class="form-row">
@@ -29,13 +30,43 @@
                             <label>Id</label>
                             <input readonly name="orderid" value="{order.id}" class="form-control-plaintext"/>
                         </div>
-                        <div class="col-2">
+                        <div class="col-3">
                             <label>On Date</label>
                             <input readonly value="{order.getStrOndate}" class="form-control">
+                            <output class="form-control">{order.ontime}</output>
                         </div>
-                        <div class="col-9">
+                        <div class="col-8">
                             <label>Title</label>
                             <input readonly value="{order.item}" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded p-3"><h5>Client Details</h5></div>
+                    <div class="form-group">
+                        <div class="form-row">
+                            <div class="col">
+                                <label>Client Name</label>
+                                <input readonly value="{client.item}" class="form-control">
+                                <label>Mobile</label>
+                                <input readonly value="{client.mobile}" class="form-control font-weight-bold">
+                            </div>
+                            <div class="col">
+                                <label>Email</label>
+                                <input readonly value="{client.email}" class="form-control font-weight-bold">
+                                <label>Dislike</label>
+                                <output class="form-control text-danger font-weight-bold">{client.dislike}</output>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <button name="command" value="call" class="btn btn-primary  fa fa-phone"
+                                    style="margin:10px;"
+                                    type="button" data-toggle="collapse" data-target="#comtools" aria-expanded="false"
+                                    aria-controls="#comtools">Contact Client
+                            </button>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-6 md-col-6 sm-col-12 collapse" id="comtools">
+                                {#include rtcom/}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -133,8 +164,9 @@
                 </div>
                 <div class="col-2">
                     <label>Google Map</label>
-                    <button class="btn btn-info fa fa-map-marked form-control" {order.location ?: disabled}>Show on
-                        Map
+                    <button onclick="window.open('https://google.com/maps/@{order.location}','_blank');" type="button"
+                            class="btn btn-info fa fa-map-marked form-control" {#if not order.location} disabled{/if}>Show on
+                    Maps
                     </button>
                 </div>
                 <div class="col">
@@ -142,24 +174,7 @@
                     <input readonly value="{order.notes}" class="form-control">
                 </div>
             </div>
-            <div class="col-12 shadow-lg p-3 mb-5 bg-white rounded p-3"><h5>Client Details</h5></div>
-            <div class="form-group">
-                <div class="form-row">
-                    <div class="col">
-                        <label>Client Name</label>
-                        <input readonly value="{client.item}" class="form-control">
-                    </div>
-                    <div class="col">
-                        <label>Mobile</label>
-                        <input readonly value="{client.mobile}" class="form-control font-weight-bold">
-                    </div>
-                    <div class="col">
-                        <label>Email</label>
-                        <input readonly value="{client.email}" class="form-control font-weight-bold">
-                    </div>
-                </div>
 
-            </div>
 
             {! CONTROLES !}
             <div class="form-row">
@@ -173,27 +188,19 @@
                             type="button">Save
                     </button>
                 </div>
-                <div class="col">
-                    <button name="command" value="call" class="btn btn-primary form-control fa fa-phone"
-                            type="button" data-toggle="collapse" data-target="#comtools" aria-expanded="false"
-                            aria-controls="#comtools">Contact Client
-                    </button>
 
-                </div>
                 <div class="col">
                     <button name="command" value="schedule" class="col btn btn-primary form-control fa fa-table-tennis"
                             type="submit">Schedule
                     </button>
                 </div>
                 <div class="col">
-                    <button name="command" value="schedule" class="col btn btn-danger form-control fa fa-hand-point-up"
+                    <button name="command" value="reject" class="col btn btn-danger form-control fa fa-hand-point-up"
                             type="button">Reject
                     </button>
                 </div>
             </div>
-            <div class="col-6 md-col-6 sm-col-12 collapse" id="comtools">
-                {#include rtcom/}
-            </div>
+
         </form>
     </div>
 </div>

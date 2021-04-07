@@ -28,6 +28,7 @@ public class Tblclient extends PanacheEntityBase {
     Integer occupation;
     String photo;
     String company;
+    String dislike;
 
     public Integer getId() {
         return id;
@@ -113,6 +114,8 @@ public class Tblclient extends PanacheEntityBase {
                 Objects.equals(accountid, that.accountid) &&
                 Objects.equals(email, that.email) &&
                 Objects.equals(mobile, that.mobile) &&
+                Objects.equals(dislike, that.dislike) &&
+                Objects.equals(company, that.company) &&
                 Objects.equals(usertype, that.usertype);
     }
 
@@ -183,5 +186,13 @@ public class Tblclient extends PanacheEntityBase {
 
     public void setCompany(String company) {
         this.company = company;
+    }
+
+    public String getDislike() {
+        return dislike;
+    }
+
+    public void setDislike(String dislike) {
+        this.dislike = dislike;
     }
 }

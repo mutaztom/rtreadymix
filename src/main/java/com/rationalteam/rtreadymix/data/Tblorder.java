@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.sql.Time;
 import java.util.Objects;
 
 @Entity
@@ -31,7 +32,7 @@ public class Tblorder extends PanacheEntityBase {
     private String notes;
     private Integer member;
     private Double rate;
-
+    private Time ontime;
 
     public Integer getId() {
         return id;
@@ -199,5 +200,13 @@ public class Tblorder extends PanacheEntityBase {
 
     public void setMember(Integer member) {
         this.member = member;
+    }
+
+    public Time getOntime() {
+        return ontime;
+    }
+
+    public void setOntime(Time ontime) {
+        this.ontime = ontime;
     }
 }

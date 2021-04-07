@@ -12,7 +12,9 @@ import okhttp3.internal.connection.Exchange;
 import javax.transaction.Transactional;
 import java.lang.reflect.Field;
 import java.sql.Date;
+import java.sql.Time;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +49,7 @@ public class Order extends CRtDataObject {
     Tblorder data;
     private Integer province;
     CExchange exchange = new CExchange();
+    private LocalTime ontime;
 
     public Order() {
         status = enOrderStatus.Created;
@@ -58,6 +61,7 @@ public class Order extends CRtDataObject {
         //default to one day delay
         dateNeeded = LocalDateTime.now().plusDays(1);
         setDbTable(Tblorder.class.getSimpleName());
+        ontime = LocalTime.now();
     }
 
 
@@ -88,6 +92,7 @@ public class Order extends CRtDataObject {
             data.setMember(member);
             data.setLocation(location);
             data.setRate(rate);
+            data.setOntime(Time.valueOf(ontime));
         } catch (Exception e) {
             Utility.ShowError(e);
         }
@@ -119,6 +124,7 @@ public class Order extends CRtDataObject {
             member = data.getMember();
             location = data.getLocation();
             rate = data.getRate() > 0 ? data.getRate() : rate;
+            ontime = data.getOntime().toLocalTime();
         } catch (IllegalArgumentException e) {
             Utility.ShowError(e);
         }
@@ -421,4 +427,11 @@ public class Order extends CRtDataObject {
         }
     }
 
+    public LocalTime getOntime() {
+        return ontime;
+    }
+
+    public void setOntime(LocalTime ontime) {
+        this.ontime = ontime;
+    }
 }
