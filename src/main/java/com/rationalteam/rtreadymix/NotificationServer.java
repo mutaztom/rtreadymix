@@ -1,10 +1,14 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
+import com.rationalteam.reaymixcommon.News;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscription;
+import com.rationalteam.rtreadymix.data.Tblnews;
 import io.quarkus.vertx.ConsumeEvent;
+import io.reactivex.Completable;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
@@ -12,7 +16,9 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.New;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -284,6 +291,7 @@ public class NotificationServer {
     }
 
     @ConsumeEvent("rtorderevent")
+    @Transactional
     public void notifyStaff(ClientOrder order) {
         try {
             if (NotifyEmail) {
@@ -292,6 +300,39 @@ public class NotificationServer {
             if (NotifySMS) {
                 confirmOrder(order, enCommMedia.SMS, order.getMobile());
             }
+            //then update client notes
+            int cid = MezoDB.getInteger("select id from tblclient where email='" + order.getClientid() + "'");
+            pushNews(cid, "Order Number: " + order.getId(),
+                    "Your order status was updated, " + order.getNotes());
+
+        } catch (Exception exp) {
+            Utility.ShowError(exp);
+        }
+    }
+    @Transactional
+    public void pushNews(int clientid, String title, String det) {
+        Tblnews n = new Tblnews();
+        n.setClientid(clientid);
+        n.setItem(title);
+        n.setDetails(det);
+        n.persist();
+    }
+
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_PASSWORD_RESET,blocking = true)
+    public void sendPasswordReset(Client clnt) {
+        try {
+            VelocityContext context = new VelocityContext();
+            initTemplatePath(enCommMedia.EMAIL);
+            Template template = Velocity.getTemplate("pwreset.txt");
+            StringBuilder msg = new StringBuilder();
+            StringWriter writer = new StringWriter();
+            context.put("password", clnt.getPassword());
+            context.put("name", clnt.getItem());
+            context.put("email", clnt.getEmail());
+            context.put("phone", clnt.getMobile());
+            template.merge(context, writer);
+            commHub.sendEMail(writer.toString(), clnt.getEmail());
+            pushNews(clnt.getId(), "Password Reset", "This is to inform you that we have sent you password reset email upon a request from you.");
         } catch (Exception exp) {
             Utility.ShowError(exp);
         }

@@ -15,6 +15,7 @@ import org.apache.velocity.app.Velocity;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -90,16 +91,19 @@ public class CommHub {
         return mobiles;
     }
 
+
     public boolean sendEMail(String message, String email) {
         try {
             String subject = ("RationalTeam Service Hub");
             remail.send(Mail.withText(email, subject, message));
-            Tblcomlog clog = new Tblcomlog();
-            clog.setAddress(email);
-            clog.setByuser("rtmixadmin");
-            clog.setMessage(message);
-            clog.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
-            CommHub.log(clog);
+
+//            Tblcomlog clog = new Tblcomlog();
+//            clog.setAddress(email);
+//            clog.setByuser("rtmixadmin");
+//            clog.setMessage(message);
+//            clog.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
+//            log(clog);
+            return true;
         } catch (Exception ex) {
             Utility.ShowError(ex);
         }

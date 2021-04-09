@@ -29,7 +29,8 @@ public class Tblclient extends PanacheEntityBase {
     String photo;
     String company;
     String dislike;
-
+	String locale;
+	
     public Integer getId() {
         return id;
     }
@@ -195,4 +196,6 @@ public class Tblclient extends PanacheEntityBase {
     public void setDislike(String dislike) {
         this.dislike = dislike;
     }
+	public void setLocale(String lang){locale=lang;}
+	public String getLocale(){return locale;}
 }

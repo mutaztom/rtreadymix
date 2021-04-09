@@ -29,6 +29,7 @@ public class Client extends CRtDataObject {
     @Browsable
     String address;
     Tblclient data;
+	private String locale;
     private Integer accountid;
     private Integer customerid;
     private String pincode;
@@ -333,4 +334,8 @@ public class Client extends CRtDataObject {
     public void setDislike(String dislike) {
         this.dislike = dislike;
     }
+	public void setLocale(String lang){
+		locale=lang;
+	}
+	public String getLocale(){return locale;}
 }

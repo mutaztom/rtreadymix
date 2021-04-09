@@ -306,7 +306,7 @@ public class RationalServices {
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-                bus.send("rtorderevent", order);
+                bus.send(IRationalEvents.RTEVENT_NEWORDER, order);
                 output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
                 return Response.ok(output).build();
             } else {
@@ -416,10 +416,11 @@ public class RationalServices {
                 if (profile.getString("dislike") != null
                         && !profile.getString("dislike").isEmpty())
                     clnt.setDislike(profile.getString("dislike"));
+				if(profile.getString("locale")!=null && !profile.getString("locale").isBlank())
+					clnt.setLocale(profile.getString("locale"));
                 clnt.setEmail(profile.getString("email"));
                 String job = profile.getString("occupation");
                 Long jobid = MezoDB.getItemID("tbljob", "item", job.stripLeading().stripTrailing());
-                System.out.println("found job id : " + job + " :  " + jobid);
                 clnt.setOccupation(jobid.intValue());
                 if (clnt.checkEntries()) {
                     result = clnt.save();
@@ -742,5 +743,21 @@ public class RationalServices {
                 notes.add(nws);
             }
         return Response.ok(notes).build();
+    }
+    @POST
+    @Path("/pwdreset/{clientid}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response resetPassword(@PathParam("clientid") String clientid){
+        try {
+            boolean a = cman.isAuthentic(clientid);
+            if (!a)
+                return Response.status(Response.Status.FORBIDDEN.getStatusCode()).build();
+            Client client = Client.findByEmail(clientid);
+            bus.publish(IRationalEvents.RTEVENT_PASSWORD_RESET,client);
+            return Response.ok().build();
+        }catch (Exception exp){
+            Utility.ShowError(exp);
+            return Response.serverError().entity(exp.getMessage()).build();
+        }
     }
 }

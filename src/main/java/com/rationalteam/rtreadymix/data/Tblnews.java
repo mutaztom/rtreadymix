@@ -1,21 +1,21 @@
 package com.rationalteam.rtreadymix.data;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+
+import javax.persistence.*;
 import java.util.Objects;
 import java.sql.Time;
 
 @Entity
-public class Tblnews {
+public class Tblnews extends PanacheEntityBase {
     private Integer id;
     private String item;
     private String details;
-	private Integer clientid;
-	private Time ontime;
+    private Integer clientid;
+    private Time ontime;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     public Integer getId() {
         return id;
@@ -59,8 +59,20 @@ public class Tblnews {
     public int hashCode() {
         return Objects.hash(id, item, details);
     }
-	public Integer getClientid(){return clientid;}
-	public void setClientid(Integer cid){clientid=cid;}
-	public Time getOntime(){return ontime;}
-	public void setOntime(Time t){ontime=t;}
+
+    public Integer getClientid() {
+        return clientid;
+    }
+
+    public void setClientid(Integer cid) {
+        clientid = cid;
+    }
+
+    public Time getOntime() {
+        return ontime;
+    }
+
+    public void setOntime(Time t) {
+        ontime = t;
+    }
 }

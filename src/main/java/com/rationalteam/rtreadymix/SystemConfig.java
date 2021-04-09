@@ -57,7 +57,7 @@ public class SystemConfig {
     @Transactional
     public static CCurrency getCompCurrency() {
         try {
-            if (compcur == null || compcur.isEmpty() || compcur.getId()<=0) {
+            if (compcur == null || compcur.isEmpty() || compcur.getId() <= 0) {
                 compcur = new CCurrency();
                 int id = MezoDB.getInteger("select id from TblCurrency where symbol='USD'");
                 if (id > 0)
