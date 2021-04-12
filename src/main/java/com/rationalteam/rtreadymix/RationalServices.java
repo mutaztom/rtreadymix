@@ -69,13 +69,15 @@ public class RationalServices {
             client.setPassword("**********");
             JsonObject jclient = JsonObject.mapFrom(client);
             String job = "None";
-            if (client.getOccupation() > 0)
+            if (client.getOccupation() != null && client.getOccupation() > 0)
                 job = MezoDB.getItem(client.getOccupation(), "tbljob");
             jclient.put("occupation", job);
+            if (client.getLocale() != null)
+                jclient.put("locale", client.getLocale());
             return Response.ok(jclient).build();
         } catch (Exception exp) {
-            System.out.println(exp.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
+            Utility.ShowError(exp);
+            return Response.serverError().entity(exp.getMessage()).build();
         }
 
     }
@@ -90,10 +92,9 @@ public class RationalServices {
         output.setMessage("Nothing was processed");
         try {
             boolean r;
-			if(muser.getItem()==null || muser.getItem().isBlank())
-			{
-				return new ServerMessage("User Name cannot be blank.");
-			}
+            if (muser.getItem() == null || muser.getItem().isBlank()) {
+                return new ServerMessage("User Name cannot be blank.");
+            }
             System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
             c.fromMobileUser(muser);
@@ -255,13 +256,13 @@ public class RationalServices {
                 ClientService cs = new ClientService();
                 cs.setId(s.getId());
                 cs.setItem(s.getItem());
+                cs.setAritem(s.getDatasheet());
                 cs.setUnit(s.getUnit());
                 cs.setDescribtion(s.getDescription());
-				cs.setCode(s.getCode());
+                cs.setCode(s.getCode());
                 cs.setUnitprice(s.getUnitPrice());
                 serlist.add(cs);
             });
-
             return Response.ok(serlist).build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();
@@ -409,6 +410,14 @@ public class RationalServices {
             Client clnt = Client.findByEmail(clientid);
             if (clnt != null) {
                 clnt.setItem(profile.getString("item"));
+
+                System.out.println("old mobile:" + clnt.getMobile() + ",new mobile:" + profile.getString("mobile") + ".");
+                if (profile.getString("mobile") != null) {
+                    if (!profile.getString("mobile").equals(clnt.getMobile())) {
+                        System.out.println("mobile is changed");
+                        clnt.setVerfied(false);
+                    }
+                }
                 clnt.setMobile(profile.getString("mobile"));
                 String gndr = profile.getString("gender");
                 if (gndr != null && gndr.isBlank())
@@ -416,15 +425,18 @@ public class RationalServices {
                 if (profile.getString("dislike") != null
                         && !profile.getString("dislike").isEmpty())
                     clnt.setDislike(profile.getString("dislike"));
-				if(profile.getString("locale")!=null && !profile.getString("locale").isBlank())
-					clnt.setLocale(profile.getString("locale"));
+                if (profile.getString("locale") != null && !profile.getString("locale").isBlank())
+                    clnt.setLocale(profile.getString("locale"));
                 clnt.setEmail(profile.getString("email"));
                 String job = profile.getString("occupation");
                 Long jobid = MezoDB.getItemID("tbljob", "item", job.stripLeading().stripTrailing());
                 clnt.setOccupation(jobid.intValue());
+                if (profile.getString("password") != null && !profile.getString("password").isBlank())
+                    clnt.setPassword(profile.getString("password"));
                 if (clnt.checkEntries()) {
                     result = clnt.save();
                 }
+
                 smsg.setMessage("OK");
                 smsg.setDetails("CLient profile updated succesfully");
                 return Response.ok(smsg).build();
@@ -450,6 +462,7 @@ public class RationalServices {
             }
         return Response.ok(notes).build();
     }
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/verifyPin/{pincode}/{clientid}")
@@ -728,34 +741,36 @@ public class RationalServices {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
         }
     }
-	@GET
+
+    @GET
     @Path("/getclientnotes/{clientid}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getClientNotes(@PathParam("clientid") String clntemail) {
         List<News> notes = new ArrayList<>();
-		Integer clientid=cman.getClientid(clntemail);
-        List<Tblnews> news = MezoDB.open("select * from tblnews where clientid="+clientid+" order by id desc  limit 5", Tblnews.class);
+        Integer clientid = cman.getClientid(clntemail);
+        List<Tblnews> news = MezoDB.open("select * from tblnews where clientid=" + clientid + " order by id desc  limit 5", Tblnews.class);
         if (news != null)
             for (Tblnews n :
                     news) {
-						News nws=new News(n.getItem(), n.getDetails());
-						nws.setClientid(n.getClientid());
+                News nws = new News(n.getItem(), n.getDetails());
+                nws.setClientid(n.getClientid());
                 notes.add(nws);
             }
         return Response.ok(notes).build();
     }
+
     @POST
     @Path("/pwdreset/{clientid}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response resetPassword(@PathParam("clientid") String clientid){
+    public Response resetPassword(@PathParam("clientid") String clientid) {
         try {
             boolean a = cman.isAuthentic(clientid);
             if (!a)
                 return Response.status(Response.Status.FORBIDDEN.getStatusCode()).build();
             Client client = Client.findByEmail(clientid);
-            bus.publish(IRationalEvents.RTEVENT_PASSWORD_RESET,client);
+            bus.publish(IRationalEvents.RTEVENT_PASSWORD_RESET, client);
             return Response.ok().build();
-        }catch (Exception exp){
+        } catch (Exception exp) {
             Utility.ShowError(exp);
             return Response.serverError().entity(exp.getMessage()).build();
         }

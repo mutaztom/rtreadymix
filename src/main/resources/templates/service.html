@@ -33,13 +33,13 @@
             </div>
             <div class="col">
                 <label>Code</label>
-                <input class="form-control" type="text" name="code" value="{service.code}">
+                <input class="form-control" type="text" name="code" value="{service.code}" readonly>
             </div>
             <label for="txtitem">Name</label>
             <input type="text" id="txtitem" class="form-control" name="item" placeholder="service Name"
                    value="{service.item}">
             <label for="txtaritem">Arabic Name</label>
-            <input type="text" id="txtaritem" class="form-control" name="aritem" placeholder="service Name in Arabic">
+            <input type="text" id="txtaritem" class="form-control" name="aritem" value="{service.datasheet}" placeholder="service Name in Arabic">
             <label for="txtdescription">Description</label>
             <textarea class="form-control" id="txtdescription" name="description">{service.description}</textarea>
             <div class="form-row">

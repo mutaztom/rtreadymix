@@ -2,6 +2,7 @@ package com.rationalteam.rtreadymix.routes;
 
 import com.rationalteam.rterp.erpcore.COption;
 import com.rationalteam.rterp.erpcore.CService;
+import com.rationalteam.rterp.erpcore.Specification;
 import com.rationalteam.rtreadymix.Rtutil;
 import com.rationalteam.rtreadymix.purchase.Supplier;
 import io.quarkus.qute.Template;
@@ -60,6 +61,7 @@ public class ServiceResource {
                 service.setDescription(description);
                 service.setUnitid(unit);
                 service.setUnitPrice(unitprice);
+                service.setDatasheet(aritem);
                 r = service.save();
             } else if (command.equals("cmddelete")) {
                 return t.data("result", "Are you sure you want to delete");

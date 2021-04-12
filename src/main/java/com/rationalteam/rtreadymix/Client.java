@@ -77,9 +77,9 @@ public class Client extends CRtDataObject {
             data.setGender(gender.name());
         data.setCompany(company);
         data.setDislike(dislike);
+        data.setLocale(locale);
         return data;
     }
-
 
     public void setData(Object o) {
         data = (Tblclient) o;
@@ -101,6 +101,7 @@ public class Client extends CRtDataObject {
             gender = enGender.valueOf(data.getGender());
         occupation = data.getOccupation();
         dislike=data.getDislike();
+        locale=data.getLocale();
     }
 
     public void fromMobileUser(MobileUser muser) {
