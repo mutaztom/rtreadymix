@@ -11,8 +11,10 @@ import io.quarkus.mailer.Mailer;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.vertx.web.Body;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.reactivex.redis.client.Request;
 import org.jboss.resteasy.util.StringContextReplacement;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +23,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -49,6 +53,10 @@ public class RationalServices {
     CommHub commHub;
     @Inject
     Mailer remail;
+
+    @Context
+    HttpServerRequest request;
+
 
     @PostConstruct
     public void init() {
@@ -177,6 +185,7 @@ public class RationalServices {
     @Path("/getCities")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCities() {
+        System.out.println();
         MezoDB.setEman(eman);
         COption st = new COption("tblcity");
         List<COption> olist = st.listOptions();
@@ -307,7 +316,7 @@ public class RationalServices {
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-                bus.send(IRationalEvents.RTEVENT_NEWORDER, order);
+                bus.send(modifying ? IRationalEvents.RTEVENT_ORDER_MODIFIED : IRationalEvents.RTEVENT_NEWORDER, order);
                 output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
                 return Response.ok(output).build();
             } else {
@@ -338,7 +347,7 @@ public class RationalServices {
             COption option = new COption(rtype);
             List<COption> oplist = option.listOptions();
             JsonObject emptyOption = new JsonObject();
-            emptyOption.put("id", -1).put("item", "None");
+            emptyOption.put("id", -1).put("item", "None").put("aritem","غير متوفر");
             jar.add(emptyOption);
             for (COption o :
                     oplist) {

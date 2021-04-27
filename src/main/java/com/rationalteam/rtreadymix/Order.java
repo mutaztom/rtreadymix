@@ -13,6 +13,9 @@ import javax.transaction.Transactional;
 import java.lang.reflect.Field;
 import java.sql.Date;
 import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -92,7 +95,10 @@ public class Order extends CRtDataObject {
             data.setMember(member);
             data.setLocation(location);
             data.setRate(rate);
-            data.setOntime(Time.valueOf(ontime));
+            if (ontime != null) {
+                Timestamp timestamp = new Timestamp(ondate.toLocalTime().getNano());
+                data.setOntime(timestamp);
+            }
         } catch (Exception e) {
             Utility.ShowError(e);
         }
@@ -124,7 +130,8 @@ public class Order extends CRtDataObject {
             member = data.getMember();
             location = data.getLocation();
             rate = data.getRate() > 0 ? data.getRate() : rate;
-            ontime = data.getOntime().toLocalTime();
+            if (data.getOntime() != null)
+                ontime = data.getOntime().toLocalDateTime().toLocalTime();
         } catch (IllegalArgumentException e) {
             Utility.ShowError(e);
         }
@@ -407,19 +414,20 @@ public class Order extends CRtDataObject {
     public static boolean isComplete(ClientOrder ord) {
         boolean r = false;
         try {
-            r = ord.getItemid() != null ||
-                    (ord.getMember() == null) ||
-                    ord.getQuantity() == null ||
-                    ord.getQuantity() <= 0 ||
-                    (ord.getClientid() == null);
-            r = !r;
-            if (Utility.IsNumber(ord.getItemid())) {
-                r = r && (Integer.parseInt(ord.getItemid()) > 0);
+            r = ord.getItemid() != null &&
+                    (ord.getMember() != null) &&
+                    ord.getQuantity() != null &&
+                    ord.getQuantity() > 0 &&
+                    (ord.getClientid() != null);
+
+            if (ord.getItemid() == null || ord.getItemid().isBlank()) {
+                r = false;
             }
-            if (Utility.IsNumber(ord.getGrade()))
-                r = r && (Integer.parseInt(ord.getGrade()) > 0);
-            if (Utility.IsNumber(ord.getMember()))
-                r = r && (Integer.parseInt(ord.getMember()) > 0);
+            if (ord.getGrade() == null || ord.getGrade().isBlank())
+                r = false;
+            if (ord.getMember() == null || ord.getMember().isBlank()) {
+                r = false;
+            }
             return r;
         } catch (Exception exp) {
             Utility.ShowError(exp);
@@ -434,4 +442,5 @@ public class Order extends CRtDataObject {
     public void setOntime(LocalTime ontime) {
         this.ontime = ontime;
     }
+
 }

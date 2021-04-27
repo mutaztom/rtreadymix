@@ -309,6 +309,7 @@ public class NotificationServer {
             Utility.ShowError(exp);
         }
     }
+
     @Transactional
     public void pushNews(int clientid, String title, String det) {
         Tblnews n = new Tblnews();
@@ -318,7 +319,18 @@ public class NotificationServer {
         n.persist();
     }
 
-    @ConsumeEvent(value = IRationalEvents.RTEVENT_PASSWORD_RESET,blocking = true)
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_NEWORDER, blocking = true)
+    public void sendPushNote(Order order) {
+        try {
+            pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
+                    + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
+        } catch (Exception exp) {
+            //just show error but proceed
+            Utility.ShowError(exp);
+        }
+    }
+
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_PASSWORD_RESET, blocking = true)
     public void sendPasswordReset(Client clnt) {
         try {
             VelocityContext context = new VelocityContext();
