@@ -551,7 +551,8 @@ public class RationalServices {
                 return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to use this service").build();
             Order order = new Order();
             boolean delteted = order.delete(orderid);
-            output.setMessage(delteted ? "Order " + orderid + " deleted succesfully" : "Order " + orderid + " was not deleted");
+            output.setMessage(delteted ? "Order " + orderid + " deleted successfully" : "Order " + orderid + " was not deleted");
+            bus.send(IRationalEvents.RTEVENT_ORDER_CANCELED, order);
             return Response.ok(output).build();
         } catch (Exception e) {
             return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), e.getMessage()).build();

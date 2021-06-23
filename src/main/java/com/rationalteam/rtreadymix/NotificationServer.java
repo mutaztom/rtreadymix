@@ -322,8 +322,61 @@ public class NotificationServer {
     @ConsumeEvent(value = IRationalEvents.RTEVENT_NEWORDER, blocking = true)
     public void sendPushNote(Order order) {
         try {
+            System.out.println("Recieved event New Order Recieved");
+            notifyStaff(order.toClientOrder());
             pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
                     + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
+        } catch (Exception exp) {
+            //just show error but proceed
+            Utility.ShowError(exp);
+        }
+    }
+
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_ORDER_MODIFIED, blocking = true)
+    public void sendOrderModified(Order order) {
+        try {
+            System.out.println("Recieved event New Order Recieved");
+            notifyStaff(order.toClientOrder());
+            pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
+                    + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
+        } catch (Exception exp) {
+            //just show error but proceed
+            Utility.ShowError(exp);
+        }
+    }
+
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_ORDER_CANCELED, blocking = true)
+    public void sendOrderCanceled(Order order) {
+        try {
+            System.out.println("Recieved event New Order canceled");
+            notifyStaff(order.toClientOrder());
+            pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
+                    + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
+        } catch (Exception exp) {
+            //just show error but proceed
+            Utility.ShowError(exp);
+        }
+    }
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_ORDER_PRICED, blocking = true)
+    public void sendOrderPriced(Order order) {
+        try {
+            System.out.println("Recieved event RTEVENT_ORDER_PRICED");
+            notifyCustomers(enCommMedia.EMAIL);
+            notifyCustomers(enCommMedia.SMS);
+            pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
+                    + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
+        } catch (Exception exp) {
+            //just show error but proceed
+            Utility.ShowError(exp);
+        }
+    }
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_PASSWORD_RESET, blocking = true)
+    public void sendPasswordRest(Client client) {
+        try {
+            System.out.println("Recieved event RTEVENT_PASSWORD_RESET");
+//            commHub.sendSMS(s.getMobile(), message.toString());
+//            pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
+//                    + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
         } catch (Exception exp) {
             //just show error but proceed
             Utility.ShowError(exp);

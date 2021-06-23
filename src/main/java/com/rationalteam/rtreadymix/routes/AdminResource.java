@@ -17,6 +17,7 @@ import io.quarkus.qute.TemplateExtension;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.qute.api.ResourcePath;
 import io.smallrye.mutiny.Multi;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -42,7 +43,8 @@ import java.util.stream.Collectors;
 
 @Path("readymix")
 public class AdminResource {
-
+    @Inject
+    EventBus bus;
     @Inject
     @ResourcePath("adminspace")
     Template adminspace;
@@ -281,6 +283,9 @@ public class AdminResource {
                     " where id=" + itid;
             boolean r = MezoDB.doSqlIn(sql);
             o.put("result", r);
+            Order order=new Order();
+            order.find(itid);
+            bus.send(IRationalEvents.RTEVENT_ORDER_PRICED, order);
             return Response.ok(o).build();
         } catch (Exception e) {
             o.put("result", false).put("error", e.getMessage());
@@ -299,6 +304,9 @@ public class AdminResource {
                     "' where id=" + itid;
             boolean r = MezoDB.doSqlIn(sql);
             o.put("result", r);
+            Order order = new Order();
+            order.find(itid);
+            bus.send(IRationalEvents.RTEVENT_ORDER_MODIFIED, order);
             return Response.ok(o).build();
         } catch (Exception e) {
             o.put("result", false).put("error", e.getMessage());
