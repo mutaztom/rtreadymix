@@ -312,11 +312,15 @@ public class NotificationServer {
 
     @Transactional
     public void pushNews(int clientid, String title, String det) {
-        Tblnews n = new Tblnews();
-        n.setClientid(clientid);
-        n.setItem(title);
-        n.setDetails(det);
-        n.persist();
+        try {
+            Tblnews n = new Tblnews();
+            n.setClientid(clientid);
+            n.setItem(title);
+            n.setDetails(det);
+            n.persist();
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
     }
 
     @ConsumeEvent(value = IRationalEvents.RTEVENT_NEWORDER, blocking = true)

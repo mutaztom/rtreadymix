@@ -43,6 +43,7 @@
                 <tr style="{str:getStyle(order.status)};">
                     <th scope="row">
                         {#if order.status eq 'Confirmed'}<img src="../images/visa.png" alt="paid">{/if}
+                        {#if order.status eq 'Created'}<img src="../images/neworder.png" width="40" alt="">{/if}
                     </th>
                     <th scope="row">{order.id}</th>
                     <td>{order.notes}</td>
