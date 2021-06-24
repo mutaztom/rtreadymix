@@ -17,19 +17,23 @@
         <li class="nav-item"><a class="nav-link" id="navcall" href="#phonecall" data-toggle="tab" aria-selected="false"
                                 aria-controls="phoneclall">Phone Call</a></li>
 
+        <li class="nav-item"><a class="nav-link" id="navalert" href="#mobilealert" data-toggle="tab"
+                                aria-selected="false"
+                                aria-controls="mobilealert">Mobile Alert</a></li>
+
     </ul>
     <div class="tab-content" id="comcontent">
         <div class="tab-pane fade show active" role="tabpanel" aria-labelledby="sendsms" id="sendsms">
             <h2>Send SMS</h2>
             <label>From SMS Template</label>
-            <select name="template" class="form-control">
+            <select name="template" class="form-control" onchange="showTemplate(this.value,'sms')">
                 {#let tmp=rtutil:listTemplate('sms')}
                 {#for t in tmp}
                 <option label="{t}" value="{t}"></option>
                 {/for}
                 {/let}
             </select>
-            <textarea class="form-control" name="sms" id="txtsms"></textarea>
+            <textarea class="form-control rtemplate" name="sms" id="txtsms"></textarea>
             <button class="btn btn-primary form-control fa fa-mobile" onclick="sendSMS('{client.mobile}');"
                     type="button">
                 Send
@@ -38,15 +42,15 @@
         <div class="tab-pane fade" role="tabpanel" aria-labelledby="sendmail" id="sendmail">
             <h2>Send Email</h2>
             <label>From Template</label>
-            <select name="template" class="form-control">
+            <select name="template" class="form-control" onchange="showTemplate(this.value,'email');">
                 {#let tmp=rtutil:listTemplate('email')}
                 {#for t in tmp}
                 <option label="{t}" value="{t}"></option>
                 {/for}
                 {/let}
             </select>
-            <textarea class="form-control" name="email" id="txtmail"></textarea>
-            <button class="btn btn-primary form-control fa fa-envelope" onclick="sendEmail('{client.email}');"
+            <textarea class="form-control " name="email" id="txtmail"></textarea>
+            <button class="btn btn-primary form-control fa fa-envelope " onclick="sendEmail('{client.email}');"
                     type="button">
                 Send
             </button>
@@ -60,11 +64,62 @@
                     type="button">Save
             </button>
         </div>
+        <div class="tab-pane fade " role="tabpanel" aria-labelledby="mobilealert" id="mobilealert">
+            <h2>Mobile Alert</h2>
+            <label>Alert Message</label>
+            <textarea class="form-control" name="txtalert" id="txtalert"></textarea>
+            <button class="btn btn-primary form-control fa fa-phone"
+                    onclick="sendAlert('{client.id}');"
+                    type="button">Send Alert
+            </button>
+        </div>
     </div>
     <div class="form-row">
-        <button class="btn btn-danger form-control fa fa-circle-notch" type="button" type="button" data-toggle="collapse"
+        <button class="btn btn-danger form-control fa fa-circle-notch" type="button" type="button"
+                data-toggle="collapse"
                 data-target="#comtools" aria-expanded="false">Close
         </button>
     </div>
 </div>
 </body>
+<script type="text/javascript">
+    function showTemplate(fname, commtype) {
+        tmpfile = fname;
+        commmedia = commtype;
+        $.ajax({
+            url: '/rtmix/getTemplate/' + commmedia + "/" + tmpfile,
+            type: 'GET',
+            headers: {'Contet-Type': 'text/plain'},
+            data: {},
+            success: function (r) {
+                // console.log("recieved from server:" + r);
+                if (commtype === 'email')
+                    $("#txtmail").val(r);
+                else if (commtype === 'sms')
+                    $("#txtsms").val(r);
+                //$("#rtemplate").load
+                console.log(r);
+            },
+            error: function (st, err) {
+                console.log("got error ".concat(err));
+            }
+        });
+    }
+
+    function sendAlert(clientid) {
+        let msg = document.getElementById('txtalert').value;
+        console.log(msg);
+        $.ajax({
+            url: '/rtmix/sendalert',
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            data: JSON.stringify({'clientid': clientid, 'message': msg}),
+            success: function (r, dat) {
+                console.log(dat)
+            },
+            error: function (st, err) {
+                console.log(err);
+            }
+        });
+    }
+</script>

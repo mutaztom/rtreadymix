@@ -347,7 +347,7 @@ public class RationalServices {
             COption option = new COption(rtype);
             List<COption> oplist = option.listOptions();
             JsonObject emptyOption = new JsonObject();
-            emptyOption.put("id", -1).put("item", "None").put("aritem","غير متوفر");
+            emptyOption.put("id", -1).put("item", "None").put("aritem", "غير متوفر");
             jar.add(emptyOption);
             for (COption o :
                     oplist) {
@@ -723,13 +723,28 @@ public class RationalServices {
     @Produces(MediaType.APPLICATION_JSON)
     public Response addProp(@PathParam("keyval") String keyval) {
         try {
-            System.out.println("Property optained as param: " + keyval);
+            System.out.println("Property obtained as param: " + keyval);
             UtilityExt.addProperty(keyval);
-            ServerMessage sm = new ServerMessage("OK:property added succesfully");
+            ServerMessage sm = new ServerMessage("OK:property added successfully");
             return Response.ok(sm).build();
         } catch (Exception e) {
             Utility.ShowError(e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), "Error:" + e.getMessage()).build();
+        }
+    }
+
+    @Path("/sendalert")
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response sendAlert(@Body JsonObject body) {
+        try {
+            System.out.println("received message: "+body);
+            server.pushNews(Integer.parseInt(body.getString("clientid")), "Admin Message", body.getString("message"));
+            return Response.ok("success").build();
+        } catch (Exception exception) {
+            System.out.println(exception);
+            ServerMessage sm=new ServerMessage("error",exception.getMessage());
+            return Response.ok(sm).status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 
