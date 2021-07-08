@@ -62,8 +62,8 @@ public class CommHub {
             Call call = client.newCall(request);
             call.timeout().timeout(60, TimeUnit.SECONDS);
             try (Response response = call.execute()) {
-                String resp = response.body().string();
-                Utility.ShowError(resp);
+                String resp =response.message();
+                Utility.ShowError(">>>Response message from SMS server is "+response.message());
                 if (resp.contains("Reject"))
                     r = false;
                 else if (resp.contains("Ok")) {
