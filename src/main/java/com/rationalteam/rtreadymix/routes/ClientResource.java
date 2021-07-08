@@ -6,6 +6,7 @@ import com.rationalteam.rtreadymix.ClientManager;
 import com.rationalteam.rtreadymix.CommHub;
 import com.rationalteam.rtreadymix.Order;
 import com.rationalteam.rtreadymix.data.Tblclient;
+import com.rationalteam.rtreadymix.data.Tblusers;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.qute.Template;
@@ -18,8 +19,10 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +110,7 @@ public class ClientResource {
     @RolesAllowed("admin")
     @POST
     @Transactional
-    public Response adminActions(@FormParam("command") String command) {
+    public Response adminActions(@FormParam("command") String command,@Context SecurityContext securityContext) {
         try {
             if (command == null) {
                 message = "No command was selected";
@@ -136,7 +139,8 @@ public class ClientResource {
                     message=">>>Response message from SMS server is OK";
                 }
             } else if (command.startsWith("setVerified")) {
-                int update = Tblclient.update("verified =true where id= ?1", itemid);
+                Tblusers user = Tblusers.find("username", securityContext.getUserPrincipal().getName()).singleResult();
+                int update = Tblclient.update("customerid=?2 ,verified =true where id= ?1", itemid,user.getId());
                 if (update > 0) {
                     message = "Client status set to 'Verified' user may now login via his mobile.";
                     pending = Tblclient.find("verified", false).list();
