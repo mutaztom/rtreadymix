@@ -145,6 +145,9 @@ public class ClientResource {
                     message = "Client status set to 'Verified' user may now login via his mobile.";
                     pending = Tblclient.find("verified", false).list();
                 }
+            }else if(command.startsWith("delete")){
+                Tblclient.delete("id=?1",itemid);
+                clients=client.listAll();
             }
         } catch (Exception e) {
             message = e.getMessage();

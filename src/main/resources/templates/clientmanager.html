@@ -1,7 +1,7 @@
 {#include base}
 {#rtbody}
     <div class="col-12">
-        {#if message}<div class="alert alert-dark">{message}</div>{/if}
+        {#if message}<div class="alert alert-danger">{message}</div>{/if}
     </div>
 <div class="row">
     <form action="adminactions" method="post">
@@ -50,7 +50,7 @@
 <div class="row justify-content-center">
     <div class="col-12 col-md-12 col-sm-12">
         <h2>All Clients</h2>
-        <form id="frmbrowse" action="/readymix/rtbaction" method="post">
+        <form id="frmbrowse" method="post">
             <div class="table-responsive">
                 <table class="table table-hover table-responsive-sm">
                     <thead class="thead-dark">
@@ -74,9 +74,9 @@
                         <td>{item.mobile}</td>
                         <td>{item.since}</td>
                         <td>
-                            <button type="submit" title="Edit" name="_method" value="edit_{item.id}"
+                            <button type="button" title="Edit" onclick="location.assign('client?itemid={item.id}')"
                                     class="btn btn-primary fa fa-pencil-alt"></button>
-                            <button id="cmddelete" type="button" onclick="deleteItem({item.id})" name="_method"
+                            <button id="cmddelete" type="submit" formaction="adminactions" onclick="deleteItem({item.id})" name="command"
                                     value="delete_{item.id}" class="btn btn-danger fa fa-trash"
                                     title="Delete this item"></button>
                         </td>
@@ -91,26 +91,12 @@
 </div>
 
 {/}
+{#jscript}
 <script type="text/javascript">
     function deleteItem(itemid) {
         var conf = confirm("Are you sure you want to delete this item?");
-        if (conf) {
-            var form = $("#frmbrowse");
-            $.ajax({
-                url: "delete/",
-                data: JSON.stringify({ itemid: itemid }),
-                headers: {'Content-Type': 'application/json'},
-                method: 'POST',
-                onsuccess: new function (dat) {
-                    console.log(dat);
-                    location.reload();
-                },
-                onerror: new function (d, s, err) {
-                    console.log("Error deleting item " + itemid + " " + err);
-                }
-            });
-        }
+        return conf;
     }
 </script>
-
+{/}
 {/include}
