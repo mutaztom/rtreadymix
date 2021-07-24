@@ -64,9 +64,9 @@ public class CommHub {
             try (Response response = call.execute()) {
                 String resp =response.message();
                 Utility.ShowError(">>>Response message from SMS server is "+response.message());
-                if (resp.contains("Reject"))
+                if (resp.toLowerCase().contains("reject"))
                     r = false;
-                else if (resp.contains("Ok")) {
+                else if (resp.toLowerCase().contains("ok")) {
                     Tblcomlog clog = new Tblcomlog();
                     clog.setAddress(mobiles);
                     clog.setByuser("rtmixadmin");
@@ -110,6 +110,7 @@ public class CommHub {
         return false;
     }
 
+    @Transactional
     public static boolean log(Tblcomlog tbl) {
         boolean r = false;
         try {

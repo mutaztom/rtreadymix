@@ -118,7 +118,8 @@ public class RationalServices {
                     output.setMessage("User created successfully");
                     output.setDetails("VERIFY");
                     //send verification sms
-                    commHub.sendSMS(c.getMobile(), c.getPincode());
+                    bus.send( IRationalEvents.RTEVENT_SIGNUP_PINSEND,c);
+
                     //return
                     return output;
                 }
@@ -527,7 +528,7 @@ public class RationalServices {
                 }
                 c.setPincode(cman.generatePin(c));
                 c.save();
-                commHub.sendSMS(c.getMobile(), c.getPincode());
+                bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND,c);
                 output.setMessage("Pin code is sent via SMS please check and verify.");
             }
             return Response.ok(output).build();

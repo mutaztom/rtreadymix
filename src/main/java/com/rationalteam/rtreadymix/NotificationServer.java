@@ -9,6 +9,7 @@ import com.rationalteam.rtreadymix.data.Tblnews;
 import io.quarkus.vertx.ConsumeEvent;
 import io.reactivex.Completable;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
@@ -28,6 +29,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -361,6 +364,7 @@ public class NotificationServer {
             Utility.ShowError(exp);
         }
     }
+
     @ConsumeEvent(value = IRationalEvents.RTEVENT_ORDER_PRICED, blocking = true)
     public void sendOrderPriced(Order order) {
         try {
@@ -374,6 +378,7 @@ public class NotificationServer {
             Utility.ShowError(exp);
         }
     }
+
     @ConsumeEvent(value = IRationalEvents.RTEVENT_PASSWORD_RESET, blocking = true)
     public void sendPasswordRest(Client client) {
         try {
@@ -406,4 +411,17 @@ public class NotificationServer {
             Utility.ShowError(exp);
         }
     }
+
+    @ConsumeEvent(value = IRationalEvents.RTEVENT_SIGNUP_PINSEND, blocking = true)
+    public void sendPin(Client c) {
+        try {
+            CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
+            completableFuture.complete(commHub.sendSMS(c.getMobile(), c.getPincode()));
+            Boolean b = completableFuture.get();
+            System.out.println(b ? "Pin was sent successfully to recipients :" + c.getMobile() : " Pin sending was not successful !!!!!!!");
+        } catch (InterruptedException | ExecutionException e) {
+            Utility.ShowError(e);
+        }
+    }
+
 }
