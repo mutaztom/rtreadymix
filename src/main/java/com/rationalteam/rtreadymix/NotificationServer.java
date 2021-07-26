@@ -6,6 +6,7 @@ import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscription;
 import com.rationalteam.rtreadymix.data.Tblnews;
+import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.vertx.ConsumeEvent;
 import io.reactivex.Completable;
 import io.smallrye.mutiny.Uni;
@@ -412,13 +413,27 @@ public class NotificationServer {
         }
     }
 
+    @Inject
+    ReactiveMailer remailer;
+
     @ConsumeEvent(value = IRationalEvents.RTEVENT_SIGNUP_PINSEND, blocking = true)
     public void sendPin(Client c) {
         try {
             CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-            completableFuture.complete(commHub.sendSMS(c.getMobile(), c.getPincode()));
+            if (c.getVerifyMedia().equals(enCommMedia.SMS))
+                completableFuture.complete(commHub.sendSMS(c.getMobile(), c.getPincode()));
+            else if (c.getVerifyMedia().equals(enCommMedia.EMAIL)) {
+                completableFuture.complete(
+                        CommHub.getEmailBuilder().withReactiveMailer(remailer).withItem("Registration verification Pin")
+                                .fromTemplate("verify.txt")
+                                .recepient(c.getEmail()).build()
+                );
+            }
             Boolean b = completableFuture.get();
-            System.out.println(b ? "Pin was sent successfully to recipients :" + c.getMobile() : " Pin sending was not successful !!!!!!!");
+
+            System.out.println(b ? "Pin was sent successfully to recipients via :"
+                    + c.getVerifyMedia().name() + " " + (c.getVerifyMedia().equals(enCommMedia.SMS) ? c.getMobile() : c.getEmail()) :
+                    " Pin sending was not successful !!!!!!!");
         } catch (InterruptedException | ExecutionException e) {
             Utility.ShowError(e);
         }

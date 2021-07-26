@@ -41,10 +41,12 @@ public class Client extends CRtDataObject {
     @Browsable(isDate = true)
     private LocalDate since;
     private String dislike;
+    private enCommMedia verifyMedia;
 
     public Client() {
         since = LocalDate.now();
         gender = enGender.Male;
+        verifyMedia=enCommMedia.SMS;
     }
 
 
@@ -339,4 +341,12 @@ public class Client extends CRtDataObject {
 		locale=lang;
 	}
 	public String getLocale(){return locale;}
+
+    public enCommMedia getVerifyMedia() {
+        return verifyMedia;
+    }
+
+    public void setVerifyMedia(enCommMedia verifyMedia) {
+        this.verifyMedia = verifyMedia;
+    }
 }

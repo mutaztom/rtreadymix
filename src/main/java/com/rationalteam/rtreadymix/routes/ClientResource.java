@@ -24,9 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Path("/readymix")
@@ -75,9 +73,15 @@ public class ClientResource {
     @RolesAllowed("admin")
     @GET
     public TemplateInstance clientMan() {
-        List<Client> filteredClients=clients;
-        if(findwhat!=null && !findwhat.isEmpty())
-            filteredClients= clients.stream().filter(f -> f.getItem().contains(findwhat)).collect(Collectors.toList());
+        List<Client> filteredClients = clients;
+        filteredClients.sort(new Comparator<Client>() {
+            @Override
+            public int compare(Client o1, Client o2) {
+                return o2.getId().compareTo(o1.getId());
+            }
+        });
+        if (findwhat != null && !findwhat.isEmpty())
+            filteredClients = clients.stream().filter(f -> f.getItem().contains(findwhat)).collect(Collectors.toList());
         return clientmanTemplate.data("title", "Client Manager")
                 .data("pending", pending)
                 .data("message", message)
@@ -90,9 +94,9 @@ public class ClientResource {
     @POST
     @RolesAllowed("admin")
     public Response filter(@FormParam("command") String command,
-                       @FormParam("findwhat") String fwhat) {
+                           @FormParam("findwhat") String fwhat) {
         if (command == null) {
-            message="No command to process";
+            message = "No command to process";
             return Response.seeOther(URI.create("/readymix/clientman")).build();
         }
         if (command.equals("search") && fwhat != null && !fwhat.isBlank()) {
@@ -100,8 +104,13 @@ public class ClientResource {
                 findwhat = fwhat;
             }
         } else if (command.equals("clear")) {
+            clients = client.listAll();
+            pending = Tblclient.find("verified", false).list();
             findwhat = null;
-
+        }else if (command.equals("refresh")) {
+            clients = client.listAll();
+            pending = Tblclient.find("verified", false).list();
+            findwhat = null;
         }
         return Response.seeOther(URI.create("/readymix/clientman")).build();
     }
@@ -110,7 +119,7 @@ public class ClientResource {
     @RolesAllowed("admin")
     @POST
     @Transactional
-    public Response adminActions(@FormParam("command") String command,@Context SecurityContext securityContext) {
+    public Response adminActions(@FormParam("command") String command, @Context SecurityContext securityContext) {
         try {
             if (command == null) {
                 message = "No command was selected";
@@ -133,21 +142,21 @@ public class ClientResource {
                     String pin = cman.generatePin(client);
                     c.setPincode(pin);
                 }
-                boolean r=commHub.sendSMS(c.getMobile(), c.getPincode());
-                if(r) {
+                boolean r = commHub.sendSMS(c.getMobile(), c.getPincode());
+                if (r) {
                     pending = Tblclient.find("verified", false).list();
-                    message=">>>Response message from SMS server is OK";
+                    message = ">>>Response message from SMS server is OK";
                 }
             } else if (command.startsWith("setVerified")) {
                 Tblusers user = Tblusers.find("username", securityContext.getUserPrincipal().getName()).singleResult();
-                int update = Tblclient.update("customerid=?2 ,verified =true where id= ?1", itemid,user.getId());
+                int update = Tblclient.update("customerid=?2 ,verified =true where id= ?1", itemid, user.getId());
                 if (update > 0) {
                     message = "Client status set to 'Verified' user may now login via his mobile.";
                     pending = Tblclient.find("verified", false).list();
                 }
-            }else if(command.startsWith("delete")){
-                Tblclient.delete("id=?1",itemid);
-                clients=client.listAll();
+            } else if (command.startsWith("delete")) {
+                Tblclient.delete("id=?1", itemid);
+                clients = client.listAll();
             }
         } catch (Exception e) {
             message = e.getMessage();

@@ -5,19 +5,20 @@ import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rtreadymix.data.Tblcomlog;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.groups.UniOnFailure;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.velocity.Template;
-import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.checkerframework.checker.units.qual.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 
-import java.io.File;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /*
@@ -62,8 +64,8 @@ public class CommHub {
             Call call = client.newCall(request);
             call.timeout().timeout(60, TimeUnit.SECONDS);
             try (Response response = call.execute()) {
-                String resp =response.message();
-                Utility.ShowError(">>>Response message from SMS server is "+response.message());
+                String resp = response.message();
+                Utility.ShowError(">>>Response message from SMS server is " + response.message());
                 if (resp.toLowerCase().contains("reject"))
                     r = false;
                 else if (resp.toLowerCase().contains("ok")) {
@@ -91,12 +93,29 @@ public class CommHub {
         return mobiles;
     }
 
-
+    @Transactional
     public boolean sendEMail(String message, String email) {
         try {
-            String subject = ("RationalTeam Service Hub");
+            String subject = ("ReadyMix Team");
             remail.send(Mail.withText(email, subject, message));
+//            Tblcomlog clog = new Tblcomlog();
+//            clog.setAddress(email);
+//            clog.setByuser("rtmixadmin");
+//            clog.setMessage(message);
+//            clog.setSmstime(Timestamp.valueOf(LocalDateTime.now()));
+//            log(clog);
+            return true;
+        } catch (Exception ex) {
+            Utility.ShowError(ex);
+        }
+        return false;
+    }
 
+    @Transactional
+    public boolean send(String message, String email) {
+        try {
+            String subject = ("ReadyMix Team");
+            remail.send(Mail.withText(email, subject, message));
 //            Tblcomlog clog = new Tblcomlog();
 //            clog.setAddress(email);
 //            clog.setByuser("rtmixadmin");
@@ -133,13 +152,30 @@ public class CommHub {
 
     //BUILD ENGINE FOR EMAILS
     static class EmailBuilder {
-        StringWriter swriter = new StringWriter();
-        String message;
-        Velocity v;
-        Template template;
-        String item;
-        String mailto;
-        MailMan engine;
+        private StringWriter swriter = new StringWriter();
+        private String message;
+        private Velocity v;
+        private Template template;
+        private String item;
+        private String mailto;
+        private MailMan engine;
+        private ReactiveMailer reactiveMailer;
+
+        public String getItem() {
+            return item;
+        }
+
+        public void setItem(String item) {
+            this.item = item;
+        }
+
+        public String getMailto() {
+            return mailto;
+        }
+
+        public void setMailto(String mailto) {
+            this.mailto = mailto;
+        }
 
         private void init() {
             Properties p = new Properties();
@@ -152,6 +188,11 @@ public class CommHub {
             init();
             engine = new MailMan();
             engine.loadConfig();
+        }
+
+        public EmailBuilder withReactiveMailer(ReactiveMailer remailer) {
+            this.reactiveMailer = remailer;
+            return this;
         }
 
         public EmailBuilder message(String msg) {
@@ -226,8 +267,15 @@ public class CommHub {
 //            }
 //        }
 
-        public void build() {
-
+        public Boolean build() {
+            try {
+                return reactiveMailer.send(Mail.withText(this.getMailto(), getItem(), message))
+                        .subscribeAsCompletionStage()
+                        .thenApply(x -> true).complete(true);
+            } catch (Exception ex) {
+                Utility.ShowError(ex.getMessage());
+                return false;
+            }
         }
     }
 

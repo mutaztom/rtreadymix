@@ -1,9 +1,18 @@
 {#include base}
 {#rtbody}
-    <div class="col-12">
-        {#if message}<div class="alert alert-danger">{message}</div>{/if}
-    </div>
+<div class="col-12">
+    {#if message}
+    <div class="alert alert-danger">{message}</div>
+    {/if}
+</div>
 <div class="row">
+
+    <div class="row justify-content-center">
+        <div id="tbar" class="col-12 col-md-12 col-sm-12">
+            {#include filterman/}
+        </div>
+    </div>
+
     <form action="adminactions" method="post">
         <h4 style="color:darkred">Pending Clients</h4>
         <h5 style="color:darkgray">(Not verified yet)</h5>
@@ -11,27 +20,35 @@
             <table class="table table-hover table-responsive-sm">
                 <thead class="table-dark">
                 <tr>
-                <th>id</th>
-                <th>name</th>
-                <th>mobile</th>
-                <th>email</th>
-                <th>since</th>
-                <th>pin code</th>
-                <th>Cont</th>
-                <th>Cont</th>
+                    <th>id</th>
+                    <th>name</th>
+                    <th>mobile</th>
+                    <th>email</th>
+                    <th>since</th>
+                    <th>pin code</th>
+                    <th>Cont</th>
+                    <th>Cont</th>
                 </tr>
                 </thead>
                 <tbody>
                 {#for c in pending orEmpty}
-                <tr  style="color:#799ba3;">
+                <tr style="color:#799ba3;">
                     <td>{c.id}</td>
                     <td>{c.item}</td>
                     <td>{c.mobile}</td>
                     <td>{c.email}</td>
                     <td>{c.since}</td>
                     <td>{c.pincode}</td>
-                    <td><button class="btn btn-primary fa fa-mobile-alt" name="command" value="sendPin_{c.id}">Resend Pin</button> </td>
-                    <td><button class="btn btn-warning fa fa-check-double" name="command" value="setVerified_{c.id}">Set Verified</button> </td>
+                    <td>
+                        <button class="btn btn-primary fa fa-mobile-alt" name="command" value="sendPin_{c.id}">Resend
+                            Pin
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-warning fa fa-check-double" name="command" value="setVerified_{c.id}">Set
+                            Verified
+                        </button>
+                    </td>
                 </tr>
                 {/for}
                 </tbody>
@@ -40,12 +57,6 @@
     </form>
 </div>
 
-
-<div class="row justify-content-center">
-    <div id="tbar" class="col-12 col-md-12 col-sm-12">
-        {#include filterman/}
-    </div>
-</div>
 
 <div class="row justify-content-center">
     <div class="col-12 col-md-12 col-sm-12">
@@ -67,7 +78,7 @@
                     <tbody>
                     {#for item in rtlist orEmpty }
                     <tr>
-                       <td>{#if str:isNew(item.since)}<img src="../images/new.png" alt="" width="30">{/if}</td>
+                        <td>{#if str:isNew(item.since)}<img src="../images/new.png" alt="" width="30">{/if}</td>
                         <td>{item.id}</td>
                         <td>{item.item}</td>
                         <td>{item.email}</td>
@@ -76,7 +87,8 @@
                         <td>
                             <button type="button" title="Edit" onclick="location.assign('client?itemid={item.id}')"
                                     class="btn btn-primary fa fa-pencil-alt"></button>
-                            <button id="cmddelete" type="submit" formaction="adminactions" onclick="deleteItem({item.id})" name="command"
+                            <button id="cmddelete" type="submit" formaction="adminactions"
+                                    onclick="deleteItem({item.id})" name="command"
                                     value="delete_{item.id}" class="btn btn-danger fa fa-trash"
                                     title="Delete this item"></button>
                         </td>

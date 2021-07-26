@@ -10,6 +10,8 @@ import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
 import io.quarkus.panache.common.Parameters;
 import io.quarkus.vertx.web.Body;
+import io.quarkus.vertx.web.Param;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -118,9 +120,7 @@ public class RationalServices {
                     output.setMessage("User created successfully");
                     output.setDetails("VERIFY");
                     //send verification sms
-                    bus.send( IRationalEvents.RTEVENT_SIGNUP_PINSEND,c);
-
-                    //return
+                    bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND, c);
                     return output;
                 }
             } else {
@@ -475,9 +475,10 @@ public class RationalServices {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/verifyPin/{pincode}/{clientid}")
+    @Path("/verifyPin/{pincode}/{clientid}/{media}")
     @Transactional
-    public Response verifyPin(@PathParam("pincode") String pincode, @PathParam("clientid") String clientid) {
+    public Response verifyPin(@PathParam("pincode") String pincode, @PathParam("clientid") String clientid,
+                              @PathParam("media") String media) {
         try {
             MezoDB.setEman(eman);
             ServerMessage output = new ServerMessage();
@@ -488,6 +489,11 @@ public class RationalServices {
             }
             Client c = Client.findByEmail(clientid);
             if (c != null) {
+                if(media!=null && !media.isBlank())
+                {
+                    enCommMedia commMedia=enCommMedia.valueOf(media.toUpperCase());
+                    c.setVerifyMedia(commMedia);
+                }
                 if (c.getPincode().equals(pincode)) {
                     output.setMessage("Pin code verification was successful, Enjoy our app.");
                     c.setVerfied(true);
@@ -510,25 +516,35 @@ public class RationalServices {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/regenPin/{clientid}")
+    @Path("/regenPin/{clientid}/{media}")
     @Transactional
-    public Response regenPin(@PathParam("clientid") String clientid) {
+    public Response regenPin(@PathParam("clientid") String clientid, @PathParam("media") String media) {
         ServerMessage output = new ServerMessage();
         try {
             if (clientid == null || clientid.isBlank()) {
                 output.setMessage("Parameters of regenPin cannot be null!");
                 output.setDetails("clientid=" + clientid);
-                return Response.serverError().entity(output).build();
+                return Response.ok(output).build();
             }
             Client c = Client.findByEmail(clientid);
+            ///Manage Media type for verification
+            if (media == null || media.isBlank()) {
+                media = enCommMedia.SMS.name();
+            }
+            enCommMedia commMedia = com.rationalteam.rtreadymix.enCommMedia.valueOf(media.toUpperCase());
+            //////
             if (c != null) {
                 if (c.isVerfied()) {
                     output.setMessage("Client has already been verified, pin regeneration is prohibited.");
-                    return Response.serverError().entity(output).build();
+                    return Response.ok(output).build();
                 }
-                c.setPincode(cman.generatePin(c));
-                c.save();
-                bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND,c);
+                //does client does not have pin code
+                if (c.getPincode() == null || c.getPincode().isBlank()) {
+                    c.setPincode(cman.generatePin(c));
+                    c.save();
+                }
+                c.setVerifyMedia(commMedia);
+                bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND, c);
                 output.setMessage("Pin code is sent via SMS please check and verify.");
             }
             return Response.ok(output).build();
@@ -739,12 +755,12 @@ public class RationalServices {
     @Consumes({MediaType.APPLICATION_JSON})
     public Response sendAlert(@Body JsonObject body) {
         try {
-            System.out.println("received message: "+body);
+            System.out.println("received message: " + body);
             server.pushNews(Integer.parseInt(body.getString("clientid")), "Admin Message", body.getString("message"));
             return Response.ok("success").build();
         } catch (Exception exception) {
             System.out.println(exception);
-            ServerMessage sm=new ServerMessage("error",exception.getMessage());
+            ServerMessage sm = new ServerMessage("error", exception.getMessage());
             return Response.ok(sm).status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }

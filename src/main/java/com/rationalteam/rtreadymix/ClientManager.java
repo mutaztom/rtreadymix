@@ -62,7 +62,8 @@ public class ClientManager implements Serializable {
             client.setPassword("123");
         //generate client pin
         client.setPincode(generatePin(client));
-        return client.save();
+        boolean r=client.save();
+        return r;
     }
 
     public String generatePin(Client c) {
