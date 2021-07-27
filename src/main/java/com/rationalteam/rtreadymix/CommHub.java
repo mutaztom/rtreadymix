@@ -267,7 +267,7 @@ public class CommHub {
 //            }
 //        }
 
-        public Boolean build() {
+        public Boolean send() {
             try {
                 return reactiveMailer.send(Mail.withText(this.getMailto(), getItem(), message))
                         .subscribeAsCompletionStage()

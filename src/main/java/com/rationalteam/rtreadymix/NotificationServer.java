@@ -6,6 +6,7 @@ import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscription;
 import com.rationalteam.rtreadymix.data.Tblnews;
+import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.vertx.ConsumeEvent;
 import io.reactivex.Completable;
@@ -419,18 +420,24 @@ public class NotificationServer {
     @ConsumeEvent(value = IRationalEvents.RTEVENT_SIGNUP_PINSEND, blocking = true)
     public void sendPin(Client c) {
         try {
+            Boolean b = false;
             CompletableFuture<Boolean> completableFuture = new CompletableFuture<>();
-            if (c.getVerifyMedia().equals(enCommMedia.SMS))
+            if (c.getVerifyMedia().equals(enCommMedia.SMS)) {
                 completableFuture.complete(commHub.sendSMS(c.getMobile(), c.getPincode()));
-            else if (c.getVerifyMedia().equals(enCommMedia.EMAIL)) {
-                completableFuture.complete(
-                        CommHub.getEmailBuilder().withReactiveMailer(remailer).withItem("Registration verification Pin")
-                                .fromTemplate("verify.txt")
-                                .recepient(c.getEmail()).build()
-                );
-            }
-            Boolean b = completableFuture.get();
+                b = completableFuture.get();
+            } else if (c.getVerifyMedia().equals(enCommMedia.EMAIL)) {
+                StringBuilder message = new StringBuilder("Dear Sir").append("\n");
+                message.append("Your pin code is: ").append(c.getPincode()).append("\n")
+                        .append("Best Regards").append("\n").append("ReadyMix Team");
+                b = remailer.send(Mail.withText(c.getEmail(), "Your pin code", message.toString()))
+                        .subscribeAsCompletionStage().isDone();
 
+
+//                        CommHub.getEmailBuilder().withReactiveMailer(remailer).withItem("Registration verification Pin")
+//                                .fromTemplate("verify.txt")
+//                                .recepient(c.getEmail()).send()
+
+            }
             System.out.println(b ? "Pin was sent successfully to recipients via :"
                     + c.getVerifyMedia().name() + " " + (c.getVerifyMedia().equals(enCommMedia.SMS) ? c.getMobile() : c.getEmail()) :
                     " Pin sending was not successful !!!!!!!");

@@ -489,9 +489,8 @@ public class RationalServices {
             }
             Client c = Client.findByEmail(clientid);
             if (c != null) {
-                if(media!=null && !media.isBlank())
-                {
-                    enCommMedia commMedia=enCommMedia.valueOf(media.toUpperCase());
+                if (media != null && !media.isBlank()) {
+                    enCommMedia commMedia = enCommMedia.valueOf(media.toUpperCase());
                     c.setVerifyMedia(commMedia);
                 }
                 if (c.getPincode().equals(pincode)) {
@@ -545,7 +544,7 @@ public class RationalServices {
                 }
                 c.setVerifyMedia(commMedia);
                 bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND, c);
-                output.setMessage("Pin code is sent via SMS please check and verify.");
+                output.setMessage("Pin code is sent via " + commMedia.name() + " please check and verify.");
             }
             return Response.ok(output).build();
         } catch (Exception exp) {
