@@ -108,6 +108,8 @@ public class RationalServices {
             System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
             c.fromMobileUser(muser);
+			if(muser.getUsertype()!=null && !muser.getUsertype().isBlank())
+				c.setVerifyMedia(enCommMedia.valueOf(muser.getUsertype().toUpperCase()));
             //check if name is used
             if (c.isNameUsed()) {
                 output.setMessage("Name of account holder '" + c.getItem() + "' is used, please type a new one.");
@@ -475,36 +477,34 @@ public class RationalServices {
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/verifyPin/{pincode}/{clientid}/{media}")
+    @Path("/verifyPin/{pincode}/{clientid}")
     @Transactional
-    public Response verifyPin(@PathParam("pincode") String pincode, @PathParam("clientid") String clientid,
-                              @PathParam("media") String media) {
+    public Response verifyPin(@PathParam("pincode") String pincode, @PathParam("clientid") String clientid) {
         try {
             MezoDB.setEman(eman);
             ServerMessage output = new ServerMessage();
             if (clientid == null || clientid.isBlank() || pincode == null || pincode.isBlank()) {
                 output.setMessage("Parameters of pin verification cannot be null!");
                 output.setDetails("Pincode= " + pincode + ", clientid=" + clientid);
-                return Response.serverError().entity(output).build();
+                return Response.ok(output).status(Response.Status.BAD_REQUEST).build();
             }
             Client c = Client.findByEmail(clientid);
             if (c != null) {
-                if (media != null && !media.isBlank()) {
-                    enCommMedia commMedia = enCommMedia.valueOf(media.toUpperCase());
-                    c.setVerifyMedia(commMedia);
-                }
                 if (c.getPincode().equals(pincode)) {
                     output.setMessage("Pin code verification was successful, Enjoy our app.");
+                    output.setDetails("تم التحقق من الرقم بنجاح يمكنك تسجيل الدخول الآن");
                     c.setVerfied(true);
                     c.save();
                     return Response.ok(output).build();
                 } else {
-                    output.setMessage("Pin code of this client does not match generated one. Please contact Technical Support.");
-                    return Response.status(Response.Status.FORBIDDEN.getStatusCode()).entity(output).build();
+                    output.setMessage("Pin code of this client does not match generated one. Please send correct pin.");
+                    output.setDetails("رقم التحقق الذي أرسلته غير مطابق ،يرجى التحقق من صحة الرقم المرسل");
+                    return Response.ok(output).status(Response.Status.FORBIDDEN.getStatusCode()).build();
                 }
             } else {
                 output.setMessage("Could not verify pin code, Client not registered: " + clientid + ". Please contact Technical Support.");
-                return Response.status(Response.Status.FORBIDDEN.getStatusCode()).entity(output).build();
+                output.setDetails("لم يتم التحقق من الكود المرسل لأن المستخدم غير مسجل، قم بالتسجيل أولا");
+                return Response.ok(output).status(Response.Status.FORBIDDEN.getStatusCode()).build();
             }
 
         } catch (Exception exp) {
