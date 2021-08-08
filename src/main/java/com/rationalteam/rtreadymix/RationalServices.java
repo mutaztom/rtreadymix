@@ -523,7 +523,7 @@ public class RationalServices {
             if (clientid == null || clientid.isBlank()) {
                 output.setMessage("Parameters of regenPin cannot be null!");
                 output.setDetails("clientid=" + clientid);
-                return Response.ok(output).build();
+                return Response.ok(output).status(Response.Status.BAD_REQUEST).build();
             }
             Client c = Client.findByEmail(clientid);
             ///Manage Media type for verification
@@ -535,6 +535,7 @@ public class RationalServices {
             if (c != null) {
                 if (c.isVerfied()) {
                     output.setMessage("Client has already been verified, pin regeneration is prohibited.");
+                    output.setDetails("هذا المستخدم تم التحقق منه مسبقاً، ليس هنالك من ضرورة لهذا الإجراء");
                     return Response.ok(output).build();
                 }
                 //does client does not have pin code
@@ -545,6 +546,8 @@ public class RationalServices {
                 c.setVerifyMedia(commMedia);
                 bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND, c);
                 output.setMessage("Pin code is sent via " + commMedia.name() + " please check and verify.");
+                output.setMessage(" تم إرسال كود التحقق عبر".concat(commMedia.equals(enCommMedia.SMS)?"رسالة نصية":
+                "البريد الإلكتروني").concat(" يرجى التحقق وإكمال الإجراء "));
             }
             return Response.ok(output).build();
         } catch (Exception exp) {
