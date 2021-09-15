@@ -148,18 +148,18 @@ public class ReadymixRoutes {
     @RolesAllowed("admin")
     public CompletionStage<Response> sendMail(RoutingContext cont) {
         @Nullable JsonObject json = cont.getBodyAsJson();
-        String msg = json.getString("message");
-        String mailto = json.getString("mailto");
-        ServerMessage m = new ServerMessage("Mail sent succesfully");
-        return remail.send(Mail.withText(mailto, "ReadyMix Admin Message", msg)).subscribeAsCompletionStage()
-                .thenApply(t -> {
-                    System.out.println("Mail sent successfully");
-                    return Response.ok(m).build();
-                }).
-                        exceptionally(t -> {
-                            System.out.println("An error has occured at mail sending, " + t.getMessage());
-                            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
-                        });
+            String msg = json.getString("message");
+            String mailto = json.getString("mailto");
+            ServerMessage m = new ServerMessage("Mail sent successfully");
+            return remail.send(Mail.withText(mailto, "ReadyMix Admin Message", msg)).subscribeAsCompletionStage()
+                    .thenApply(t -> {
+                        System.out.println("Mail sent successfully");
+                        return Response.ok(m).build();
+                    }).
+                            exceptionally(t -> {
+                                System.out.println("An error has occurred at mail sending, " + t.getMessage());
+                                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), t.getMessage()).build();
+                            });
 
     }
 

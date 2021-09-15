@@ -82,7 +82,7 @@ public class ClientManager implements Serializable {
 //            r = filter.get(0).equals(client);
             MezoDB.setEman(eman);
             int cid = MezoDB.getInteger("select id from tblclient where email='" + client.getEmail() + "' and password='" + client.getPassword() + "'");
-            System.out.println("Login log: is user " + client.getEmail() + " auth? " + Boolean.toString(r));
+            System.out.println("Login log: is user " + client.getEmail() + " auth? " + r);
             return cid > 0;
         }
         return r;

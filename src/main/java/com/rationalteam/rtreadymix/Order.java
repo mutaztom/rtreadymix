@@ -129,7 +129,7 @@ public class Order extends CRtDataObject {
             notes = data.getNotes();
             member = data.getMember();
             location = data.getLocation();
-            rate = data.getRate() > 0 ? data.getRate() : rate;
+            rate = data.getRate() !=null ? data.getRate() : rate;
             if (data.getOntime() != null)
                 ontime = data.getOntime().toLocalDateTime().toLocalTime();
         } catch (IllegalArgumentException e) {

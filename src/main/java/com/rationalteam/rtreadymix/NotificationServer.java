@@ -1,7 +1,6 @@
 package com.rationalteam.rtreadymix;
 
 import com.rationalteam.reaymixcommon.ClientOrder;
-import com.rationalteam.reaymixcommon.News;
 import com.rationalteam.rterp.erpcore.MezoDB;
 import com.rationalteam.rterp.erpcore.Utility;
 import com.rationalteam.rterp.sales.Subscription;
@@ -9,9 +8,6 @@ import com.rationalteam.rtreadymix.data.Tblnews;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.vertx.ConsumeEvent;
-import io.reactivex.Completable;
-import io.smallrye.mutiny.Uni;
-import io.vertx.core.Future;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.apache.velocity.Template;
@@ -19,7 +15,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.New;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.io.StringWriter;
@@ -32,7 +27,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
@@ -295,12 +289,12 @@ public class NotificationServer {
         return b;
     }
 
-    @ConsumeEvent("rtorderevent")
+//    @ConsumeEvent("rtorderevent")
     @Transactional
     public void notifyStaff(ClientOrder order) {
         try {
             if (NotifyEmail) {
-                confirmOrder(order, enCommMedia.EMAIL, order.getMobile());
+                confirmOrder(order, enCommMedia.EMAIL, order.getClientid());
             }
             if (NotifySMS) {
                 confirmOrder(order, enCommMedia.SMS, order.getMobile());
@@ -331,7 +325,7 @@ public class NotificationServer {
     @ConsumeEvent(value = IRationalEvents.RTEVENT_NEWORDER, blocking = true)
     public void sendPushNote(Order order) {
         try {
-            System.out.println("Recieved event New Order Recieved");
+            System.out.println("Received event New Order Received");
             notifyStaff(order.toClientOrder());
             pushNews(order.getClientid(), "Order Activity for ".concat(order.getItem()), "Order status : " + order.getStatus().name()
                     + (order.getTotal() > 0 ? " Price:".concat(order.getTotal().toString()) : ""));
@@ -426,10 +420,10 @@ public class NotificationServer {
                 completableFuture.complete(commHub.sendSMS(c.getMobile(), c.getPincode()));
                 b = completableFuture.get();
             } else if (c.getVerifyMedia().equals(enCommMedia.EMAIL)) {
-                StringBuilder message = new StringBuilder("Dear Sir").append("\n");
-                message.append("Your pin code is: ").append(c.getPincode()).append("\n")
-                        .append("Best Regards").append("\n").append("ReadyMix Team");
-                b = remailer.send(Mail.withText(c.getEmail(), "Your pin code", message.toString()))
+                String message = "Dear Sir" + "\n" +
+                        "Your pin code is: " + c.getPincode() + "\n" +
+                        "Best Regards" + "\n" + "ReadyMix Team";
+                b = remailer.send(Mail.withText(c.getEmail(), "Your pin code", message))
                         .subscribeAsCompletionStage().isDone();
 
 

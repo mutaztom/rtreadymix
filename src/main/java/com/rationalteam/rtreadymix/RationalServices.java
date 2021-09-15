@@ -18,11 +18,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.redis.client.Request;
 import org.jboss.resteasy.util.StringContextReplacement;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.transaction.Status;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -108,8 +110,8 @@ public class RationalServices {
             System.out.println("Received json object is as follows: " + muser.toString());
             Client c = new Client();
             c.fromMobileUser(muser);
-			if(muser.getUsertype()!=null && !muser.getUsertype().isBlank())
-				c.setVerifyMedia(enCommMedia.valueOf(muser.getUsertype().toUpperCase()));
+            if (muser.getUsertype() != null && !muser.getUsertype().isBlank())
+                c.setVerifyMedia(enCommMedia.valueOf(muser.getUsertype().toUpperCase()));
             //check if name is used
             if (c.isNameUsed()) {
                 output.setMessage("Name of account holder '" + c.getItem() + "' is used, please type a new one.");
@@ -302,7 +304,7 @@ public class RationalServices {
 
             DataManager.setEntityManager(eman);
             if (!cman.isAuthentic(order.getClientid()))
-                return Response.status(Response.Status.FORBIDDEN.getStatusCode(), "You are not allowed to place orders in this server.").build();
+                return Response.ok("You are not allowed to place orders in this server.").status(Response.Status.FORBIDDEN.getStatusCode()).build();
             //save order to our database
             Order inorder = new Order();
             boolean modifying = order.getId() != null;
@@ -314,18 +316,22 @@ public class RationalServices {
             if (modifying) {
                 inorder.find(order.getId());
                 System.out.println("Modifying");
+                if (inorder.getStatus().equals(enOrderStatus.Canceled) ||
+                        inorder.getStatus().equals(enOrderStatus.Rejected) ||
+                        inorder.getStatus().equals(enOrderStatus.Delivered))
+                    return Response.ok(new ServerMessage("Can't modify order when it is Delivered,Rejected or Canceled please create a new one", "Bad order status")).status(Status.STATUS_ROLLEDBACK).build();
             }
 
             inorder.fromClientOrder(order);
             boolean r = inorder.save();
             if (r) {
-                bus.send(modifying ? IRationalEvents.RTEVENT_ORDER_MODIFIED : IRationalEvents.RTEVENT_NEWORDER, order);
+                bus.send(modifying ? IRationalEvents.RTEVENT_ORDER_MODIFIED : IRationalEvents.RTEVENT_NEWORDER, inorder);
                 output.setMessage("Received order " + (modifying ? "modification" : "") + " from client: " + order.getClientid() + " Notes:" + order.getNotes());
-                return Response.ok(output).build();
+                return Response.ok(output).status(Response.Status.OK).build();
             } else {
                 output.setMessage("Could not save order, an unknown exception is thrown.");
                 Utility.ShowError(output.getMessage());
-                return Response.serverError().status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getMessage()).build();
+                return Response.ok(output).status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), output.getMessage()).build();
             }
         } catch (Exception e) {
             Utility.ShowError(e);
@@ -546,8 +552,8 @@ public class RationalServices {
                 c.setVerifyMedia(commMedia);
                 bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND, c);
                 output.setMessage("Pin code is sent via " + commMedia.name() + " please check and verify.");
-                output.setMessage(" تم إرسال كود التحقق عبر".concat(commMedia.equals(enCommMedia.SMS)?"رسالة نصية":
-                "البريد الإلكتروني").concat(" يرجى التحقق وإكمال الإجراء "));
+                output.setMessage(" تم إرسال كود التحقق عبر".concat(commMedia.equals(enCommMedia.SMS) ? "رسالة نصية" :
+                        "البريد الإلكتروني").concat(" يرجى التحقق وإكمال الإجراء "));
             }
             return Response.ok(output).build();
         } catch (Exception exp) {
@@ -776,10 +782,10 @@ public class RationalServices {
         try {
             System.out.println(json);
             String msg = json.getString("message");
-            String mailto = json.getString("mailto");
-            remail.send(Mail.withText(mailto, "Admin Message", msg));
+            String mailto = json.getString("mailto") == null ? "mutaztom@gmail.com" : json.getString("mailto");
+            remail.send(Mail.withText(mailto, "Admin Message", msg).setFrom("sales@readymixteam.com"));
             System.out.println("Email sent successfully");
-            return Response.ok(new ServerMessage("Mail sent successfully")).build();
+            return Response.ok(new ServerMessage("Mail sent successfully")).status(Response.Status.OK).build();
         } catch (Exception exp) {
             System.out.println("Error Sending Mail: " + exp);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), exp.getMessage()).build();
@@ -817,6 +823,23 @@ public class RationalServices {
         } catch (Exception exp) {
             Utility.ShowError(exp);
             return Response.serverError().entity(exp.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("checkevents")
+    public Response checkEvents() {
+        try {
+            Order order = new Order();
+            order.find(78);
+            boolean modifying = true;
+            bus.send(IRationalEvents.RTEVENT_ORDER_MODIFIED, order);
+            bus.send(IRationalEvents.RTEVENT_NEWORDER, order);
+            //bus.send(IRationalEvents.RTEVENT_SIGNUP_PINSEND,order.getClient());
+            bus.send(IRationalEvents.RTEVENT_ORDER_CANCELED, order);
+            return Response.ok().build();
+        } catch (Exception exception) {
+            return Response.ok(exception).status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
 }

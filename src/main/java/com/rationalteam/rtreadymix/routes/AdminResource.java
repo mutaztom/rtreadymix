@@ -81,6 +81,7 @@ public class AdminResource {
 
     static List<Order> orderList = null;
     private String searchFor;
+    private String filterInfo;
 
     @Path("/orders")
     @GET
@@ -97,7 +98,9 @@ public class AdminResource {
                 .data("clientid", "Admin")
                 .data("filteraction", "filterorder")
                 .data("findwhat", searchFor)
-                .data("clients", cman.getCLients()).data("orderstatus", values);
+                .data("clients", cman.getCLients())
+                .data("filterInfo", filterInfo)
+                .data("orderstatus", values);
     }
 
     @Path("/filterorder")
@@ -105,7 +108,7 @@ public class AdminResource {
     @RolesAllowed("admin")
     public void filter(@FormParam("findwhat") String findwhat,
                        @FormParam("client") String client) {
-        String sql = "";
+        String sql = "";filterInfo="";
         if (command.equals("search") && findwhat != null && !findwhat.isBlank()) {
             searchFor = findwhat;
             if (findwhat.matches("(C|c)\\d*")) {
@@ -115,7 +118,7 @@ public class AdminResource {
             } else {
                 sql = "item like '%" + findwhat + "%' or notes like '%" + findwhat + "%'";
             }
-            System.out.println(sql);
+            filterInfo = sql;
             PanacheQuery<Tblorder> olist = Tblorder.find(sql);
             orderList.clear();
             olist.stream().forEach(o -> {
@@ -123,15 +126,22 @@ public class AdminResource {
                 order.setData(o);
                 orderList.add(order);
             });
-        } else if (command.equals("clear")) {
+        } else if (command.equals("clear") || command.equals("refresh")) {
             searchFor = null;
             orderList = stat.getOrders();
+            filterInfo = "Show All.";
         } else if (command.equals("filterbyclient")) {
+            if (client.equals("-1")) {
+                searchFor = null;
+                orderList = stat.getOrders();
+                filterInfo = "Show All.";
+                return;
+            }
             Order order = new Order();
             Map<String, Object> map = new HashMap<>();
             map.put("clientid", client);
             orderList = order.filter(map);
-            System.out.println("filter called:" + map + " size:" + orderList.size());
+            filterInfo = map.toString();
         }
 
     }
@@ -283,7 +293,7 @@ public class AdminResource {
                     " where id=" + itid;
             boolean r = MezoDB.doSqlIn(sql);
             o.put("result", r);
-            Order order=new Order();
+            Order order = new Order();
             order.find(itid);
             bus.send(IRationalEvents.RTEVENT_ORDER_PRICED, order);
             return Response.ok(o).build();
